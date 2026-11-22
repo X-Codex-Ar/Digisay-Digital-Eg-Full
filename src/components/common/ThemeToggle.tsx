@@ -99,7 +99,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         type="button"
         onClick={handleToggle}
         aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-        className={`group relative flex size-10 items-center justify-center overflow-hidden rounded-2xl border border-border/80 bg-card/70 backdrop-blur-sm text-foreground shadow-sm transition-all duration-300 hover:border-primary/40 hover:bg-card hover:text-primary hover:shadow-lg hover:shadow-primary/5 active:scale-95 ${
+        className={`group relative flex size-10 items-center justify-center overflow-hidden rounded-xl border border-border/80 bg-card/70 backdrop-blur-sm text-foreground shadow-sm transition-all duration-300 hover:border-primary/40 hover:bg-card hover:text-primary hover:shadow-lg hover:shadow-primary/5 active:scale-95 ${
           className || ""
         }`}
       >

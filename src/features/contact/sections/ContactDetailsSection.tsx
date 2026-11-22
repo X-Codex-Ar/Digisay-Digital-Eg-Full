@@ -171,7 +171,7 @@ export function ContactCtaSection() {
           </div>
           <Link
             to="/services"
-            className="shrink-0 rounded-2xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-[#bf0826] active:scale-[0.98]"
+            className="shrink-0 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md transition-all hover:bg-[#bf0826] active:scale-[0.98]"
           >
             Explore Services
           </Link>

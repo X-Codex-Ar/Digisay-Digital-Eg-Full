@@ -63,7 +63,7 @@ export function PlayVideoButton({
       onClick={onClick}
       whileHover={reduced ? {} : { scale: 1.03 }}
       whileTap={reduced ? {} : { scale: 0.97 }}
-      className={`group relative inline-flex items-center gap-3 rounded-2xl border border-border/70 bg-card/80 px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md shadow-sm transition-all duration-300 hover:border-primary/50 hover:bg-card hover:shadow-lg hover:shadow-primary/10 ${className}`}
+      className={`group relative inline-flex items-center gap-3 rounded-xl border border-border/70 bg-card/80 px-4 py-3 sm:px-5 sm:py-3.5 backdrop-blur-md shadow-sm transition-all duration-300 hover:border-primary/50 hover:bg-card hover:shadow-lg hover:shadow-primary/10 ${className}`}
     >
       {/* Pulsing play icon badge */}
       <div className="relative flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary text-white shadow-md shadow-primary/30 transition-transform duration-300 group-hover:scale-105">

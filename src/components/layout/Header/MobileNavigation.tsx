@@ -115,7 +115,7 @@ export function MobileNavigation({ open, onClose }: { open: boolean; onClose: ()
             <SheetClose asChild>
               <PrimaryButton
                 to="/contact"
-                className="flex-1 justify-center rounded-2xl text-sm py-3"
+                className="flex-1 justify-center rounded-xl text-sm py-3"
               >
                 Let's Talk
               </PrimaryButton>
