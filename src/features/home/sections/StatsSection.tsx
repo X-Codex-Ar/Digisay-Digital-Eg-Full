@@ -128,20 +128,20 @@ function TiltStatCard({
         whileInView={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
         viewport={{ once: true }}
         transition={{ duration: 0.6, delay: index * 0.1, ease: [0.16, 1, 0.3, 1] }}
-        className="relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-border/70 bg-card p-8 shadow-lg transition-colors duration-300 hover:border-emerald-500/40 hover:shadow-2xl"
+        className="relative flex h-full flex-col justify-between overflow-hidden rounded-3xl border border-border/70 bg-card p-8 shadow-lg transition-colors duration-300 hover:border-[#d90a2c]/40 hover:shadow-2xl"
       >
-        {/* Specular Glare Overlay */}
+        {/* Specular Glare Overlay in Brand Accent */}
         {!reduced && isHovered && (
           <motion.div
             className="pointer-events-none absolute inset-0 z-20 rounded-3xl opacity-30 transition-opacity duration-300"
             style={{
-              background: `radial-gradient(circle 200px at ${glareX.get()}% ${glareY.get()}%, rgba(0, 229, 117, 0.25), transparent 80%)`,
+              background: `radial-gradient(circle 200px at ${glareX.get()}% ${glareY.get()}%, rgba(217, 10, 44, 0.25), transparent 80%)`,
             }}
           />
         )}
 
         {/* Ambient background accent */}
-        <div className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full bg-emerald-500/5 blur-2xl transition-all group-hover:bg-emerald-500/15" />
+        <div className="pointer-events-none absolute -right-10 -top-10 size-32 rounded-full bg-[#d90a2c]/5 blur-2xl transition-all group-hover:bg-[#d90a2c]/15" />
 
         <div className="relative z-10">
           {/* Animated Counter Display */}
@@ -149,13 +149,13 @@ function TiltStatCard({
             <span className="font-mono text-5xl font-extrabold tracking-tight text-foreground sm:text-6xl lg:text-7xl">
               {count}
             </span>
-            <span className="ml-1 text-3xl font-bold text-emerald-500 sm:text-4xl">
+            <span className="ml-1 text-3xl font-bold text-[#d90a2c] sm:text-4xl">
               {stat.suffix ?? ""}
             </span>
           </div>
 
           {/* Metric Label */}
-          <p className="mt-3 text-xs font-bold uppercase tracking-[0.2em] text-emerald-600 dark:text-emerald-400">
+          <p className="mt-3 text-xs font-bold uppercase tracking-[0.2em] text-[#d90a2c]">
             {stat.label}
           </p>
 
@@ -165,8 +165,8 @@ function TiltStatCard({
           </p>
         </div>
 
-        {/* Bottom subtle indicator line */}
-        <div className="mt-6 h-1 w-12 rounded-full bg-border transition-all duration-300 group-hover:w-full group-hover:bg-emerald-500/60" />
+        {/* Bottom indicator line */}
+        <div className="mt-6 h-1 w-12 rounded-full bg-border transition-all duration-300 group-hover:w-full group-hover:bg-[#d90a2c]" />
       </motion.div>
     </div>
   );

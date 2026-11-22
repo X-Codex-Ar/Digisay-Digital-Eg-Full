@@ -1,4 +1,4 @@
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 import {
   motion,
   useScroll,
@@ -68,8 +68,8 @@ function VelocityMarquee() {
       >
         {duplicatedItems.map((item, idx) => (
           <div key={`${item}-${idx}`} className="flex items-center gap-6">
-            <span className="transition-colors hover:text-emerald-500">{item}</span>
-            <span className="size-1.5 rounded-full bg-emerald-500/60" aria-hidden="true" />
+            <span className="transition-colors hover:text-[#d90a2c]">{item}</span>
+            <span className="size-1.5 rounded-full bg-[#d90a2c]/70" aria-hidden="true" />
           </div>
         ))}
       </motion.div>
@@ -125,7 +125,7 @@ export function CompanyIntroSection() {
       {/* Word-by-word Reading Light-Up Section */}
       <Container className="py-20 md:py-28">
         <div ref={containerRef} className="mx-auto max-w-4xl">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-600 dark:text-emerald-400">
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#d90a2c]">
             About DigiSay Group
           </p>
           <h2 className="mt-3 text-2xl font-bold tracking-tight text-foreground md:text-3xl">

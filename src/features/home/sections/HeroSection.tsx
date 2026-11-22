@@ -20,7 +20,7 @@ export function HeroSection() {
   const opacity = useTransform(scrollYProgress, [0, 0.7], [1, 0.1]);
   const contentY = useTransform(scrollYProgress, [0, 0.85], [0, 60]);
 
-  // Interactive mouse-following background glows
+  // Interactive mouse-following background glows in DigiSay Brand Red
   const springConfig = { damping: 28, stiffness: 65, mass: 0.15 };
   const mouseX = useSpring(400, springConfig);
   const mouseY = useSpring(250, springConfig);
@@ -40,9 +40,9 @@ export function HeroSection() {
       onMouseMove={handleMouseMove}
       className="relative min-h-[90vh] overflow-hidden bg-background pt-24 md:pt-32"
     >
-      {/* Dynamic ambient mouse-following glow effects */}
+      {/* Dynamic ambient mouse-following glow effects (DigiSay Brand Red #d90a2c) */}
       <div className="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-        {/* Glow 1 - Follows mouse directly (Emerald/Teal tone) */}
+        {/* Glow 1 - Follows mouse directly (Brand Red tone) */}
         {!reduced && (
           <motion.div
             style={{
@@ -51,13 +51,13 @@ export function HeroSection() {
               translateX: "-50%",
               translateY: "-50%",
             }}
-            className="absolute size-[520px] rounded-full bg-gradient-to-tr from-emerald-500/15 via-teal-400/10 to-transparent blur-[110px]"
+            className="absolute size-[520px] rounded-full bg-gradient-to-tr from-[#d90a2c]/15 via-[#ff3b56]/10 to-transparent blur-[110px]"
           />
         )}
 
         {/* Glow 2 - Atmospheric complementary ambient glow */}
-        <div className="absolute right-10 top-20 size-[420px] rounded-full bg-blue-500/8 blur-[120px]" />
-        <div className="absolute bottom-10 left-1/4 size-[360px] rounded-full bg-emerald-400/8 blur-[100px]" />
+        <div className="absolute right-10 top-20 size-[420px] rounded-full bg-[#d90a2c]/8 blur-[120px]" />
+        <div className="absolute bottom-10 left-1/4 size-[360px] rounded-full bg-[#b80824]/6 blur-[100px]" />
 
         {/* Subtle high-tech grid texture */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:32px_32px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_30%,#000_70%,transparent_100%)]" />
@@ -71,13 +71,13 @@ export function HeroSection() {
         <Container className="flex min-h-[calc(85vh-5rem)] flex-col justify-center py-12 md:py-16">
           {/* Eyebrow badge */}
           <motion.div
-            className="inline-flex items-center gap-2 self-start rounded-full border border-emerald-500/20 bg-emerald-500/5 px-3.5 py-1.5"
+            className="inline-flex items-center gap-2 self-start rounded-full border border-[#d90a2c]/20 bg-[#d90a2c]/5 px-3.5 py-1.5"
             initial={reduced ? { opacity: 1 } : { opacity: 0, y: 14 }}
             animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-600 dark:text-emerald-400">
+            <span className="size-2 rounded-full bg-[#d90a2c] animate-pulse" />
+            <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#d90a2c]">
               {hero.eyebrow}
             </span>
           </motion.div>

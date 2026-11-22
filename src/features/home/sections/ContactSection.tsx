@@ -9,7 +9,7 @@ export function ContactSection() {
   const containerRef = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 
-  // Scroll-linked growth animation for the green "Talk to us" box
+  // Scroll-linked growth animation for the "Talk to us" box
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start end", "center center"],
@@ -25,22 +25,22 @@ export function ContactSection() {
       className="relative overflow-hidden border-t border-border/40 bg-background py-20 md:py-32"
     >
       <Container>
-        {/* Growing Green "Talk to Us" Box */}
+        {/* Growing "Talk to Us" Box in DigiSay Brand Palette */}
         <motion.div
           style={reduced ? {} : { scale, opacity, y }}
-          className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-emerald-500/40 bg-gradient-to-br from-emerald-950 via-[#0a271c] to-[#041a12] p-8 sm:p-12 md:p-16 text-white shadow-[0_20px_70px_rgba(0,194,105,0.22)]"
+          className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-[#d90a2c]/30 bg-gradient-to-br from-[#1c080b] via-[#14080a] to-[#0a0607] p-8 sm:p-12 md:p-16 text-white shadow-[0_20px_70px_rgba(217,10,44,0.18)]"
         >
-          {/* Animated Ambient Glows inside the green box */}
-          <div className="pointer-events-none absolute -left-20 -top-20 size-80 rounded-full bg-emerald-500/25 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-20 -right-20 size-80 rounded-full bg-teal-400/20 blur-3xl" />
+          {/* Animated Ambient Glows inside the box (Brand Crimson & Red) */}
+          <div className="pointer-events-none absolute -left-20 -top-20 size-80 rounded-full bg-[#d90a2c]/20 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-20 -right-20 size-80 rounded-full bg-[#ff3b56]/15 blur-3xl" />
 
           {/* Grid texture overlay */}
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#ffffff08_1px,transparent_1px),linear-gradient(to_bottom,#ffffff08_1px,transparent_1px)] bg-[size:28px_28px]" />
 
           <div className="relative z-10 flex flex-col items-center text-center">
             {/* Pill badge */}
-            <div className="inline-flex items-center gap-2 rounded-full border border-emerald-400/40 bg-emerald-500/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-emerald-300">
-              <MessageSquare className="size-3.5 text-emerald-400" />
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#d90a2c]/40 bg-[#d90a2c]/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-[#ff4d67]">
+              <MessageSquare className="size-3.5 text-[#ff4d67]" />
               <span>Let's Talk</span>
             </div>
 
@@ -50,7 +50,7 @@ export function ContactSection() {
             </h2>
 
             {/* Description */}
-            <p className="mt-4 max-w-2xl text-base text-emerald-100/80 sm:text-lg">
+            <p className="mt-4 max-w-2xl text-base text-stone-300 sm:text-lg">
               Whether you need automated anti-piracy protection, YouTube channel monetization, or
               breakthrough media production, our team is ready to scale your vision.
             </p>
@@ -60,30 +60,30 @@ export function ContactSection() {
               <PrimaryButton
                 to="/contact"
                 size="lg"
-                className="bg-emerald-400 text-slate-950 hover:bg-emerald-300 shadow-[0_0_25px_rgba(52,211,153,0.5)]"
+                className="bg-[#d90a2c] text-white hover:bg-[#b80824] shadow-[0_0_25px_rgba(217,10,44,0.45)]"
               >
                 <span>Talk to Us Now</span>
               </PrimaryButton>
             </div>
 
             {/* Direct contact info chips */}
-            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 border-t border-emerald-500/20 pt-8 text-sm text-emerald-200/90">
+            <div className="mt-12 flex flex-wrap items-center justify-center gap-6 border-t border-white/10 pt-8 text-sm text-stone-300">
               <a
                 href={`mailto:${brand.email}`}
                 className="inline-flex items-center gap-2 transition-colors hover:text-white"
               >
-                <Mail className="size-4 text-emerald-400" />
+                <Mail className="size-4 text-[#ff4d67]" />
                 <span>{brand.email}</span>
-                <ArrowUpRight className="size-3 text-emerald-400" />
+                <ArrowUpRight className="size-3 text-[#ff4d67]" />
               </a>
-              <span className="hidden sm:inline text-emerald-500/40">•</span>
+              <span className="hidden sm:inline text-white/30">•</span>
               <a
                 href={`tel:${brand.phone}`}
                 className="inline-flex items-center gap-2 transition-colors hover:text-white"
               >
-                <Phone className="size-4 text-emerald-400" />
+                <Phone className="size-4 text-[#ff4d67]" />
                 <span>{brand.phone}</span>
-                <ArrowUpRight className="size-3 text-emerald-400" />
+                <ArrowUpRight className="size-3 text-[#ff4d67]" />
               </a>
             </div>
           </div>

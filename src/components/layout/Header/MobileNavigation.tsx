@@ -20,7 +20,7 @@ function MobileNavItem({
       <Link
         to={to as never}
         className={`rounded-xl px-4 py-2.5 text-base font-semibold text-foreground transition-colors hover:bg-muted ${
-          active ? "bg-muted text-emerald-600 dark:text-emerald-400 font-bold" : ""
+          active ? "bg-muted text-[#d90a2c] font-bold" : ""
         } ${className || ""}`}
         aria-current={active ? "page" : undefined}
       >
@@ -54,7 +54,7 @@ export function MobileNavigation({ open, onClose }: { open: boolean; onClose: ()
               <Link
                 to="/services"
                 onClick={onClose}
-                className="block px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400"
+                className="block px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#d90a2c]"
               >
                 Services
               </Link>
@@ -63,7 +63,7 @@ export function MobileNavigation({ open, onClose }: { open: boolean; onClose: ()
                   <SheetClose key={s.label} asChild>
                     <Link
                       to={s.to as never}
-                      className="rounded-lg px-3 py-2 text-sm text-foreground/90 transition-colors hover:bg-background/80 hover:text-emerald-500"
+                      className="rounded-lg px-3 py-2 text-sm text-foreground/90 transition-colors hover:bg-background/80 hover:text-[#d90a2c]"
                     >
                       {s.label}
                     </Link>

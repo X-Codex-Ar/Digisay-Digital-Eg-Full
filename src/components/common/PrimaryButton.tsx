@@ -42,7 +42,7 @@ export function PrimaryButton({
       </span>
       <span
         aria-hidden="true"
-        className="absolute inset-0 -z-0 bg-gradient-to-r from-emerald-500/20 via-transparent to-primary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        className="absolute inset-0 -z-0 bg-gradient-to-r from-[#d90a2c]/20 via-transparent to-primary/30 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
       />
     </>
   );

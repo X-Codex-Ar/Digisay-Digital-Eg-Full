@@ -36,7 +36,6 @@ export function WorkflowSection() {
   });
 
   // Calculate horizontal translation for the 4 cards
-  // On desktop, 4 cards of ~480px width each
   const x = useTransform(scrollYProgress, [0.05, 0.92], ["0%", "-62%"]);
 
   return (
@@ -50,7 +49,7 @@ export function WorkflowSection() {
         <Container className="relative z-10 shrink-0">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div className="max-w-2xl">
-              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-600 dark:text-emerald-400">
+              <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#d90a2c]">
                 Proven Methodology
               </span>
               <h2 className="mt-2 text-2xl font-bold tracking-tight text-foreground sm:text-3xl md:text-4xl">
@@ -74,16 +73,16 @@ export function WorkflowSection() {
               return (
                 <div
                   key={step.title}
-                  className="flex h-[380px] w-[85vw] max-w-[460px] shrink-0 flex-col justify-between rounded-3xl border border-border/70 bg-card p-6 sm:p-8 md:p-10 shadow-lg backdrop-blur-md transition-all hover:border-emerald-500/40 hover:shadow-xl sm:w-[460px]"
+                  className="flex h-[380px] w-[85vw] max-w-[460px] shrink-0 flex-col justify-between rounded-3xl border border-border/70 bg-card p-6 sm:p-8 md:p-10 shadow-lg backdrop-blur-md transition-all hover:border-[#d90a2c]/40 hover:shadow-xl sm:w-[460px]"
                 >
                   <div>
                     {/* Top step number and icon */}
                     <div className="flex items-center justify-between">
-                      <span className="font-mono text-4xl font-extrabold text-emerald-600/40 dark:text-emerald-400/40">
+                      <span className="font-mono text-4xl font-extrabold text-[#d90a2c]/40">
                         0{idx + 1}
                       </span>
                       <div className="flex size-12 items-center justify-center rounded-2xl border border-border bg-muted/40">
-                        <Icon className="size-6 text-emerald-500" />
+                        <Icon className="size-6 text-[#d90a2c]" />
                       </div>
                     </div>
 
@@ -99,7 +98,7 @@ export function WorkflowSection() {
                   </div>
 
                   {/* Step status label */}
-                  <div className="flex items-center gap-2 border-t border-border/50 pt-4 text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                  <div className="flex items-center gap-2 border-t border-border/50 pt-4 text-xs font-semibold text-[#d90a2c] uppercase tracking-wider">
                     <CheckCircle2 className="size-4" />
                     <span>Phase 0{idx + 1} Milestone</span>
                   </div>
@@ -115,7 +114,7 @@ export function WorkflowSection() {
             <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-border">
               <motion.div
                 style={{ scaleX: smoothProgress, transformOrigin: "0%" }}
-                className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-primary shadow-[0_0_12px_rgba(16,185,129,0.8)]"
+                className="h-full bg-gradient-to-r from-[#d90a2c] via-[#ff3b56] to-[#d90a2c] shadow-[0_0_12px_rgba(217,10,44,0.8)]"
               />
             </div>
             <div className="flex justify-between font-mono text-xs text-muted-foreground">
