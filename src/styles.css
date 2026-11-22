@@ -300,6 +300,38 @@
       scroll-behavior: auto !important;
     }
   }
+
+  /*
+   * View Transitions Architecture (motionsites.ai style):
+   * Suppress browser default cross-fade animations so the circular clip-path
+   * expands crisply and smoothly without ghosting, double-exposure, or washed-out blending.
+   */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+    mix-blend-mode: normal !important;
+  }
+
+  ::view-transition-old(root) {
+    z-index: 1 !important;
+  }
+
+  ::view-transition-new(root) {
+    z-index: 99999 !important;
+  }
+
+  /* Smooth CSS theme transition fallback for browsers without View Transitions */
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                fill 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                stroke 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition-delay: 0s !important;
+  }
 }
 
 @layer components {

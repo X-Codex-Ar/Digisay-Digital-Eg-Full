@@ -23,52 +23,7 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     const isDark = document.documentElement.classList.contains("dark");
     const nextTheme = isDark ? "light" : "dark";
 
-    // Modern Motion Transition inspired by motionsites.ai
-    if (
-      typeof document !== "undefined" &&
-      "startViewTransition" in document &&
-      !reduced
-    ) {
-      const x = e.clientX;
-      const y = e.clientY;
-      const endRadius = Math.hypot(
-        Math.max(x, window.innerWidth - x),
-        Math.max(y, window.innerHeight - y),
-      );
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const transition = (document as any).startViewTransition(() => {
-        if (nextTheme === "dark") {
-          document.documentElement.classList.add("dark");
-        } else {
-          document.documentElement.classList.remove("dark");
-        }
-        try {
-          localStorage.setItem("digisay_theme", nextTheme);
-        } catch {
-          // ignore
-        }
-        setTheme(nextTheme);
-      });
-
-      transition.ready.then(() => {
-        document.documentElement.animate(
-          {
-            clipPath: [
-              `circle(0px at ${x}px ${y}px)`,
-              `circle(${endRadius}px at ${x}px ${y}px)`,
-            ],
-          },
-          {
-            duration: 550,
-            easing: "cubic-bezier(0.16, 1, 0.3, 1)",
-            pseudoElement: "::view-transition-new(root)",
-          },
-        );
-      });
-    } else {
-      // Smooth CSS fallback transition
-      document.documentElement.classList.add("theme-transitioning");
+    const updateDOM = () => {
       if (nextTheme === "dark") {
         document.documentElement.classList.add("dark");
       } else {
@@ -80,6 +35,50 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
         // ignore
       }
       setTheme(nextTheme);
+    };
+
+    // Modern Motion Transition inspired by motionsites.ai
+    if (
+      typeof document !== "undefined" &&
+      "startViewTransition" in document &&
+      !reduced
+    ) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      // Center of button or mouse click coordinates
+      const x = e.clientX || rect.left + rect.width / 2;
+      const y = e.clientY || rect.top + rect.height / 2;
+      const endRadius = Math.hypot(
+        Math.max(x, window.innerWidth - x),
+        Math.max(y, window.innerHeight - y),
+      );
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const transition = (document as any).startViewTransition(updateDOM);
+
+      transition.ready
+        .then(() => {
+          const animation = document.documentElement.animate(
+            {
+              clipPath: [
+                `circle(0px at ${x}px ${y}px)`,
+                `circle(${endRadius}px at ${x}px ${y}px)`,
+              ],
+            },
+            {
+              duration: 500,
+              easing: "cubic-bezier(0.16, 1, 0.3, 1)",
+              pseudoElement: "::view-transition-new(root)",
+            },
+          );
+          return animation.finished;
+        })
+        .catch(() => {
+          // If interrupted or aborted, DOM state has already been committed cleanly
+        });
+    } else {
+      // Smooth CSS fallback transition for browsers without View Transitions
+      document.documentElement.classList.add("theme-transitioning");
+      updateDOM();
       setTimeout(() => {
         document.documentElement.classList.remove("theme-transitioning");
       }, 450);
@@ -104,14 +103,14 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
           className || ""
         }`}
       >
-        <AnimatePresence mode="wait" initial={false}>
+        <AnimatePresence mode="popLayout" initial={false}>
           {isDark ? (
             <motion.div
               key="moon"
-              initial={{ rotate: -90, scale: 0, opacity: 0 }}
+              initial={{ rotate: -45, scale: 0.5, opacity: 0 }}
               animate={{ rotate: 0, scale: 1, opacity: 1 }}
-              exit={{ rotate: 90, scale: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              exit={{ rotate: 45, scale: 0.5, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.21, 0.47, 0.32, 0.98] }}
               className="flex items-center justify-center text-primary"
             >
               <Moon className="size-4.5 transition-transform duration-300 group-hover:scale-110" />
@@ -119,10 +118,10 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
           ) : (
             <motion.div
               key="sun"
-              initial={{ rotate: 90, scale: 0, opacity: 0 }}
+              initial={{ rotate: 45, scale: 0.5, opacity: 0 }}
               animate={{ rotate: 0, scale: 1, opacity: 1 }}
-              exit={{ rotate: -90, scale: 0, opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              exit={{ rotate: -45, scale: 0.5, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.21, 0.47, 0.32, 0.98] }}
               className="flex items-center justify-center text-amber-500"
             >
               <Sun className="size-4.5 transition-transform duration-300 group-hover:scale-110" />
