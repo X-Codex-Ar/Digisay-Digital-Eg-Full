@@ -5,93 +5,24 @@ import { ArrowRight, ShieldCheck, Film, Share2, TrendingUp, Radio, Users } from 
 import { Container } from "@/components/common/Container";
 import { SectionHeading } from "@/components/common/SectionHeading";
 import { Magnetic } from "@/components/common/Magnetic";
+import { stackedServicesData } from "@/data/services";
+import type { StackedServiceCardData } from "@/types/services";
 
-interface ServiceCardData {
-  id: string;
-  index: string;
-  tag: string;
-  title: string;
-  description: string;
-  highlights: string[];
-  to: string;
-  icon: typeof ShieldCheck;
-}
-
-const SERVICES_DATA: ServiceCardData[] = [
-  {
-    id: "anti-piracy",
-    index: "01",
-    tag: "CONTENT PROTECTION",
-    title: "Anti-Piracy & Rights Defense",
-    description:
-      "Enterprise-grade copyright defense powered by proprietary RightsHero technology. We detect, takedown, and protect original intellectual property across YouTube, social networks, IPTV, and global pirated streaming portals.",
-    highlights: ["24/7 Real-Time Automated Crawlers", "Rapid Cross-Platform DMCA Takedowns", "Monetization Leak Recovery"],
-    to: "/anti-piracy",
-    icon: ShieldCheck,
-  },
-  {
-    id: "media-production",
-    index: "02",
-    tag: "CREATIVE & PRODUCTION",
-    title: "Full-Fledged Media Production",
-    description:
-      "Crafting high-impact visual narratives through Immersive Studio. From broadcast commercials and web series to cinematic brand stories and dynamic short-form video formats optimized for digital platforms.",
-    highlights: ["End-to-End Conceptualization & Scripting", "Broadcast-Grade Cinematography & Post", "Multi-Platform Video Formats"],
-    to: "/content-production",
-    icon: Film,
-  },
-  {
-    id: "content-management",
-    index: "03",
-    tag: "DISTRIBUTION & MONETIZATION",
-    title: "Content Management & Monetization",
-    description:
-      "Maximizing revenue across digital catalog libraries. Certified YouTube multi-channel management, metadata architecture, rights verification, and strategic monetization pipelines across tier-one platforms.",
-    highlights: ["Certified Partner Channel Management", "Global Revenue Optimization & Claiming", "Metadata & SEO Architecture"],
-    to: "/content-management",
-    icon: Radio,
-  },
-  {
-    id: "growth-marketing",
-    index: "04",
-    tag: "PERFORMANCE & ACQUISITION",
-    title: "Growth Marketing & Strategy",
-    description:
-      "Data-driven performance campaigns that propel brands forward. Combining audience segmentation, high-converting creative testing, and multi-channel attribution to turn impressions into scalable revenue.",
-    highlights: ["Full-Funnel Paid Media Acquisition", "Conversion Rate Optimization (CRO)", "Real-Time Attribution & Analytics"],
-    to: "/growth-marketing",
-    icon: TrendingUp,
-  },
-  {
-    id: "social-media",
-    index: "05",
-    tag: "COMMUNITY & ENGAGEMENT",
-    title: "Social Media Ecosystems",
-    description:
-      "Transforming social presences into vibrant community engines. Creative asset production, always-on community management, real-time trend tapping, and brand resonance strategies.",
-    highlights: ["Always-On Community Management", "Viral Short-Form Content Creation", "Brand Voice & Visual Identity Systems"],
-    to: "/social-media",
-    icon: Share2,
-  },
-  {
-    id: "influencer-marketing",
-    index: "06",
-    tag: "CREATOR PARTNERSHIPS",
-    title: "Influencer Marketing & Creator Alliances",
-    description:
-      "Direct relationships with top-tier MENA and international creators. Authentic brand integration, talent vetting, campaign orchestration, and measurable performance reporting.",
-    highlights: ["Verified Tier-1 Creator Roster", "End-to-End Campaign Contracting", "Performance & Brand Lift Analytics"],
-    to: "/influencers-marketing",
-    icon: Users,
-  },
-];
+const ICON_MAP = {
+  ShieldCheck,
+  Film,
+  Radio,
+  TrendingUp,
+  Share2,
+  Users,
+};
 
 function StickyServiceCard({
   service,
   index,
   total,
 }: {
-  service: ServiceCardData;
+  service: StackedServiceCardData;
   index: number;
   total: number;
 }) {
@@ -101,7 +32,7 @@ function StickyServiceCard({
   // Calculate dynamic sticky top position so each card stacks cleanly
   const topOffset = 88 + index * 20;
 
-  const Icon = service.icon;
+  const Icon = ICON_MAP[service.iconName] || ShieldCheck;
 
   return (
     <div
@@ -189,12 +120,12 @@ export function ServicesOverviewSection() {
 
         {/* Stacked Cards Deck Container */}
         <div className="relative mt-16 max-w-5xl mx-auto">
-          {SERVICES_DATA.map((service, index) => (
+          {stackedServicesData.map((service, index) => (
             <StickyServiceCard
               key={service.id}
               service={service}
               index={index}
-              total={SERVICES_DATA.length}
+              total={stackedServicesData.length}
             />
           ))}
         </div>

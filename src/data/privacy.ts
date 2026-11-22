@@ -1,7 +1,6 @@
-﻿export type PrivacyBlock = {
-  type: "heading" | "subheading" | "paragraph" | "bullet";
-  text: string;
-};
+import type { PrivacyBlock, PrivacyBlockType } from "@/types/privacy";
+
+export type { PrivacyBlock, PrivacyBlockType };
 
 // Full privacy policy content. Cleaned up from the digisay.com extraction:
 // scraped header/footer navigation leftovers removed, character encoding

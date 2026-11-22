@@ -2,35 +2,28 @@ import antiPiracyImg from "@/assets/services/anti-piracy.webp.asset.json";
 import acquisitionImg from "@/assets/services/customer-acquisition.png.asset.json";
 import agencyImg from "@/assets/services/one-stop-agency.jpg.asset.json";
 
-export type ServiceItem = { title: string; lead?: string; body: string };
-export type ServiceGroup = { eyebrow: string; heading: string; items: ServiceItem[] };
-export type Feature = { title: string; body: string };
-export type Stat = { value: number; suffix?: string; label: string };
+import type {
+  ServiceItem,
+  ServiceGroup,
+  Feature,
+  Stat,
+  ServicePage,
+  ServiceSlug,
+  StackedServiceCardData,
+  ServiceOfferingItem,
+  OverviewMetric,
+} from "@/types/services";
 
-export type ServicePage = {
-  slug:
-    | "anti-piracy"
-    | "content-production"
-    | "content-management"
-    | "social-media"
-    | "growth-marketing"
-    | "influencers-marketing";
-  name: string;
-  summary: string;
-  heroTitle: string;
-  heroAccent: string;
-  image: string;
-  groups: ServiceGroup[];
-  spotlight?: {
-    eyebrow: string;
-    heading: string;
-    paragraphs: string[];
-    features?: Feature[];
-    list?: { heading: string; items: string[] };
-  };
-  features?: { heading: string; items: Feature[] };
-  stats?: { heading: string; items: Stat[] };
-  partnerModels?: { heading: string; items: Feature[] };
+export type {
+  ServiceItem,
+  ServiceGroup,
+  Feature,
+  Stat,
+  ServicePage,
+  ServiceSlug,
+  StackedServiceCardData,
+  ServiceOfferingItem,
+  OverviewMetric,
 };
 
 export const servicePages: ServicePage[] = [
@@ -488,3 +481,157 @@ export const getServicePage = (slug: ServicePage["slug"]) => {
   if (!page) throw new Error(`Unknown service ${slug}`);
   return page;
 };
+
+// Centralized Stacked Deck Service Cards for Home Services Overview Section
+export const stackedServicesData: StackedServiceCardData[] = [
+  {
+    id: "anti-piracy",
+    index: "01",
+    tag: "CONTENT PROTECTION",
+    title: "Anti-Piracy & Rights Defense",
+    description:
+      "Enterprise-grade copyright defense powered by proprietary RightsHero technology. We detect, takedown, and protect original intellectual property across YouTube, social networks, IPTV, and global pirated streaming portals.",
+    highlights: [
+      "24/7 Real-Time Automated Crawlers",
+      "Rapid Cross-Platform DMCA Takedowns",
+      "Monetization Leak Recovery",
+    ],
+    to: "/anti-piracy",
+    iconName: "ShieldCheck",
+  },
+  {
+    id: "media-production",
+    index: "02",
+    tag: "CREATIVE & PRODUCTION",
+    title: "Full-Fledged Media Production",
+    description:
+      "Crafting high-impact visual narratives through Immersive Studio. From broadcast commercials and web series to cinematic brand stories and dynamic short-form video formats optimized for digital platforms.",
+    highlights: [
+      "End-to-End Conceptualization & Scripting",
+      "Broadcast-Grade Cinematography & Post",
+      "Multi-Platform Video Formats",
+    ],
+    to: "/content-production",
+    iconName: "Film",
+  },
+  {
+    id: "content-management",
+    index: "03",
+    tag: "DISTRIBUTION & MONETIZATION",
+    title: "Content Management & Monetization",
+    description:
+      "Maximizing revenue across digital catalog libraries. Certified YouTube multi-channel management, metadata architecture, rights verification, and strategic monetization pipelines across tier-one platforms.",
+    highlights: [
+      "Certified Partner Channel Management",
+      "Global Revenue Optimization & Claiming",
+      "Metadata & SEO Architecture",
+    ],
+    to: "/content-management",
+    iconName: "Radio",
+  },
+  {
+    id: "growth-marketing",
+    index: "04",
+    tag: "PERFORMANCE & ACQUISITION",
+    title: "Growth Marketing & Strategy",
+    description:
+      "Data-driven performance campaigns that propel brands forward. Combining audience segmentation, high-converting creative testing, and multi-channel attribution to turn impressions into scalable revenue.",
+    highlights: [
+      "Full-Funnel Paid Media Acquisition",
+      "Conversion Rate Optimization (CRO)",
+      "Real-Time Attribution & Analytics",
+    ],
+    to: "/growth-marketing",
+    iconName: "TrendingUp",
+  },
+  {
+    id: "social-media",
+    index: "05",
+    tag: "COMMUNITY & ENGAGEMENT",
+    title: "Social Media Ecosystems",
+    description:
+      "Transforming social presences into vibrant community engines. Creative asset production, always-on community management, real-time trend tapping, and brand resonance strategies.",
+    highlights: [
+      "Always-On Community Management",
+      "Viral Short-Form Content Creation",
+      "Brand Voice & Visual Identity Systems",
+    ],
+    to: "/social-media",
+    iconName: "Share2",
+  },
+  {
+    id: "influencer-marketing",
+    index: "06",
+    tag: "CREATOR PARTNERSHIPS",
+    title: "Influencer Marketing & Creator Alliances",
+    description:
+      "Direct relationships with top-tier MENA and international creators. Authentic brand integration, talent vetting, campaign orchestration, and measurable performance reporting.",
+    highlights: [
+      "Verified Tier-1 Creator Roster",
+      "End-to-End Campaign Contracting",
+      "Performance & Brand Lift Analytics",
+    ],
+    to: "/influencers-marketing",
+    iconName: "Users",
+  },
+];
+
+// Centralized Services Overview Offerings for /services Overview Page
+export const serviceOfferings: ServiceOfferingItem[] = [
+  {
+    title: "Full-stack Enterprise Media Management",
+    description:
+      "Comprehensive media operations, cross-platform distribution rights, and monetization across digital video and streaming networks.",
+    metric: "36+ active media campaigns",
+    href: "/content-management",
+    iconName: "Film",
+  },
+  {
+    title: "Anti-Piracy & Content Protection",
+    description:
+      "Automated copyright enforcement, real-time leak detection, and revenue recovery powered by RightsHero proprietary technology.",
+    metric: "2M+ assets monitored & defended",
+    href: "/anti-piracy",
+    iconName: "ShieldCheck",
+  },
+  {
+    title: "Growth Marketing & Data Analytics",
+    description:
+      "Performance-driven marketing strategies, audience acquisition, conversion funnels, and real-time attribution intelligence.",
+    metric: "Scalable ROI-focused campaigns",
+    href: "/growth-marketing",
+    iconName: "TrendingUp",
+  },
+  {
+    title: "Content Production & Studio Facilities",
+    description:
+      "End-to-end audiovisual production, state-of-the-art studio execution, post-production, and digital-first narrative crafting.",
+    metric: "High-impact broadcast quality",
+    href: "/content-production",
+    iconName: "Video",
+  },
+  {
+    title: "Influencer Marketing & Creator Ecosystem",
+    description:
+      "Strategic matchmaking between tier-one creators and top brands to spark organic cultural engagement across MENA.",
+    metric: "100+ top creator partnerships",
+    href: "/influencers-marketing",
+    iconName: "Users",
+  },
+  {
+    title: "Social Media Strategy & Engagement",
+    description:
+      "Data-backed social storytelling, community management, viral trend architecture, and high-velocity platform execution.",
+    metric: "Omnichannel brand dominance",
+    href: "/social-media",
+    iconName: "Share2",
+  },
+];
+
+// Centralized Metric Stats for /services Overview Page
+export const overviewStats: OverviewMetric[] = [
+  { value: "36+", label: "Active Enterprise Media Campaigns" },
+  { value: "2M+", label: "Protected Digital Assets & Streams" },
+  { value: "100+", label: "Top MENA Creator Network" },
+  { value: "12+", label: "Years of Media-Tech Innovation" },
+];

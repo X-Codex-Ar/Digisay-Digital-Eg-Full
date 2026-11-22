@@ -1,7 +1,10 @@
 // Homepage data extracted from digisay.com.
 import { brand } from "./site";
+import type { HeroData, QuickContactData, Testimonial } from "@/types/home";
 
-export const hero = {
+export type { HeroData, QuickContactData, Testimonial };
+
+export const hero: HeroData = {
   eyebrow: "DigiSay Group",
   title: "The Digital Media Solutions Leader",
   subtitle:
@@ -13,9 +16,9 @@ export const hero = {
   hours: "Assistance hours: Sunday – Thursday 9 am to 5 pm EET",
   emailLabel: "info@digisay.com",
   emailTo: "/contact",
-} as const;
+};
 
-export const quickContact = {
+export const quickContact: QuickContactData = {
   title: "Get in touch",
   phoneLabel: "Work and general inquiries",
   phone: brand.phone,
@@ -24,9 +27,9 @@ export const quickContact = {
   email: brand.email,
   postAddressLabel: "Post address",
   postAddress: "Office 10, Level 1, Sharjah Media City, Sharjah, UAE",
-} as const;
+};
 
-export const testimonials = [
+export const testimonials: Testimonial[] = [
   {
     quote:
       "It's totally customizable with the theme settings, it's compatible with a wide range of important plugins and the support is outstanding.",
@@ -45,7 +48,18 @@ export const testimonials = [
     name: "Laura Morton",
     role: "UI/UX Designer, Colabrio",
   },
-] as const;
+];
+
+export const marqueeServices: string[] = [
+  "Anti-Piracy & Content Protection",
+  "Content Monetization",
+  "Digital Content Production",
+  "Social Media Strategy",
+  "Growth & Performance Marketing",
+  "Influencers Marketing",
+  "RightsHero Protection",
+  "Full-Stack Media Solutions",
+];
 
 export const latestBlogs = [
   {

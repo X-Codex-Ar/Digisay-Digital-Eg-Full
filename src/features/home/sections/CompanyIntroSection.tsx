@@ -11,17 +11,7 @@ import {
   type MotionValue,
 } from "motion/react";
 import { Container } from "@/components/common/Container";
-
-const MARQUEE_SERVICES = [
-  "Anti-Piracy & Content Protection",
-  "Content Monetization",
-  "Digital Content Production",
-  "Social Media Strategy",
-  "Growth & Performance Marketing",
-  "Influencers Marketing",
-  "RightsHero Protection",
-  "Full-Stack Media Solutions",
-];
+import { marqueeServices } from "@/data/home";
 
 function VelocityMarquee() {
   const reduced = useReducedMotion();
@@ -54,10 +44,10 @@ function VelocityMarquee() {
   });
 
   const duplicatedItems = [
-    ...MARQUEE_SERVICES,
-    ...MARQUEE_SERVICES,
-    ...MARQUEE_SERVICES,
-    ...MARQUEE_SERVICES,
+    ...marqueeServices,
+    ...marqueeServices,
+    ...marqueeServices,
+    ...marqueeServices,
   ];
 
   return (

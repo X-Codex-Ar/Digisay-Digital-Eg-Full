@@ -18,72 +18,16 @@ import { AnimatedSection } from "@/components/common/AnimatedSection";
 import { Container } from "@/components/common/Container";
 import { PrimaryButton } from "@/components/common/PrimaryButton";
 import { SectionHeading } from "@/components/common/SectionHeading";
+import { serviceOfferings, overviewStats } from "@/data/services";
 
-interface ServiceCardItem {
-  title: string;
-  description: string;
-  metric: string;
-  href: string;
-  icon: typeof Film;
-}
-
-const serviceOfferings: ServiceCardItem[] = [
-  {
-    title: "Full-stack Enterprise Media Management",
-    description:
-      "Comprehensive media operations, cross-platform distribution rights, and monetization across digital video and streaming networks.",
-    metric: "36+ active media campaigns",
-    href: "/content-management",
-    icon: Film,
-  },
-  {
-    title: "Anti-Piracy & Content Protection",
-    description:
-      "Automated copyright enforcement, real-time leak detection, and revenue recovery powered by RightsHero proprietary technology.",
-    metric: "2M+ assets monitored & defended",
-    href: "/anti-piracy",
-    icon: ShieldCheck,
-  },
-  {
-    title: "Growth Marketing & Data Analytics",
-    description:
-      "Performance-driven marketing strategies, audience acquisition, conversion funnels, and real-time attribution intelligence.",
-    metric: "Scalable ROI-focused campaigns",
-    href: "/growth-marketing",
-    icon: TrendingUp,
-  },
-  {
-    title: "Content Production & Studio Facilities",
-    description:
-      "End-to-end audiovisual production, state-of-the-art studio execution, post-production, and digital-first narrative crafting.",
-    metric: "High-impact broadcast quality",
-    href: "/content-production",
-    icon: Video,
-  },
-  {
-    title: "Influencer Marketing & Creator Ecosystem",
-    description:
-      "Strategic matchmaking between tier-one creators and top brands to spark organic cultural engagement across MENA.",
-    metric: "100+ top creator partnerships",
-    href: "/influencers-marketing",
-    icon: Users,
-  },
-  {
-    title: "Social Media Strategy & Engagement",
-    description:
-      "Data-backed social storytelling, community management, viral trend architecture, and high-velocity platform execution.",
-    metric: "Omnichannel brand dominance",
-    href: "/social-media",
-    icon: Share2,
-  },
-];
-
-const stats = [
-  { value: "36+", label: "Active Enterprise Media Campaigns" },
-  { value: "2M+", label: "Protected Digital Assets & Streams" },
-  { value: "100+", label: "Top MENA Creator Network" },
-  { value: "12+", label: "Years of Media-Tech Innovation" },
-];
+const ICON_MAP = {
+  Film,
+  ShieldCheck,
+  TrendingUp,
+  Video,
+  Users,
+  Share2,
+};
 
 export default function ServicesOverviewPage() {
   const reduced = useReducedMotion();
@@ -131,7 +75,7 @@ export default function ServicesOverviewPage() {
 
           <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {serviceOfferings.map((service, i) => {
-              const Icon = service.icon;
+              const Icon = ICON_MAP[service.iconName] || Film;
               return (
                 <motion.div
                   key={service.title}
@@ -184,7 +128,7 @@ export default function ServicesOverviewPage() {
           />
 
           <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {stats.map((s, i) => (
+            {overviewStats.map((s, i) => (
               <motion.div
                 key={s.label}
                 initial={reduced ? { opacity: 1 } : { opacity: 0, y: 16 }}

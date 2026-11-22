@@ -1,15 +1,6 @@
-export type BlogPost = {
-  slug: string;
-  title: string;
-  date: string;
-  excerpt: string;
-  image: string;
-  category: string;
-  tags: string[];
-  author: string;
-  content: string[];
-  to: string;
-};
+import type { BlogPost, BlogCategory, BlogAuthor } from "@/types/blog";
+
+export type { BlogPost, BlogCategory, BlogAuthor };
 
 export const blogPosts: BlogPost[] = [
   {

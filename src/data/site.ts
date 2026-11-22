@@ -1,6 +1,29 @@
 // Core site data: brand identity, nav, services overview, stats, process, values,
 // group companies, awards and partners. Extracted from digisay.com.
-export const brand = {
+import type {
+  BrandInfo,
+  GroupCompany,
+  GroupCompanyLogo,
+  CompanyValue,
+  Award,
+  Partner,
+  TeamPhoto,
+} from "@/types/site";
+import type { HomeStat, ProcessStep } from "@/types/home";
+
+export type {
+  BrandInfo,
+  GroupCompany,
+  GroupCompanyLogo,
+  CompanyValue,
+  Award,
+  Partner,
+  TeamPhoto,
+  HomeStat,
+  ProcessStep,
+};
+
+export const brand: BrandInfo = {
   name: "DigiSay",
   legal: "DIGISAY LLC",
   logo: "/assets/brand/Digisay-logo-transparent-1-e1709464890607.png",
@@ -8,7 +31,7 @@ export const brand = {
   email: "info@digisay.com",
   phone: "+1 (809) 120-6705",
   hours: "Sunday – Thursday 9 am to 5 pm EET",
-} as const;
+};
 
 export const mainNav = [
   { label: "Home", to: "/" },
