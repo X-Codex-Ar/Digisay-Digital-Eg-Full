@@ -233,17 +233,23 @@
     background: rgba(217, 10, 44, 0.8) !important;
   }
 
-  /* Completely eliminate top/bottom stepper buttons and arrows on all elements */
+  /* Completely eliminate top/bottom stepper buttons and arrows on all elements across all platforms */
+  ::-webkit-scrollbar-button,
   *::-webkit-scrollbar-button,
   *::-webkit-scrollbar-button:single-button,
   *::-webkit-scrollbar-button:vertical:decrement,
   *::-webkit-scrollbar-button:vertical:increment,
   *::-webkit-scrollbar-button:horizontal:decrement,
-  *::-webkit-scrollbar-button:horizontal:increment {
+  *::-webkit-scrollbar-button:horizontal:increment,
+  *::-webkit-scrollbar-button:start:decrement,
+  *::-webkit-scrollbar-button:end:increment {
     display: none !important;
     width: 0 !important;
     height: 0 !important;
+    max-width: 0 !important;
+    max-height: 0 !important;
     background: transparent !important;
+    border: none !important;
   }
 
   *::-webkit-scrollbar-corner {
@@ -259,9 +265,15 @@
     touch-action: none !important;
   }
 
-  /* When Radix Sheet / Dialog opens, lock the background body scroll completely to prevent duplicate scrollbars */
+  /* When Radix Sheet or mobile menu opens, completely lock the root window to eliminate duplicate scrollbars */
+  html.menu-open,
+  html.menu-open body,
+  html:has(body[data-scroll-locked]),
   html body[data-scroll-locked] {
     overflow: hidden !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    touch-action: none !important;
     padding-right: 0 !important;
     margin-right: 0 !important;
   }

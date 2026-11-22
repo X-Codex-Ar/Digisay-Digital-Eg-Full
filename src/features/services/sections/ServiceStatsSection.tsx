@@ -17,12 +17,12 @@ function StatCard({
 }) {
   const count = useCounter(value);
   return (
-    <div className="group flex flex-col items-center justify-center rounded-2xl border border-white/10 bg-white/5 p-6 sm:p-8 backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:bg-white/[0.08] hover:-translate-y-1">
-      <p className="text-5xl font-black text-white group-hover:text-primary transition-colors sm:text-6xl md:text-7xl">
+    <div className="group flex flex-col items-center justify-center rounded-2xl border border-border/60 bg-card p-6 sm:p-8 shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1.5 text-center">
+      <p className="text-5xl font-black text-foreground group-hover:text-primary transition-colors sm:text-6xl md:text-7xl">
         {count}
         {suffix && <span className="ml-1 text-2xl font-bold text-primary">{suffix}</span>}
       </p>
-      <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-background/80">
+      <p className="mt-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
     </div>
@@ -35,12 +35,11 @@ export function ServiceStatsSection({ page }: { page: ServicePageType }) {
   if (!stats) return null;
 
   return (
-    <AnimatedSection className="border-t border-border/40 bg-foreground text-background">
+    <AnimatedSection className="border-t border-border/40 bg-muted/20">
       <Container className="py-16 sm:py-24">
         <SectionHeading
           align="center"
           heading={stats.heading}
-          className="[&_h2]:text-white [&_p]:text-background/90"
         />
         <div className="mt-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.items.map((s, i) => (

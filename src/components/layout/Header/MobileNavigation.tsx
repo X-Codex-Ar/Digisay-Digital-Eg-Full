@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
 import { ChevronRight } from "lucide-react";
 import { mainNav, servicesMenu } from "@/data/navigation";
@@ -42,6 +43,17 @@ function MobileNavItem({
 export function MobileNavigation({ open, onClose }: { open: boolean; onClose: () => void }) {
   const topLinks = mainNav.filter((n) => n.label !== "Let's Talk" && n.label !== "Services");
 
+  useEffect(() => {
+    if (open) {
+      document.documentElement.classList.add("menu-open");
+    } else {
+      document.documentElement.classList.remove("menu-open");
+    }
+    return () => {
+      document.documentElement.classList.remove("menu-open");
+    };
+  }, [open]);
+
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent
@@ -56,8 +68,8 @@ export function MobileNavigation({ open, onClose }: { open: boolean; onClose: ()
           <SheetTitle className="sr-only">Main Menu</SheetTitle>
         </SheetHeader>
 
-        {/* Scrollable Navigation Body */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
+        {/* Scrollable Navigation Body (with internal scrollbar suppressed for clean touch UI) */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex flex-col gap-1.5">
             <MobileNavItem label="Home" to="/" />
             <MobileNavItem label="Companies" to="/about" />
