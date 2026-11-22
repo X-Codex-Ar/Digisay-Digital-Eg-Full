@@ -14,6 +14,7 @@ import {
 import { SiteFooter } from "@/components/layout/Footer";
 import { SiteHeader } from "@/components/layout/Header";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
+import { AgencyShowreelSection } from "@/components/common/AgencyShowreelSection";
 import { Container } from "@/components/common/Container";
 import { PageHeader } from "@/components/common/PageHeader";
 import { PrimaryButton } from "@/components/common/PrimaryButton";
@@ -99,6 +100,13 @@ export default function ServicesOverviewPage() {
           </div>
         </Container>
       </section>
+
+      {/* Agency Video Showreel Section */}
+      <AgencyShowreelSection
+        eyebrow="Media Excellence"
+        title="See Our Creative & Distribution Powerhouse at Work"
+        description="From premier entertainment networks to enterprise content owners, watch how DigiSay scales visual media across global digital channels."
+      />
 
       {/* Stats Section */}
       <section className="border-t border-border/40 py-16 sm:py-24">

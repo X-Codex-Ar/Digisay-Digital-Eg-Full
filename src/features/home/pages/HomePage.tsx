@@ -1,6 +1,7 @@
 import { SiteFooter } from "@/components/layout/Footer";
 import { SiteHeader } from "@/components/layout/Header";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
+import { AgencyShowreelSection } from "@/components/common/AgencyShowreelSection";
 import { HeroSection } from "../sections/HeroSection";
 import { CompanyIntroSection } from "../sections/CompanyIntroSection";
 import { ServicesOverviewSection } from "../sections/ServicesOverviewSection";
@@ -17,6 +18,7 @@ export default function HomePage() {
       <SiteHeader />
       <HeroSection />
       <CompanyIntroSection />
+      <AgencyShowreelSection />
       <ServicesOverviewSection />
       <StatsSection />
       <WorkflowSection />

@@ -1,12 +1,15 @@
-import React, { useRef } from "react";
+import React, { useRef, useState } from "react";
 import { motion, useReducedMotion, useScroll, useTransform, useSpring } from "motion/react";
 import { Container } from "@/components/common/Container";
 import { PrimaryButton } from "@/components/common/PrimaryButton";
 import { SecondaryButton } from "@/components/common/SecondaryButton";
+import { PlayVideoButton } from "@/components/common/PlayVideoButton";
+import { VideoModal } from "@/components/common/VideoModal";
 import { brand } from "@/data/site";
 import { hero, quickContact } from "@/data/home";
 
 export function HeroSection() {
+  const [isVideoOpen, setIsVideoOpen] = useState(false);
   const reduced = useReducedMotion();
   const sectionRef = useRef<HTMLElement>(null);
 
@@ -116,7 +119,7 @@ export function HeroSection() {
             strategy at every step of the customer journey, from concept to revenue generation.
           </motion.p>
 
-          {/* Magnetic CTA buttons */}
+          {/* Magnetic CTA buttons and Watch Video trigger */}
           <motion.div
             className="mt-8 flex flex-wrap items-center gap-4"
             initial={reduced ? { opacity: 1 } : { opacity: 0, y: 20 }}
@@ -129,6 +132,11 @@ export function HeroSection() {
             <SecondaryButton to="/anti-piracy" size="lg">
               Explore Anti-Piracy
             </SecondaryButton>
+            <PlayVideoButton
+              onClick={() => setIsVideoOpen(true)}
+              label="Watch Video"
+              variant="hero"
+            />
           </motion.div>
 
           {/* Quick contact strip */}
@@ -153,6 +161,14 @@ export function HeroSection() {
           </motion.div>
         </Container>
       </motion.div>
+
+      {/* Video Modal */}
+      <VideoModal
+        isOpen={isVideoOpen}
+        onClose={() => setIsVideoOpen(false)}
+        videoUrl="https://digisay.com/wp-content/uploads/2024/03/GFF-No-Logo-1.mp4"
+        title="DigiSay Group • The Digital Media Solutions Leader"
+      />
     </section>
   );
 }
