@@ -9,11 +9,17 @@ function BlogCard({ post }: { post: { title: string; excerpt: string; to: string
   return (
     <AnimatedSection>
       <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-5 shadow-sm">
-        <Link to={post.to as never} className="text-base font-bold text-foreground transition-colors hover:text-primary">
+        <Link
+          to={post.to as never}
+          className="text-base font-bold text-foreground transition-colors hover:text-primary"
+        >
           {post.title}
         </Link>
         <p className="text-sm text-muted-foreground">{post.excerpt}</p>
-        <Link to={post.to as never} className="self-start text-sm font-semibold text-primary hover:underline">
+        <Link
+          to={post.to as never}
+          className="self-start text-sm font-semibold text-primary hover:underline"
+        >
           Read More →
         </Link>
       </div>

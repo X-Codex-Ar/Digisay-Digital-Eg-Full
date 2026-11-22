@@ -16,9 +16,7 @@ export const servicesMenu = [
   { label: "Growth Marketing", to: "/growth-marketing" },
 ] as const;
 
-export const resourcesMenu = [
-  { label: "Blog", to: "/blog" },
-] as const;
+export const resourcesMenu = [{ label: "Blog", to: "/blog" }] as const;
 
 export const socialLinks = [
   { label: "Lk.", href: "https://www.linkedin.com/company/digisay/" },
@@ -33,5 +31,5 @@ export const headerCTAs = [
 ] as const;
 
 export const footerTexts = {
-  copyright: "© 2023, DigiSay",
+  getCopyright: () => `© ${new Date().getFullYear()}, DigiSay`,
 } as const;

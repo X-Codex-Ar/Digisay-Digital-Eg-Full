@@ -38,7 +38,9 @@ export function CTASection({
           </p>
         )}
         <h2 className="text-2xl font-bold tracking-tight md:text-3xl">{heading}</h2>
-        {description && <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">{description}</p>}
+        {description && (
+          <p className="mx-auto mt-3 max-w-xl text-base text-muted-foreground">{description}</p>
+        )}
         <PrimaryButton to={buttonTo} className="mt-8">
           {buttonLabel}
           <ArrowRight className="size-4" />

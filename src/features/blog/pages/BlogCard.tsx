@@ -8,7 +8,11 @@ export function BlogCard({ post }: { post: BlogPost }) {
   return (
     <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-xl">
       {post.image ? (
-        <ImageWithFallback src={post.image} alt={post.title} className="aspect-[16/10] w-full rounded-xl" />
+        <ImageWithFallback
+          src={post.image}
+          alt={post.title}
+          className="aspect-[16/10] w-full rounded-xl"
+        />
       ) : null}
       <div className="flex flex-col gap-2">
         <span className="w-fit rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">

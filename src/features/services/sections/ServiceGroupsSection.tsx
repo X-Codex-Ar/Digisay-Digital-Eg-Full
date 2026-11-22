@@ -1,4 +1,4 @@
-import {motion, useReducedMotion} from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import type { ServicePage as ServicePageType } from "@/data/services";
 
 import { AnimatedSection } from "@/components/common/AnimatedSection";

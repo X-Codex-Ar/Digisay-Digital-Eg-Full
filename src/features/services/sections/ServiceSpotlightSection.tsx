@@ -6,13 +6,17 @@ import { SectionHeading } from "@/components/common/SectionHeading";
 import type { ServicePage as ServicePageType } from "@/data/services";
 
 export function ServiceSpotlightSection({ page }: { page: ServicePageType }) {
+  const reduced = useReducedMotion();
   const spotlight = page.spotlight;
   if (!spotlight) return null;
-  const reduced = useReducedMotion();
   return (
     <AnimatedSection className="border-t border-border/40 bg-foreground text-background">
       <Container className="py-14 sm:py-16">
-        <SectionHeading eyebrow={spotlight.eyebrow} heading={spotlight.heading} className="mb-4 text-white [&_h2]:text-white [&_p]:text-background/90" />
+        <SectionHeading
+          eyebrow={spotlight.eyebrow}
+          heading={spotlight.heading}
+          className="mb-4 text-white [&_h2]:text-white [&_p]:text-background/90"
+        />
         <div className="mt-4 space-y-4">
           {spotlight.paragraphs.map((p) => (
             <motion.p

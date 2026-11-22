@@ -11,7 +11,7 @@ export const hero = {
   phoneLabel: "Work and general inquiries",
   phone: brand.phone,
   hours: "Assistance hours: Sunday – Thursday 9 am to 5 pm EET",
-  emailLabel: "info@digisay",
+  emailLabel: "info@digisay.com",
   emailTo: "/contact",
 } as const;
 
@@ -28,17 +28,20 @@ export const quickContact = {
 
 export const testimonials = [
   {
-    quote: "It's totally customizable with the theme settings, its compatible with a tonne of important plugins and the support is outstanding.",
+    quote:
+      "It's totally customizable with the theme settings, it's compatible with a wide range of important plugins and the support is outstanding.",
     name: "Colin Lucido",
     role: "Co-founder, Colabrio",
   },
   {
-    quote: "5 stars design agency! If anyone wants an example of what you can do with this theme, check out my site at ohio.clbthemes.com.",
+    quote:
+      "5 stars design agency! If anyone wants an example of what you can do with this theme, check out my site at ohio.clbthemes.com.",
     name: "Stacey Rickson",
     role: "Project Manager, Colabrio",
   },
   {
-    quote: "I tell you what, there has never been an issue that Cory from the Colabrio Support Team hasn't been able to solve for me.",
+    quote:
+      "I tell you what, there has never been an issue that Cory from the Colabrio Support Team hasn't been able to solve for me.",
     name: "Laura Morton",
     role: "UI/UX Designer, Colabrio",
   },
@@ -56,7 +59,8 @@ export const latestBlogs = [
     category: "anti-piracy",
   },
   {
-    title: "Mastering Digital Success: The Comprehensive Advantage of Partnering with a Full-Fledged Digital Agency",
+    title:
+      "Mastering Digital Success: The Comprehensive Advantage of Partnering with a Full-Fledged Digital Agency",
     to: "/blog/full-fledge-agency/",
     category: "digital-solutions",
   },

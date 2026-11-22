@@ -9,8 +9,8 @@ export function ServiceHeroSection({ page }: { page: ServicePageType }) {
         <h1 className="max-w-4xl text-5xl font-bold tracking-tight md:text-6xl xl:text-7xl">
           {page.heroTitle}
           {page.heroAccent ? (
-          <span className="mt-2 block text-xl font-normal text-primary">{page.heroAccent}</span>
-        ) : null}
+            <span className="mt-2 block text-xl font-normal text-primary">{page.heroAccent}</span>
+          ) : null}
         </h1>
         <div className="mt-6">
           <PrimaryButton to="/contact">Let's Talk</PrimaryButton>

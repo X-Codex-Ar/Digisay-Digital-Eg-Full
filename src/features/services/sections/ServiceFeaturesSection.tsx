@@ -12,7 +12,11 @@ export function ServiceFeaturesSection({ page }: { page: ServicePageType }) {
         <SectionHeading heading={features.heading} />
         <div className="mt-8 grid gap-4 md:grid-cols-2">
           {features.items.map((f, i) => (
-            <div key={f.title} className="animate-none rounded-2xl border border-border bg-card p-5 shadow-sm" style={{ animationDelay: `${i * 60}ms` }}>
+            <div
+              key={f.title}
+              className="animate-none rounded-2xl border border-border bg-card p-5 shadow-sm"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
               <p className="text-sm font-bold">{f.title}</p>
               <p className="mt-2 text-sm text-muted-foreground">{f.body}</p>
             </div>

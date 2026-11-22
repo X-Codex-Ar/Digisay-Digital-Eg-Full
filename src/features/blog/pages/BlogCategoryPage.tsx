@@ -21,7 +21,7 @@ export default function BlogCategoryPage() {
       <SiteHeader />
       <AnimatedSection>
         <Container className="py-16">
-          <SectionHeading eyebrow="Category" heading={`Category: ${category}`} />
+          <SectionHeading eyebrow="Category" heading={`Category: ${category}`} level="h1" />
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {posts.map((p) => (
               <BlogCard key={p.slug} post={p} />

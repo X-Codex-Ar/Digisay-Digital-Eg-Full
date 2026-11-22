@@ -12,7 +12,9 @@ import { BlogCard } from "./BlogCard";
 
 export default function BlogListingPage() {
   const recent = blogPosts.filter((p) => !p.category || p.category === "uncategorized");
-  const featured = blogPosts.filter((p) => p.category === "growth-marketing" || p.category === "anti-piracy");
+  const featured = blogPosts.filter(
+    (p) => p.category === "growth-marketing" || p.category === "anti-piracy",
+  );
   const other = blogPosts.filter((p) => p.category === "digital-solutions");
 
   return (
@@ -20,7 +22,7 @@ export default function BlogListingPage() {
       <SiteHeader />
       <AnimatedSection>
         <Container className="py-16">
-          <SectionHeading eyebrow="Resources" heading="Blog" />
+          <SectionHeading eyebrow="Resources" heading="Blog" level="h1" />
           <div className="mt-4 flex flex-wrap gap-2">
             {blogCategories.map((c) => (
               <Link

@@ -1,7 +1,14 @@
 import { SiteFooter } from "@/components/layout/Footer";
 import { SiteHeader } from "@/components/layout/Header";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
-import { AboutIntroSection, ValuesSection, GroupCompaniesSection, AwardsSection, TeamPhotosSection, PartnersSection } from "../sections/AboutSections";
+import {
+  AboutIntroSection,
+  ValuesSection,
+  GroupCompaniesSection,
+  AwardsSection,
+  TeamPhotosSection,
+  PartnersSection,
+} from "../sections/AboutSections";
 
 export default function AboutPage() {
   return (

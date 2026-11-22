@@ -44,7 +44,10 @@ function ServicesDropdown() {
         <ChevronDown className={cn("size-4 transition-transform", open && "rotate-180")} />
       </button>
       {open && (
-        <div role="menu" className="absolute left-0 top-full z-30 mt-2 w-80 rounded-2xl border border-border bg-background p-2 shadow-xl">
+        <div
+          role="menu"
+          className="absolute left-0 top-full z-30 mt-2 w-80 rounded-2xl border border-border bg-background p-2 shadow-xl"
+        >
           <p className="px-3 pb-2 pt-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
             Services
           </p>

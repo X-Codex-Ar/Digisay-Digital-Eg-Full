@@ -20,13 +20,15 @@ export default function BlogTagPage() {
       <SiteHeader />
       <AnimatedSection>
         <Container className="py-16">
-          <SectionHeading eyebrow="Tag" heading={`Tagged: ${tag}`} />
+          <SectionHeading eyebrow="Tag" heading={`Tagged: ${tag}`} level="h1" />
           <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {posts.map((p) => (
               <BlogCard key={p.slug} post={p} />
             ))}
           </div>
-          {posts.length === 0 && <p className="mt-8 text-base text-muted-foreground">No posts with this tag.</p>}
+          {posts.length === 0 && (
+            <p className="mt-8 text-base text-muted-foreground">No posts with this tag.</p>
+          )}
         </Container>
       </AnimatedSection>
       <SiteFooter />

@@ -12,7 +12,10 @@ export function TestimonialsSection() {
         <SectionHeading align="center" heading="We help to achieve mutual goals." />
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
           {testimonials.map((t) => (
-            <Card key={t.name} className="flex h-full flex-col gap-4 border border-border bg-card/60 p-6 shadow-sm">
+            <Card
+              key={t.name}
+              className="flex h-full flex-col gap-4 border border-border bg-card/60 p-6 shadow-sm"
+            >
               <p className="text-sm leading-relaxed text-foreground italic">"{t.quote}"</p>
               <div className="mt-auto">
                 <p className="text-sm font-bold">{t.name}</p>

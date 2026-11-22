@@ -28,7 +28,9 @@ export function ServiceCtaSection({ eyebrow = "Ready to work with us?" }: { eyeb
   return (
     <AnimatedSection className="border-t border-border/40 bg-foreground text-background">
       <Container className="py-14 sm:py-16 text-center">
-        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-background/70">{eyebrow}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.22em] text-background/70">
+          {eyebrow}
+        </p>
         <PrimaryButton to="/contact" className="mt-4 bg-primary">
           Let's Talk
         </PrimaryButton>

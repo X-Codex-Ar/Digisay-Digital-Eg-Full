@@ -10,7 +10,13 @@ export function PartnersSection() {
         <SectionHeading eyebrow="Clients & partners" heading="Trusted by leading brands" />
         <div className="mt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-5">
           {partners.map((p) => (
-            <img key={p.name} src={p.src} alt={p.name} className="h-10 w-auto object-contain" loading="lazy" />
+            <img
+              key={p.name}
+              src={p.src}
+              alt={p.name}
+              className="h-10 w-auto object-contain"
+              loading="lazy"
+            />
           ))}
         </div>
       </Container>

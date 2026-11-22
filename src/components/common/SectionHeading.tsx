@@ -7,11 +7,21 @@ type SectionHeadingProps = {
   heading?: string;
   subtitle?: string;
   align?: "left" | "center";
+  /** Heading tag. Use "h1" for a page's primary heading (one h1 per page for a11y). */
+  level?: "h1" | "h2";
   className?: string;
 };
 
-export function SectionHeading({ eyebrow, heading, subtitle, align = "left", className }: SectionHeadingProps) {
+export function SectionHeading({
+  eyebrow,
+  heading,
+  subtitle,
+  align = "left",
+  level = "h2",
+  className,
+}: SectionHeadingProps) {
   const reduced = useReducedMotion();
+  const HeadingTag = level;
   return (
     <motion.div
       className={cn("mb-8 sm:mb-12", align === "center" && "text-center", className)}
@@ -26,9 +36,9 @@ export function SectionHeading({ eyebrow, heading, subtitle, align = "left", cla
         </p>
       )}
       {heading && (
-        <h2 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-[2.75rem]">
+        <HeadingTag className="text-3xl font-bold tracking-tight text-foreground md:text-4xl lg:text-[2.75rem]">
           {heading}
-        </h2>
+        </HeadingTag>
       )}
       {subtitle && (
         <p className="mt-4 max-w-3xl text-base text-muted-foreground md:text-lg">{subtitle}</p>

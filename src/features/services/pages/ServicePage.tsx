@@ -12,7 +12,10 @@ import { ServiceGroupsSection } from "../sections/ServiceGroupsSection";
 import { ServiceSpotlightSection } from "../sections/ServiceSpotlightSection";
 import { ServiceStatsSection } from "../sections/ServiceStatsSection";
 import { ServiceFeaturesSection } from "../sections/ServiceFeaturesSection";
-import { ServicePartnerModelsSection, ServiceCtaSection } from "../sections/ServicePartnerModelsSection";
+import {
+  ServicePartnerModelsSection,
+  ServiceCtaSection,
+} from "../sections/ServicePartnerModelsSection";
 
 export default function ServicePage({ page }: { page: ServicePageType }) {
   return (

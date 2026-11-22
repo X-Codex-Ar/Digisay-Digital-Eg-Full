@@ -15,7 +15,9 @@ export function ImageSkeleton({ className }: SkeletonProps) {
 
 export function CardSkeleton({ className }: SkeletonProps) {
   return (
-    <div className={cn("flex flex-col gap-3 rounded-2xl border border-border bg-card p-6", className)}>
+    <div
+      className={cn("flex flex-col gap-3 rounded-2xl border border-border bg-card p-6", className)}
+    >
       <Skeleton className="h-5 w-3/4" />
       <Skeleton className="h-4 w-full" />
       <Skeleton className="h-4 w-2/3" />

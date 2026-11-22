@@ -31,7 +31,7 @@ export function ScrollToTop({ className }: { className?: string }) {
         exit={{ opacity: 0, scale: 0.85 }}
         whileHover={{ scale: reduced ? 1 : 1.1 }}
         whileTap={{ scale: 0.9 }}
-        onClick={() => window.scrollTo({ top: 0, behavior: reduced ? undefined : "smooth" })}
+        onClick={() => window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" })}
       >
         <ArrowUp className="size-5 text-foreground" />
       </motion.button>

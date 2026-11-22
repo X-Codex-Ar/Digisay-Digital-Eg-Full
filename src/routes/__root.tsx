@@ -12,6 +12,8 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { ScrollProgressBar } from "@/components/common/ScrollProgressBar";
+import { BrandIntroLoader } from "@/components/common/BrandIntroLoader";
 
 function NotFoundComponent() {
   return (
@@ -127,6 +129,8 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <ScrollProgressBar />
+      <BrandIntroLoader />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>

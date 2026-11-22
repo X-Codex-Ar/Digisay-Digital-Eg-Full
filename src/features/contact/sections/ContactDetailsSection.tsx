@@ -11,8 +11,8 @@ export function ContactIntroSection() {
           How can we help you out? Reach out to us
         </h1>
         <p className="mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
-          Fill in this form or send us an e-mail with your inquiry. Our UAE and U.S. offices are ready
-          to work with you.
+          Fill in this form or send us an e-mail with your inquiry. Our UAE and U.S. offices are
+          ready to work with you.
         </p>
       </div>
     </div>

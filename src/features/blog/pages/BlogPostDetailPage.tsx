@@ -21,15 +21,24 @@ export default function BlogPostDetailPage({ post }: { post: BlogPost | undefine
       </div>
     );
   }
-  const related = blogPosts.filter((p) => p.slug !== post.slug && p.category === post.category).slice(0, 3);
+  const related = blogPosts
+    .filter((p) => p.slug !== post.slug && p.category === post.category)
+    .slice(0, 3);
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <AnimatedSection>
         <Container className="py-16">
-          <Breadcrumbs items={[{ label: "Blog", to: "/blog" }, { label: post.title, active: true }]} />
-          <h1 className="mt-6 text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">{post.title}</h1>
+          <Breadcrumbs
+            items={[
+              { label: "Blog", to: "/blog" },
+              { label: post.title, active: true },
+            ]}
+          />
+          <h1 className="mt-6 text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+            {post.title}
+          </h1>
           <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <span className="w-fit rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               {post.category}
@@ -41,7 +50,11 @@ export default function BlogPostDetailPage({ post }: { post: BlogPost | undefine
           </div>
           {post.image && (
             <div className="mt-8">
-              <ImageWithFallback src={post.image} alt={post.title} className="aspect-[16/9] w-full rounded-3xl" />
+              <ImageWithFallback
+                src={post.image}
+                alt={post.title}
+                className="aspect-[16/9] w-full rounded-3xl"
+              />
             </div>
           )}
           <div className="mt-10 max-w-3xl space-y-5">
@@ -58,7 +71,10 @@ export default function BlogPostDetailPage({ post }: { post: BlogPost | undefine
                 <BlogCard key={p.slug} post={p} />
               ))}
             </div>
-            <Link to="/blog" className="mt-8 inline-flex font-semibold text-primary hover:underline">
+            <Link
+              to="/blog"
+              className="mt-8 inline-flex font-semibold text-primary hover:underline"
+            >
               ← Back to Blog
             </Link>
           </div>

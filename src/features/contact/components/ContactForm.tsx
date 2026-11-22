@@ -40,27 +40,49 @@ export function ContactForm() {
           <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="firstName">
             First Name *
           </label>
-          <input id="firstName" {...register("firstName")} className={inputClass} aria-invalid={!!errors.firstName} />
+          <input
+            id="firstName"
+            {...register("firstName")}
+            className={inputClass}
+            aria-invalid={!!errors.firstName}
+          />
           {errors.firstName && (
-            <p role="alert" className="mt-1 text-sm text-destructive">{errors.firstName.message}</p>
+            <p role="alert" className="mt-1 text-sm text-destructive">
+              {errors.firstName.message}
+            </p>
           )}
         </div>
         <div>
           <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="lastName">
             Last Name *
           </label>
-          <input id="lastName" {...register("lastName")} className={inputClass} aria-invalid={!!errors.lastName} />
+          <input
+            id="lastName"
+            {...register("lastName")}
+            className={inputClass}
+            aria-invalid={!!errors.lastName}
+          />
           {errors.lastName && (
-            <p role="alert" className="mt-1 text-sm text-destructive">{errors.lastName.message}</p>
+            <p role="alert" className="mt-1 text-sm text-destructive">
+              {errors.lastName.message}
+            </p>
           )}
         </div>
         <div>
           <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="email">
             Email *
           </label>
-          <input id="email" type="email" {...register("email")} className={inputClass} aria-invalid={!!errors.email} />
+          <input
+            id="email"
+            type="email"
+            {...register("email")}
+            className={inputClass}
+            aria-invalid={!!errors.email}
+          />
           {errors.email && (
-            <p role="alert" className="mt-1 text-sm text-destructive">{errors.email.message}</p>
+            <p role="alert" className="mt-1 text-sm text-destructive">
+              {errors.email.message}
+            </p>
           )}
         </div>
         <div>
@@ -81,7 +103,9 @@ export function ContactForm() {
             ))}
           </select>
           {errors.service && (
-            <p role="alert" className="mt-1 text-sm text-destructive">{errors.service.message}</p>
+            <p role="alert" className="mt-1 text-sm text-destructive">
+              {errors.service.message}
+            </p>
           )}
         </div>
       </div>
@@ -103,7 +127,10 @@ export function ContactForm() {
           configured to send messages; our team will follow up via the details provided.
         </p>
       )}
-      <button type="submit" className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-colors hover:bg-primary/90">
+      <button
+        type="submit"
+        className="rounded-full bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-colors hover:bg-primary/90"
+      >
         Send message
       </button>
     </form>
