@@ -204,12 +204,12 @@
 
   html {
     scrollbar-width: thin;
-    scrollbar-color: rgb(37 99 235 / 25%) transparent;
+    scrollbar-color: rgba(217, 10, 44, 0.35) transparent;
   }
 
   html::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   html::-webkit-scrollbar-track {
@@ -217,12 +217,13 @@
   }
 
   html::-webkit-scrollbar-thumb {
-    background: rgb(37 99 235 / 25%);
-    border-radius: 10px;
+    background: rgba(217, 10, 44, 0.35);
+    border-radius: 9999px;
+    transition: background-color 0.2s ease;
   }
 
   html::-webkit-scrollbar-thumb:hover {
-    background: rgb(37 99 235 / 45%);
+    background: rgba(217, 10, 44, 0.75);
   }
 
   html::-webkit-scrollbar-button {

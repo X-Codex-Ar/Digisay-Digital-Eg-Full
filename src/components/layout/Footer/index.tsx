@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { brand, getCopyright, offices, serviceNav, socialLinks } from "@/data/site";
 import { PrimaryButton } from "@/components/common/PrimaryButton";
 import { Container } from "@/components/common/Container";
+import { SocialIcon } from "@/components/common/SocialIcons";
 
 function SocialIconLink({
   href,
@@ -37,10 +38,12 @@ export function SiteFooter() {
               DigiSay Group — The Digital Media Solutions Leader. Building creator-economy services
               across MENA.
             </p>
-            <div className="flex gap-4">
+            <div className="flex items-center gap-2.5">
               {socialLinks.map((s) => (
                 <SocialIconLink key={s.label} href={s.href} label={s.label}>
-                  <span className="text-xs font-semibold tracking-wide">{s.label}</span>
+                  <div className="flex size-9 items-center justify-center rounded-full border border-border/70 bg-card p-2 text-muted-foreground transition-all duration-200 hover:border-[#d90a2c] hover:bg-[#d90a2c]/10 hover:text-[#d90a2c] hover:scale-110">
+                    <SocialIcon name={s.label} className="size-4" />
+                  </div>
                 </SocialIconLink>
               ))}
             </div>

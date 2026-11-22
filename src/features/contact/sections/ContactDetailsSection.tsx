@@ -1,53 +1,138 @@
+import { Mail, Phone, MapPin, Clock, ArrowUpRight } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { AnimatedSection } from "@/components/common/AnimatedSection";
 import { Container } from "@/components/common/Container";
-import { SectionHeading } from "@/components/common/SectionHeading";
-import { brand, offices } from "@/data/site";
+import { brand, offices, socialLinks } from "@/data/site";
+import { SocialIcon } from "@/components/common/SocialIcons";
 
 export function ContactIntroSection() {
   return (
-    <div className="px-4 sm:px-6 xl:px-8">
-      <div className="mx-auto max-w-[1300px] rounded-3xl border border-border bg-background p-8 text-center shadow-lg md:p-12">
-        <h1 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
-          How can we help you out? Reach out to us
-        </h1>
-        <p className="mt-4 max-w-2xl text-base text-muted-foreground md:text-lg">
-          Fill in this form or send us an e-mail with your inquiry. Our UAE and U.S. offices are
-          ready to work with you.
-        </p>
+    <section className="px-4 sm:px-6 xl:px-8">
+      <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-border/80 bg-card p-8 text-center shadow-xl md:p-14">
+        {/* Ambient brand glow */}
+        <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-[#d90a2c]/5 blur-3xl" />
+        <div className="pointer-events-none absolute -left-20 -bottom-20 size-72 rounded-full bg-[#d90a2c]/5 blur-3xl" />
+
+        <div className="relative z-10">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#d90a2c]/20 bg-[#d90a2c]/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-[#d90a2c]">
+            Get In Touch
+          </div>
+          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl">
+            How Can We Help You Out? Reach Out to Us
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
+            Fill in the form below or reach us directly. Our regional and international teams in UAE
+            and the U.S. are ready to accelerate your media roadmap.
+          </p>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }
 
 export function ContactDetailsSection() {
+  const cleanPhone = brand.phone.replace(/[^+\d]/g, "");
+
   return (
-    <AnimatedSection className="border-t border-border/40">
-      <Container className="pb-8 pt-4">
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="flex flex-col gap-8">
-            {offices.map((o) => (
-              <div key={o.name}>
-                <h4 className="text-base font-bold text-foreground">{o.name}</h4>
-                <h5 className="mt-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Location
-                </h5>
-                <p className="mt-1 text-sm text-muted-foreground">{o.lines.join(" ")}</p>
-                <h5 className="mt-4 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  General inquiries
-                </h5>
-                <p className="mt-1 text-sm text-foreground">{brand.email}</p>
+    <AnimatedSection className="py-12 md:py-16">
+      <Container>
+        <div className="grid gap-8 lg:grid-cols-3">
+          {/* Offices Columns */}
+          {offices.map((office) => (
+            <div
+              key={office.name}
+              className="flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-sm transition-all hover:border-[#d90a2c]/30 hover:shadow-md"
+            >
+              <div>
+                <div className="flex size-10 items-center justify-center rounded-2xl border border-border bg-muted/40 text-[#d90a2c]">
+                  <MapPin className="size-5" />
+                </div>
+                <h3 className="mt-4 text-lg font-bold text-foreground">{office.name}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                  {office.lines.join(" ")}
+                </p>
               </div>
-            ))}
-          </div>
-          <div className="flex flex-col justify-center gap-4 text-sm text-muted-foreground">
-            <p className="font-semibold text-foreground">Phone: {brand.phone}</p>
-            <p>Hours: {brand.hours}</p>
-            <p className="font-semibold text-foreground">Email: {brand.email}</p>
-            <p className="mt-4">
-              <a href="/anti-piracy" className="font-semibold text-foreground hover:text-primary">
-                View services
-              </a>
-            </p>
+
+              <div className="mt-6 border-t border-border/40 pt-4">
+                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  Official Inquiries
+                </span>
+                <p className="mt-1 text-sm font-medium text-foreground">{brand.email}</p>
+              </div>
+            </div>
+          ))}
+
+          {/* Direct Communications & Social Channels */}
+          <div className="flex flex-col justify-between rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-sm transition-all hover:border-[#d90a2c]/30 hover:shadow-md">
+            <div>
+              <div className="flex size-10 items-center justify-center rounded-2xl border border-border bg-muted/40 text-[#d90a2c]">
+                <Phone className="size-5" />
+              </div>
+              <h3 className="mt-4 text-lg font-bold text-foreground">Direct Assistance</h3>
+
+              <div className="mt-4 space-y-3 text-sm">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Phone
+                  </span>
+                  <p className="mt-0.5">
+                    <a
+                      href={`tel:${cleanPhone}`}
+                      className="font-semibold text-foreground transition-colors hover:text-[#d90a2c] inline-flex items-center gap-1.5"
+                    >
+                      <span>{brand.phone}</span>
+                      <ArrowUpRight className="size-3.5 text-[#d90a2c]" />
+                    </a>
+                  </p>
+                </div>
+
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Email
+                  </span>
+                  <p className="mt-0.5">
+                    <a
+                      href={`mailto:${brand.email}`}
+                      className="font-semibold text-foreground transition-colors hover:text-[#d90a2c] inline-flex items-center gap-1.5"
+                    >
+                      <span>{brand.email}</span>
+                      <ArrowUpRight className="size-3.5 text-[#d90a2c]" />
+                    </a>
+                  </p>
+                </div>
+
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    Hours
+                  </span>
+                  <p className="mt-0.5 flex items-center gap-1.5 text-muted-foreground">
+                    <Clock className="size-3.5" />
+                    <span>{brand.hours}</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Social Channels with SVG Brand Icons */}
+            <div className="mt-6 border-t border-border/40 pt-4">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Follow DigiSay
+              </span>
+              <div className="mt-2.5 flex items-center gap-2">
+                {socialLinks.map((s) => (
+                  <a
+                    key={s.label}
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={s.label}
+                    className="flex size-9 items-center justify-center rounded-xl border border-border/70 bg-muted/30 p-2 text-muted-foreground transition-all duration-200 hover:border-[#d90a2c] hover:bg-[#d90a2c]/10 hover:text-[#d90a2c] hover:scale-105"
+                  >
+                    <SocialIcon name={s.label} className="size-4" />
+                  </a>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </Container>
@@ -57,9 +142,24 @@ export function ContactDetailsSection() {
 
 export function ContactCtaSection() {
   return (
-    <AnimatedSection className="border-t border-border/40">
-      <Container className="py-14 sm:py-16">
-        <SectionHeading heading="Join us to create the best digital solutions." />
+    <AnimatedSection className="border-t border-border/40 py-14 sm:py-16">
+      <Container>
+        <div className="flex flex-col items-center justify-between gap-6 rounded-3xl border border-border bg-muted/20 p-8 text-center sm:flex-row sm:text-left">
+          <div>
+            <h3 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+              Join us to create the best digital solutions.
+            </h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Learn more about our creator networks, distribution pipelines, and intellectual property defense.
+            </p>
+          </div>
+          <Link
+            to="/services"
+            className="shrink-0 rounded-full bg-foreground px-6 py-3 text-sm font-semibold text-background shadow-sm transition-all hover:bg-foreground/90"
+          >
+            Explore Services
+          </Link>
+        </div>
       </Container>
     </AnimatedSection>
   );

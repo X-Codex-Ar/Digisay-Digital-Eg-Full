@@ -6,7 +6,7 @@ export const brand = {
   logo: "/assets/brand/Digisay-logo-transparent-1-e1709464890607.png",
   logoBig: "/assets/brand/Digisay-logo-big.jpg",
   email: "info@digisay.com",
-  phone: "+1.809.120.6705",
+  phone: "+1 (809) 120-6705",
   hours: "Sunday – Thursday 9 am to 5 pm EET",
 } as const;
 
