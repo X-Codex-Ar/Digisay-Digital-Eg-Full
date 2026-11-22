@@ -21,28 +21,28 @@ export default function BlogListingPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <AnimatedSection>
-        <Container className="py-16">
+        <Container className="pt-28 pb-16 sm:pt-36 sm:pb-24">
           <SectionHeading eyebrow="Resources" heading="Blog" level="h1" />
           <div className="mt-4 flex flex-wrap gap-2">
             {blogCategories.map((c) => (
               <Link
                 key={c}
                 to={`/blog/category/${c}` as never}
-                className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-foreground hover:text-background"
+                className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
               >
                 {c}
               </Link>
             ))}
           </div>
-          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recent.map((p) => (
               <BlogCard key={p.slug} post={p} />
             ))}
           </div>
           {featured.length > 0 && (
-            <div className="mt-10">
+            <div className="mt-14">
               <SectionHeading className="mb-6" heading="Featured" eyebrow="Articles" />
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {featured.map((p) => (
                   <BlogCard key={p.slug} post={p} />
                 ))}
@@ -50,9 +50,9 @@ export default function BlogListingPage() {
             </div>
           )}
           {other.length > 0 && (
-            <div className="mt-10">
+            <div className="mt-14">
               <SectionHeading className="mb-6" heading="Insights" eyebrow="Our insights" />
-              <div className="grid gap-4 md:grid-cols-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {other.map((p) => (
                   <BlogCard key={p.slug} post={p} />
                 ))}

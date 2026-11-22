@@ -64,7 +64,7 @@ export default function PrivacyPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <AnimatedSection>
-        <Container className="py-16">
+        <Container className="pt-28 pb-16 sm:pt-36 sm:pb-24">
           <div className="mx-auto max-w-3xl">
             {/* The original page has no visible title; keep it for structure/a11y only. */}
             <h1 className="sr-only">Privacy Policy</h1>

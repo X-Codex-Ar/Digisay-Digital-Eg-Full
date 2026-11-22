@@ -19,9 +19,9 @@ export default function BlogAuthorPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <AnimatedSection>
-        <Container className="py-16">
+        <Container className="pt-28 pb-16 sm:pt-36 sm:pb-24">
           <SectionHeading eyebrow="Author" heading={`Posts by ${author}`} />
-          <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {posts.map((p) => (
               <BlogCard key={p.slug} post={p} />
             ))}

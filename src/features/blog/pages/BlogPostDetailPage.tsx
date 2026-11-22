@@ -29,7 +29,7 @@ export default function BlogPostDetailPage({ post }: { post: BlogPost | undefine
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
       <AnimatedSection>
-        <Container className="py-16">
+        <Container className="pt-28 pb-16 sm:pt-36 sm:pb-24">
           <Breadcrumbs
             items={[
               { label: "Blog", to: "/blog" },
@@ -64,16 +64,16 @@ export default function BlogPostDetailPage({ post }: { post: BlogPost | undefine
               </p>
             ))}
           </div>
-          <div className="mt-14">
-            <SectionHeading eyebrow="Related" heading="You may also like" />
-            <div className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-16 border-t border-border/40 pt-12">
+            <SectionHeading eyebrow="Related Articles" heading="You may also like" />
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {related.map((p) => (
                 <BlogCard key={p.slug} post={p} />
               ))}
             </div>
             <Link
               to="/blog"
-              className="mt-8 inline-flex font-semibold text-primary hover:underline"
+              className="mt-8 inline-flex items-center gap-1 font-semibold text-primary hover:underline"
             >
               ← Back to Blog
             </Link>
