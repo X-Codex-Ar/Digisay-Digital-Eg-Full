@@ -2,6 +2,7 @@ import { Link, useLocation } from "@tanstack/react-router";
 import { mainNav, servicesMenu } from "@/data/navigation";
 import { brand } from "@/data/site";
 import { PrimaryButton } from "@/components/common/PrimaryButton";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 function MobileNavItem({
@@ -37,10 +38,11 @@ export function MobileNavigation({ open, onClose }: { open: boolean; onClose: ()
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent side="right" className="flex h-full w-full max-w-sm flex-col justify-between overflow-y-auto p-6">
         <div>
-          <SheetHeader className="pb-6 border-b border-border/40">
+          <SheetHeader className="pb-6 border-b border-border/40 flex flex-row items-center justify-between">
             <Link to="/" onClick={onClose}>
               <img src={brand.logo} alt={brand.name} className="h-9 w-auto" />
             </Link>
+            <ThemeToggle />
             <SheetTitle className="sr-only">Main Menu</SheetTitle>
           </SheetHeader>
 

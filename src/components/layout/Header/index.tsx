@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { brand } from "@/data/site";
 import { Magnetic } from "@/components/common/Magnetic";
+import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { DesktopNavigation } from "./DesktopNavigation";
 import { MobileNavigation } from "./MobileNavigation";
 
@@ -39,6 +40,7 @@ export function SiteHeader() {
         </Link>
         <DesktopNavigation />
         <div className="flex items-center gap-2 sm:gap-3">
+          <ThemeToggle />
           <div className="hidden md:block">
             <Magnetic>
               <Link

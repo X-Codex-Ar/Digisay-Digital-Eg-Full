@@ -126,6 +126,13 @@ function RootShell({ children }: { children: ReactNode }) {
           dangerouslySetInnerHTML={{
             __html: `
               try {
+                const savedTheme = localStorage.getItem('digisay_theme');
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+                  document.documentElement.classList.add('dark');
+                } else if (savedTheme === 'light') {
+                  document.documentElement.classList.remove('dark');
+                }
                 if (!sessionStorage.getItem('digisay_intro_seen')) {
                   document.documentElement.classList.add('loading-intro');
                 }
