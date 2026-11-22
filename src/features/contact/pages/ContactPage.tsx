@@ -16,9 +16,9 @@ export default function ContactPage() {
       <main className="flex-1 pt-28 pb-16 md:pt-36 space-y-12 md:space-y-16">
         <ContactIntroSection />
         <ContactDetailsSection />
-        <AnimatedSection className="px-4 sm:px-6 xl:px-8">
+        <section className="px-4 sm:px-6 xl:px-8">
           <ContactForm />
-        </AnimatedSection>
+        </section>
         <ContactCtaSection />
       </main>
       <SiteFooter />
