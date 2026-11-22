@@ -3,6 +3,7 @@ import type { ServicePage as ServicePageType } from "@/data/services";
 
 import { AnimatedSection } from "@/components/common/AnimatedSection";
 import { Container } from "@/components/common/Container";
+import { ImageWithFallback } from "@/components/common/ImageWithFallback";
 
 export function ServiceIntroSection({ page }: { page: ServicePageType }) {
   const reduced = useReducedMotion();
@@ -30,6 +31,25 @@ export function ServiceIntroSection({ page }: { page: ServicePageType }) {
             </p>
           </motion.div>
         </div>
+
+        {page.image && (
+          <motion.div
+            initial={reduced ? { opacity: 1 } : { opacity: 0, y: 24 }}
+            whileInView={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.15 }}
+            className="group relative mx-auto mt-12 max-w-4xl overflow-hidden rounded-2xl border border-border/60 bg-card shadow-2xl shadow-primary/5 transition-all hover:border-primary/40 hover:shadow-primary/10"
+          >
+            <div className="relative aspect-[16/9] w-full overflow-hidden">
+              <ImageWithFallback
+                src={page.image}
+                alt={page.name}
+                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-102"
+              />
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background/70 via-transparent to-transparent" />
+            </div>
+          </motion.div>
+        )}
       </Container>
     </AnimatedSection>
   );

@@ -33,7 +33,7 @@ export const servicePages: ServicePage[] = [
     summary: "Safeguarding digital content, securing creators' intellectual property",
     heroTitle: "Safeguard Your Digital Assets with DigiSay's Dynamic",
     heroAccent: "Anti-Piracy Solutions",
-    image: antiPiracyImg.url,
+    image: "/assets/services/rightshero-cyber-shield.jpg",
     groups: [
       {
         eyebrow: "Anti-Piracy & Content Protection",
@@ -110,7 +110,7 @@ export const servicePages: ServicePage[] = [
     summary: "Crafting captivating visual narratives for powerful brand storytelling",
     heroTitle: "Elevate, Captivate, and Resonate with our Comprehensive Suite of",
     heroAccent: "Content Production Services",
-    image: agencyImg.url,
+    image: "/assets/services/content-production-studio.jpg",
     groups: [
       {
         eyebrow: "Content Production",
@@ -224,7 +224,7 @@ export const servicePages: ServicePage[] = [
     summary: "Elevating brands through strategic, engaging social media strategies",
     heroTitle: "Skyrocket Your Success & Elevate Your Brand with Proven",
     heroAccent: "Social Media Mastery!",
-    image: agencyImg.url,
+    image: "/assets/services/influencers-creator-network.jpg",
     groups: [
       {
         eyebrow: "Strategy & Digital Services",
@@ -315,7 +315,7 @@ export const servicePages: ServicePage[] = [
     summary: "Strategic performance marketing tactics that propel brands to new heights",
     heroTitle: "Elevate Growth with Our Dynamic",
     heroAccent: "Growth Marketing Solutions",
-    image: acquisitionImg.url,
+    image: "/assets/blog/performance-marketing.jpg",
     groups: [
       {
         eyebrow: "Inbound & CRM Marketing",
@@ -440,7 +440,7 @@ export const servicePages: ServicePage[] = [
     heroTitle:
       "We Connect Your Story with Authentic Creators to Drive Real Impact and Audience Engagement",
     heroAccent: "",
-    image: "/assets/services/one-stop-agency.jpeg",
+    image: "/assets/services/influencers-creator-network.jpg",
     groups: [
       {
         eyebrow: "Influencer Partnerships",

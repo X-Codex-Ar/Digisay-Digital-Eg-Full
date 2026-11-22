@@ -14,25 +14,56 @@ export function ServiceSpotlightSection({ page }: { page: ServicePageType }) {
   return (
     <AnimatedSection className="border-t border-border/40 bg-muted/20">
       <Container className="py-16 sm:py-24">
-        <SectionHeading
-          eyebrow={spotlight.eyebrow}
-          heading={spotlight.heading}
-          className="mb-6"
-        />
+        <SectionHeading eyebrow={spotlight.eyebrow} heading={spotlight.heading} className="mb-6" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-          {spotlight.paragraphs.map((p, i) => (
+        <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+          {page.slug === "anti-piracy" && (
             <motion.div
-              key={p}
-              initial={reduced ? { opacity: 1 } : { opacity: 0, y: 16 }}
-              whileInView={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+              initial={reduced ? { opacity: 1 } : { opacity: 0, scale: 0.98 }}
+              whileInView={reduced ? { opacity: 1 } : { opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: i * 0.08 }}
-              className="rounded-2xl border border-border/60 bg-card p-6 sm:p-7 shadow-sm"
+              transition={{ duration: 0.5 }}
+              className="group relative lg:col-span-5 overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm hover:border-primary/40 transition-all flex flex-col justify-end"
             >
-              <p className="text-base leading-relaxed text-muted-foreground md:text-lg">{p}</p>
+              <div className="relative aspect-video lg:aspect-auto lg:h-full min-h-[220px] w-full overflow-hidden">
+                <img
+                  src="/assets/services/rightshero-cyber-shield.jpg"
+                  alt="RightsHero Anti-Piracy Intelligence"
+                  className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
+                  loading="lazy"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
+                  <span className="text-xs font-bold tracking-wider uppercase text-primary">
+                    RightsHero™ Engine
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-2.5 py-1 text-xs font-semibold text-primary backdrop-blur-md">
+                    <span className="size-1.5 rounded-full bg-primary animate-pulse" />
+                    Autonomous Sentinel
+                  </span>
+                </div>
+              </div>
             </motion.div>
-          ))}
+          )}
+
+          <div
+            className={`${
+              page.slug === "anti-piracy" ? "lg:col-span-7" : "lg:col-span-12"
+            } grid grid-cols-1 sm:grid-cols-2 gap-4`}
+          >
+            {spotlight.paragraphs.map((p, i) => (
+              <motion.div
+                key={p}
+                initial={reduced ? { opacity: 1 } : { opacity: 0, y: 16 }}
+                whileInView={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.08 }}
+                className="rounded-2xl border border-border/60 bg-card p-6 sm:p-7 shadow-sm transition-all hover:border-primary/30"
+              >
+                <p className="text-base leading-relaxed text-muted-foreground md:text-lg">{p}</p>
+              </motion.div>
+            ))}
+          </div>
         </div>
 
         {spotlight.features && (
