@@ -9,18 +9,17 @@ import {
   Scale,
   ChevronDown,
   ChevronsUpDown,
-  Sparkles,
-  ArrowUpRight,
   FileText,
 } from "lucide-react";
 
 import { AnimatedSection } from "@/components/common/AnimatedSection";
 import { Container } from "@/components/common/Container";
+import { PageHeader } from "@/components/common/PageHeader";
 import { PrimaryButton } from "@/components/common/PrimaryButton";
 import { SiteFooter } from "@/components/layout/Footer";
 import { SiteHeader } from "@/components/layout/Header";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
-import { privacySections, type PrivacyBlock, type PrivacySection } from "@/data/privacy";
+import { privacySections, type PrivacyBlock } from "@/data/privacy";
 
 const ICON_MAP = {
   Globe,
@@ -115,7 +114,6 @@ export default function PrivacyPage() {
 
   const toggleAll = () => {
     if (areAllOpen) {
-      // Keep first section open
       setOpenSections(new Set(["overview"]));
     } else {
       setOpenSections(new Set(privacySections.map((s) => s.id)));
@@ -126,39 +124,24 @@ export default function PrivacyPage() {
     <div className="flex min-h-screen flex-col bg-background">
       <SiteHeader />
 
-      {/* Hero Header */}
-      <section className="relative overflow-hidden pt-28 pb-12 sm:pt-36 sm:pb-16 bg-background">
-        <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
-        <Container className="relative z-10 text-center">
-          <motion.div
-            initial={reduced ? { opacity: 1 } : { opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
-          >
-            <span className="inline-flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-              <ShieldCheck className="h-3.5 w-3.5" />
-              Legal & Compliance
+      {/* Unified Signature Page Header */}
+      <PageHeader
+        badge="Legal & Compliance"
+        icon={ShieldCheck}
+        title="Privacy Policy & Terms"
+        description="Explore how DigiSay safeguards intellectual property and manages data across our digital solutions and creator ecosystem."
+        meta={
+          <>
+            <span className="rounded-xl border border-border/80 bg-card/60 px-3 py-1 font-medium">
+              Last Updated: August 2022
             </span>
-            <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
-              Privacy Policy & Terms
-            </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base md:text-lg">
-              Explore how DigiSay safeguards intellectual property and manages data across our
-              digital solutions and creator ecosystem.
-            </p>
-
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3 text-xs text-muted-foreground">
-              <span className="rounded-xl border border-border/80 bg-card/60 px-3 py-1 font-medium">
-                Last Updated: August 2022
-              </span>
-              <span>·</span>
-              <span className="rounded-xl border border-border/80 bg-card/60 px-3 py-1 font-medium">
-                Governed under UAE & Egyptian Data Protection Laws
-              </span>
-            </div>
-          </motion.div>
-        </Container>
-      </section>
+            <span>·</span>
+            <span className="rounded-xl border border-border/80 bg-card/60 px-3 py-1 font-medium">
+              Governed under UAE & Egyptian Data Protection Laws
+            </span>
+          </>
+        }
+      />
 
       {/* Interactive Accordion Section */}
       <AnimatedSection className="border-t border-border/40 bg-muted/20 pb-20 sm:pb-28">

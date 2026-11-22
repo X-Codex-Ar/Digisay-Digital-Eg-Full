@@ -1,8 +1,9 @@
-import { motion, useReducedMotion } from "motion/react";
 import { Sparkles } from "lucide-react";
+import { motion, useReducedMotion } from "motion/react";
 
 import { AnimatedSection } from "@/components/common/AnimatedSection";
 import { Container } from "@/components/common/Container";
+import { PageHeader } from "@/components/common/PageHeader";
 import { SectionHeading } from "@/components/common/SectionHeading";
 import {
   aboutPartners,
@@ -49,41 +50,13 @@ function GroupCompanyCard({ name, src, body }: { name: string; src: string; body
 }
 
 export function AboutIntroSection() {
-  const reduced = useReducedMotion();
-
   return (
-    <section className="relative overflow-hidden pt-28 pb-14 sm:pt-36 sm:pb-20 bg-background">
-      {/* Ambient background brand glow */}
-      <div className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
-
-      <Container className="relative z-10">
-        <motion.div
-          className="max-w-4xl"
-          initial={reduced ? { opacity: 1 } : { opacity: 0, y: 24 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
-        >
-          <span className="inline-flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            Company Story
-          </span>
-          <h1 className="mt-6 text-4xl font-bold tracking-tight text-foreground sm:text-5xl md:text-6xl">
-            Pioneering Media-Tech & Creator Economies in MENA
-          </h1>
-          <div className="mt-6 space-y-5 text-base text-muted-foreground md:text-lg leading-relaxed">
-            <p>
-              DigiSay focuses on creator economy advancements which kickstarted the company's early
-              days on YouTube with further business opportunities like working on the most
-              successful and well-known projects in MENA's media industry.
-            </p>
-            <p>
-              DigiSay has extensive expertise in managing complex media challenges through strategic
-              and technology-based approaches.
-            </p>
-          </div>
-        </motion.div>
-      </Container>
-    </section>
+    <PageHeader
+      badge="Company Story"
+      icon={Sparkles}
+      title="About DigiSay"
+      description="DigiSay is a leading media-tech enabling company in MENA. From early YouTube creator economy milestones to managing enterprise media rights, we pioneer strategic, technology-driven media solutions."
+    />
   );
 }
 

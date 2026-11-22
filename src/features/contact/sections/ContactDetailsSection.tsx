@@ -1,40 +1,20 @@
-import { Mail, Phone, MapPin, Clock, ArrowUpRight } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, ArrowUpRight, Sparkles } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "motion/react";
 import { AnimatedSection } from "@/components/common/AnimatedSection";
 import { Container } from "@/components/common/Container";
+import { PageHeader } from "@/components/common/PageHeader";
 import { brand, offices, socialLinks } from "@/data/site";
 import { SocialIcon } from "@/components/common/SocialIcons";
 
 export function ContactIntroSection() {
-  const reduced = useReducedMotion();
-
   return (
-    <section className="px-4 sm:px-6 xl:px-8">
-      <div className="relative mx-auto max-w-5xl overflow-hidden rounded-3xl border border-border/80 bg-card p-8 text-center shadow-xl md:p-14">
-        {/* Ambient brand glow */}
-        <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -left-20 -bottom-20 size-72 rounded-full bg-primary/10 blur-3xl" />
-
-        <motion.div
-          className="relative z-10"
-          initial={reduced ? { opacity: 1 } : { opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.21, 0.47, 0.32, 0.98] }}
-        >
-          <div className="inline-flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-primary">
-            Get In Touch
-          </div>
-          <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl">
-            How Can We Help You Out? Reach Out to Us
-          </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground md:text-lg">
-            Fill in the form below or reach us directly. Our regional and international teams in UAE
-            and the U.S. are ready to accelerate your media roadmap.
-          </p>
-        </motion.div>
-      </div>
-    </section>
+    <PageHeader
+      badge="Get In Touch"
+      icon={Sparkles}
+      title="How Can We Help You Out? Reach Out to Us"
+      description="Fill in the form below or reach us directly. Our regional and international teams in UAE and the U.S. are ready to accelerate your media roadmap."
+    />
   );
 }
 

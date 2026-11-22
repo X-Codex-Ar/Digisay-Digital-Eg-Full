@@ -15,6 +15,7 @@ import { SiteHeader } from "@/components/layout/Header";
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 import { Container } from "@/components/common/Container";
 import { AnimatedSection } from "@/components/common/AnimatedSection";
+import { PageHeader } from "@/components/common/PageHeader";
 import { PrimaryButton } from "@/components/common/PrimaryButton";
 
 const IRAQ_SERVICES = [
@@ -69,38 +70,16 @@ export default function IraqPage() {
     <div className="flex min-h-screen flex-col bg-background" dir="rtl" lang="ar">
       <SiteHeader />
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-28 pb-16 sm:pt-36 sm:pb-24 bg-background">
-        {/* Ambient brand glow */}
-        <div className="pointer-events-none absolute -top-24 right-1/2 translate-x-1/2 h-96 w-96 rounded-full bg-primary/10 blur-3xl" />
-
-        <Container className="relative z-10">
-          <motion.div
-            className="max-w-4xl text-right"
-            initial={reduced ? { opacity: 1 } : { opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
-          >
-            <span className="inline-flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary">
-              <Sparkles className="h-3.5 w-3.5" />
-              ديجيساي - العراق
-            </span>
-
-            <h1 className="mt-6 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl lg:text-6xl">
-              ديجيساي الوكالة الإعلامية الرائدة في الشرق الأوسط
-            </h1>
-
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted-foreground sm:text-xl">
-              نمكن المبدعين وصناع المحتوى والشركات الإعلامية في العراق من حماية حقوقهم ومضاعفة
-              أرباحهم عبر حلول تقنية وإعلامية متكاملة.
-            </p>
-
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-start">
-              <PrimaryButton to="/contact">تواصل معنا الآن</PrimaryButton>
-            </div>
-          </motion.div>
-        </Container>
-      </section>
+      {/* Unified Signature Page Header */}
+      <PageHeader
+        badge="ديجيساي - العراق"
+        icon={Sparkles}
+        title="ديجيساي الوكالة الإعلامية الرائدة في الشرق الأوسط"
+        description="نمكن المبدعين وصناع المحتوى والشركات الإعلامية في العراق من حماية حقوقهم ومضاعفة أرباحهم عبر حلول تقنية وإعلامية متكاملة."
+        align="center"
+      >
+        <PrimaryButton to="/contact">تواصل معنا الآن</PrimaryButton>
+      </PageHeader>
 
       {/* Services Grid Section */}
       <AnimatedSection className="border-t border-border/40 bg-muted/20">
