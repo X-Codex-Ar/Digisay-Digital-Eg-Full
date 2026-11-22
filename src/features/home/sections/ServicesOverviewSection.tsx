@@ -15,7 +15,6 @@ interface ServiceCardData {
   highlights: string[];
   to: string;
   icon: typeof ShieldCheck;
-  gradient: string;
 }
 
 const SERVICES_DATA: ServiceCardData[] = [
@@ -29,7 +28,6 @@ const SERVICES_DATA: ServiceCardData[] = [
     highlights: ["24/7 Real-Time Automated Crawlers", "Rapid Cross-Platform DMCA Takedowns", "Monetization Leak Recovery"],
     to: "/anti-piracy",
     icon: ShieldCheck,
-    gradient: "from-[#d90a2c]/10 via-[#d90a2c]/5 to-transparent",
   },
   {
     id: "media-production",
@@ -41,7 +39,6 @@ const SERVICES_DATA: ServiceCardData[] = [
     highlights: ["End-to-End Conceptualization & Scripting", "Broadcast-Grade Cinematography & Post", "Multi-Platform Video Formats"],
     to: "/content-production",
     icon: Film,
-    gradient: "from-[#d90a2c]/8 via-[#d90a2c]/3 to-transparent",
   },
   {
     id: "content-management",
@@ -53,7 +50,6 @@ const SERVICES_DATA: ServiceCardData[] = [
     highlights: ["Certified Partner Channel Management", "Global Revenue Optimization & Claiming", "Metadata & SEO Architecture"],
     to: "/content-management",
     icon: Radio,
-    gradient: "from-[#d90a2c]/10 via-[#d90a2c]/5 to-transparent",
   },
   {
     id: "growth-marketing",
@@ -65,7 +61,6 @@ const SERVICES_DATA: ServiceCardData[] = [
     highlights: ["Full-Funnel Paid Media Acquisition", "Conversion Rate Optimization (CRO)", "Real-Time Attribution & Analytics"],
     to: "/growth-marketing",
     icon: TrendingUp,
-    gradient: "from-[#d90a2c]/8 via-[#d90a2c]/3 to-transparent",
   },
   {
     id: "social-media",
@@ -77,7 +72,6 @@ const SERVICES_DATA: ServiceCardData[] = [
     highlights: ["Always-On Community Management", "Viral Short-Form Content Creation", "Brand Voice & Visual Identity Systems"],
     to: "/social-media",
     icon: Share2,
-    gradient: "from-[#d90a2c]/10 via-[#d90a2c]/5 to-transparent",
   },
   {
     id: "influencer-marketing",
@@ -89,7 +83,6 @@ const SERVICES_DATA: ServiceCardData[] = [
     highlights: ["Verified Tier-1 Creator Roster", "End-to-End Campaign Contracting", "Performance & Brand Lift Analytics"],
     to: "/influencers-marketing",
     icon: Users,
-    gradient: "from-[#d90a2c]/8 via-[#d90a2c]/3 to-transparent",
   },
 ];
 
@@ -121,7 +114,7 @@ function StickyServiceCard({
         whileInView={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-50px" }}
         transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        className={`relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 sm:p-8 md:p-12 shadow-xl backdrop-blur-sm bg-gradient-to-br ${service.gradient}`}
+        className="relative overflow-hidden rounded-3xl border border-border/80 bg-card p-6 sm:p-8 md:p-12 shadow-xl backdrop-blur-sm"
       >
         {/* Subtle decorative glow */}
         <div className="pointer-events-none absolute -right-20 -top-20 size-72 rounded-full bg-[#d90a2c]/8 blur-3xl" />
@@ -164,7 +157,7 @@ function StickyServiceCard({
               <Magnetic>
                 <Link
                   to={service.to as never}
-                  className="group inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-6 py-3 text-sm font-semibold text-foreground shadow-sm transition-all hover:border-[#d90a2c]/40 hover:bg-[#d90a2c]/10 hover:text-[#d90a2c]"
+                  className="group inline-flex items-center gap-2 rounded-2xl border border-border bg-background/80 px-6 py-3 text-sm font-semibold text-foreground shadow-sm transition-all hover:border-[#d90a2c]/40 hover:bg-[#d90a2c]/10 hover:text-[#d90a2c]"
                 >
                   <span>Explore service details</span>
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />

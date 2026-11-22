@@ -43,7 +43,7 @@ export function SiteHeader() {
             <Magnetic>
               <Link
                 to="/contact"
-                className="group relative inline-flex items-center justify-center overflow-hidden rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-all duration-200 hover:scale-[1.03] hover:shadow-lg hover:shadow-primary/20"
+                className="group relative inline-flex items-center justify-center overflow-hidden rounded-2xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-md transition-all duration-200 hover:scale-[1.02] hover:bg-[#bf0826] hover:shadow-lg hover:shadow-primary/20"
                 aria-label="Contact DigiSay"
               >
                 Let's Talk

@@ -51,7 +51,7 @@ export function HeroSection() {
               translateX: "-50%",
               translateY: "-50%",
             }}
-            className="absolute size-[520px] rounded-full bg-gradient-to-tr from-[#d90a2c]/15 via-[#ff3b56]/10 to-transparent blur-[110px]"
+            className="absolute size-[520px] rounded-full bg-[#d90a2c]/12 blur-[110px]"
           />
         )}
 

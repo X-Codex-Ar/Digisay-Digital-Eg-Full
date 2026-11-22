@@ -98,7 +98,7 @@ export function BrandIntroLoader() {
             <div className="mt-8 flex w-48 flex-col items-center gap-2">
               <div className="relative h-1 w-full overflow-hidden rounded-full bg-white/10">
                 <motion.div
-                  className="h-full bg-gradient-to-r from-[#d90a2c] via-[#ff3b56] to-[#d90a2c] shadow-[0_0_12px_rgba(217,10,44,0.8)]"
+                  className="h-full bg-[#d90a2c] shadow-[0_0_12px_rgba(217,10,44,0.8)]"
                   style={{ width: `${progress}%` }}
                   transition={{ ease: "linear" }}
                 />

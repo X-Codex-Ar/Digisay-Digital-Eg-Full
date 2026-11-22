@@ -114,7 +114,7 @@ export function WorkflowSection() {
             <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-border">
               <motion.div
                 style={{ scaleX: smoothProgress, transformOrigin: "0%" }}
-                className="h-full bg-gradient-to-r from-[#d90a2c] via-[#ff3b56] to-[#d90a2c] shadow-[0_0_12px_rgba(217,10,44,0.8)]"
+                className="h-full bg-[#d90a2c] shadow-[0_0_12px_rgba(217,10,44,0.8)]"
               />
             </div>
             <div className="flex justify-between font-mono text-xs text-muted-foreground">

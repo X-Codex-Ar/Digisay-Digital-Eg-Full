@@ -213,7 +213,7 @@ export function ContactForm() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-full bg-[#d90a2c] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#d90a2c]/25 transition-all duration-300 hover:bg-[#b80824] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+            className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-2xl bg-[#d90a2c] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#d90a2c]/25 transition-all duration-300 hover:bg-[#bf0826] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
           >
             <span>Send Message</span>
             <Send className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
