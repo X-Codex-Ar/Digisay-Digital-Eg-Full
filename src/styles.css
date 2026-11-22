@@ -259,10 +259,9 @@
     touch-action: none !important;
   }
 
-  /* Prevent Radix UI or any modal library from hiding the page scrollbar or causing layout shift */
-  html body[data-scroll-locked],
-  html body[style*="overflow: hidden"] {
-    overflow-y: scroll !important;
+  /* When Radix Sheet / Dialog opens, lock the background body scroll completely to prevent duplicate scrollbars */
+  html body[data-scroll-locked] {
+    overflow: hidden !important;
     padding-right: 0 !important;
     margin-right: 0 !important;
   }
