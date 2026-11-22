@@ -8,7 +8,7 @@ export type Feature = { title: string; body: string };
 export type Stat = { value: number; suffix?: string; label: string };
 
 export type ServicePage = {
-  slug: "anti-piracy" | "content-production" | "content-management" | "social-media" | "growth-marketing";
+  slug: "anti-piracy" | "content-production" | "content-management" | "social-media" | "growth-marketing" | "influencers-marketing";
   name: string;
   summary: string;
   heroTitle: string;
@@ -211,6 +211,28 @@ export const servicePages: ServicePage[] = [
         { title: "Growth Marketing Consulting", body: "Navigate your growth challenges with our expert Growth Consultancy. Tailored advice and strategic insights for sustainable and scalable success." },
       ],
     },
+  },
+  {
+    slug: "influencers-marketing",
+    name: "Influencers Marketing",
+    summary: "Amplifying reach through authentic partnerships with influential figures",
+    heroTitle: "We Connect Your Story with Authentic Creators to Drive Real Impact and Audience Engagement",
+    heroAccent: "",
+    image: "/assets/services/one-stop-agency.jpeg",
+    groups: [
+      {
+        eyebrow: "Influencer Partnerships",
+        heading: "Your Brand's Success Story Starts Here",
+        items: [
+          { title: "Influencer Partnerships", body: "Elevate your brand presence by forming impactful partnerships with influencers who resonate with your audience. Our expert curation ensures that every collaboration is not just a promotion but a genuine connection, enhancing brand loyalty." },
+          { title: "Audience-Centric Content Creation", body: "Engage and captivate your target audience with content that speaks directly to their interests. Our network of influencers specialize in creating authentic, compelling content that resonates with their followers, ensuring your brand message is delivered seamlessly." },
+          { title: "Strategic Campaign Design", body: "Crafting successful campaigns requires more than influencers; it needs strategic thinking. Our team designs campaigns that align with your brand goals, ensuring each collaboration is a step towards achieving your business objectives." },
+          { title: "Seamless Collaboration Management", body: "From negotiation to execution, we handle every aspect of influencer collaboration. Our streamlined process ensures seamless communication, timely deliverables, and a stress-free experience, allowing you to focus on your business while we handle the details." },
+          { title: "Amplified Social Media Presence", body: "Extend your brand's reach across social media platforms through strategic influencer partnerships. Benefit from the exposure of diverse audiences and witness the ripple effect as your brand gains visibility in previously untapped markets." },
+          { title: "Continuous Campaign Optimization", body: "Our commitment doesn't end with campaign launch. We continuously optimize based on real-time analytics, ensuring your brand stays ahead in the ever-evolving digital landscape." },
+        ],
+      },
+    ],
   },
 ];
 

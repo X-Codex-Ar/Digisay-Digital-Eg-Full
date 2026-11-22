@@ -10,33 +10,259 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AboutRouteImport } from './routes/about'
+import { Route as AntiPiracyRouteImport } from './routes/anti-piracy'
+import { Route as ContactRouteImport } from './routes/contact'
+import { Route as ContentManagementRouteImport } from './routes/content-management'
+import { Route as ContentManagementAndMonetizationIraqRouteImport } from './routes/content-management-and-monetization-iraq'
+import { Route as ContentProductionRouteImport } from './routes/content-production'
+import { Route as GrowthMarketingRouteImport } from './routes/growth-marketing'
+import { Route as InfluencersMarketingRouteImport } from './routes/influencers-marketing'
+import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
+import { Route as RightsheroRouteImport } from './routes/rightshero'
+import { Route as ServicesRouteImport } from './routes/services'
+import { Route as SocialMediaRouteImport } from './routes/social-media'
+import { Route as BlogIndexRouteImport } from './routes/blog/index'
+import { Route as BlogPostSlugRouteImport } from './routes/blog/$postSlug'
+import { Route as BlogAuthorAuthorRouteImport } from './routes/blog/author/$author'
+import { Route as BlogCategoryCategoryRouteImport } from './routes/blog/category/$category'
+import { Route as BlogTagTagRouteImport } from './routes/blog/tag/$tag'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AntiPiracyRoute = AntiPiracyRouteImport.update({
+  id: '/anti-piracy',
+  path: '/anti-piracy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagementRoute = ContentManagementRouteImport.update({
+  id: '/content-management',
+  path: '/content-management',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContentManagementAndMonetizationIraqRoute =
+  ContentManagementAndMonetizationIraqRouteImport.update({
+    id: '/content-management-and-monetization-iraq',
+    path: '/content-management-and-monetization-iraq',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ContentProductionRoute = ContentProductionRouteImport.update({
+  id: '/content-production',
+  path: '/content-production',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GrowthMarketingRoute = GrowthMarketingRouteImport.update({
+  id: '/growth-marketing',
+  path: '/growth-marketing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InfluencersMarketingRoute = InfluencersMarketingRouteImport.update({
+  id: '/influencers-marketing',
+  path: '/influencers-marketing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
+  id: '/privacy-policy',
+  path: '/privacy-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RightsheroRoute = RightsheroRouteImport.update({
+  id: '/rightshero',
+  path: '/rightshero',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ServicesRoute = ServicesRouteImport.update({
+  id: '/services',
+  path: '/services',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SocialMediaRoute = SocialMediaRouteImport.update({
+  id: '/social-media',
+  path: '/social-media',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogPostSlugRoute = BlogPostSlugRouteImport.update({
+  id: '/blog/$postSlug',
+  path: '/blog/$postSlug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogAuthorAuthorRoute = BlogAuthorAuthorRouteImport.update({
+  id: '/blog/author/$author',
+  path: '/blog/author/$author',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogCategoryCategoryRoute = BlogCategoryCategoryRouteImport.update({
+  id: '/blog/category/$category',
+  path: '/blog/category/$category',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogTagTagRoute = BlogTagTagRouteImport.update({
+  id: '/blog/tag/$tag',
+  path: '/blog/tag/$tag',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/anti-piracy': typeof AntiPiracyRoute
+  '/contact': typeof ContactRoute
+  '/content-management': typeof ContentManagementRoute
+  '/content-management-and-monetization-iraq': typeof ContentManagementAndMonetizationIraqRoute
+  '/content-production': typeof ContentProductionRoute
+  '/growth-marketing': typeof GrowthMarketingRoute
+  '/influencers-marketing': typeof InfluencersMarketingRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/rightshero': typeof RightsheroRoute
+  '/services': typeof ServicesRoute
+  '/social-media': typeof SocialMediaRoute
+  '/blog/$postSlug': typeof BlogPostSlugRoute
+  '/blog/': typeof BlogIndexRoute
+  '/blog/author/$author': typeof BlogAuthorAuthorRoute
+  '/blog/category/$category': typeof BlogCategoryCategoryRoute
+  '/blog/tag/$tag': typeof BlogTagTagRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/anti-piracy': typeof AntiPiracyRoute
+  '/contact': typeof ContactRoute
+  '/content-management': typeof ContentManagementRoute
+  '/content-management-and-monetization-iraq': typeof ContentManagementAndMonetizationIraqRoute
+  '/content-production': typeof ContentProductionRoute
+  '/growth-marketing': typeof GrowthMarketingRoute
+  '/influencers-marketing': typeof InfluencersMarketingRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/rightshero': typeof RightsheroRoute
+  '/services': typeof ServicesRoute
+  '/social-media': typeof SocialMediaRoute
+  '/blog/$postSlug': typeof BlogPostSlugRoute
+  '/blog': typeof BlogIndexRoute
+  '/blog/author/$author': typeof BlogAuthorAuthorRoute
+  '/blog/category/$category': typeof BlogCategoryCategoryRoute
+  '/blog/tag/$tag': typeof BlogTagTagRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
+  '/anti-piracy': typeof AntiPiracyRoute
+  '/contact': typeof ContactRoute
+  '/content-management': typeof ContentManagementRoute
+  '/content-management-and-monetization-iraq': typeof ContentManagementAndMonetizationIraqRoute
+  '/content-production': typeof ContentProductionRoute
+  '/growth-marketing': typeof GrowthMarketingRoute
+  '/influencers-marketing': typeof InfluencersMarketingRoute
+  '/privacy-policy': typeof PrivacyPolicyRoute
+  '/rightshero': typeof RightsheroRoute
+  '/services': typeof ServicesRoute
+  '/social-media': typeof SocialMediaRoute
+  '/blog/$postSlug': typeof BlogPostSlugRoute
+  '/blog/': typeof BlogIndexRoute
+  '/blog/author/$author': typeof BlogAuthorAuthorRoute
+  '/blog/category/$category': typeof BlogCategoryCategoryRoute
+  '/blog/tag/$tag': typeof BlogTagTagRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/anti-piracy'
+    | '/contact'
+    | '/content-management'
+    | '/content-management-and-monetization-iraq'
+    | '/content-production'
+    | '/growth-marketing'
+    | '/influencers-marketing'
+    | '/privacy-policy'
+    | '/rightshero'
+    | '/services'
+    | '/social-media'
+    | '/blog/$postSlug'
+    | '/blog/'
+    | '/blog/author/$author'
+    | '/blog/category/$category'
+    | '/blog/tag/$tag'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/about'
+    | '/anti-piracy'
+    | '/contact'
+    | '/content-management'
+    | '/content-management-and-monetization-iraq'
+    | '/content-production'
+    | '/growth-marketing'
+    | '/influencers-marketing'
+    | '/privacy-policy'
+    | '/rightshero'
+    | '/services'
+    | '/social-media'
+    | '/blog/$postSlug'
+    | '/blog'
+    | '/blog/author/$author'
+    | '/blog/category/$category'
+    | '/blog/tag/$tag'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/anti-piracy'
+    | '/contact'
+    | '/content-management'
+    | '/content-management-and-monetization-iraq'
+    | '/content-production'
+    | '/growth-marketing'
+    | '/influencers-marketing'
+    | '/privacy-policy'
+    | '/rightshero'
+    | '/services'
+    | '/social-media'
+    | '/blog/$postSlug'
+    | '/blog/'
+    | '/blog/author/$author'
+    | '/blog/category/$category'
+    | '/blog/tag/$tag'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
+  AntiPiracyRoute: typeof AntiPiracyRoute
+  ContactRoute: typeof ContactRoute
+  ContentManagementRoute: typeof ContentManagementRoute
+  ContentManagementAndMonetizationIraqRoute: typeof ContentManagementAndMonetizationIraqRoute
+  ContentProductionRoute: typeof ContentProductionRoute
+  GrowthMarketingRoute: typeof GrowthMarketingRoute
+  InfluencersMarketingRoute: typeof InfluencersMarketingRoute
+  PrivacyPolicyRoute: typeof PrivacyPolicyRoute
+  RightsheroRoute: typeof RightsheroRoute
+  ServicesRoute: typeof ServicesRoute
+  SocialMediaRoute: typeof SocialMediaRoute
+  BlogPostSlugRoute: typeof BlogPostSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
+  BlogAuthorAuthorRoute: typeof BlogAuthorAuthorRoute
+  BlogCategoryCategoryRoute: typeof BlogCategoryCategoryRoute
+  BlogTagTagRoute: typeof BlogTagTagRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +274,148 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/anti-piracy': {
+      id: '/anti-piracy'
+      path: '/anti-piracy'
+      fullPath: '/anti-piracy'
+      preLoaderRoute: typeof AntiPiracyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-management': {
+      id: '/content-management'
+      path: '/content-management'
+      fullPath: '/content-management'
+      preLoaderRoute: typeof ContentManagementRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-management-and-monetization-iraq': {
+      id: '/content-management-and-monetization-iraq'
+      path: '/content-management-and-monetization-iraq'
+      fullPath: '/content-management-and-monetization-iraq'
+      preLoaderRoute: typeof ContentManagementAndMonetizationIraqRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/content-production': {
+      id: '/content-production'
+      path: '/content-production'
+      fullPath: '/content-production'
+      preLoaderRoute: typeof ContentProductionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/growth-marketing': {
+      id: '/growth-marketing'
+      path: '/growth-marketing'
+      fullPath: '/growth-marketing'
+      preLoaderRoute: typeof GrowthMarketingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/influencers-marketing': {
+      id: '/influencers-marketing'
+      path: '/influencers-marketing'
+      fullPath: '/influencers-marketing'
+      preLoaderRoute: typeof InfluencersMarketingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy-policy': {
+      id: '/privacy-policy'
+      path: '/privacy-policy'
+      fullPath: '/privacy-policy'
+      preLoaderRoute: typeof PrivacyPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/rightshero': {
+      id: '/rightshero'
+      path: '/rightshero'
+      fullPath: '/rightshero'
+      preLoaderRoute: typeof RightsheroRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/services': {
+      id: '/services'
+      path: '/services'
+      fullPath: '/services'
+      preLoaderRoute: typeof ServicesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/social-media': {
+      id: '/social-media'
+      path: '/social-media'
+      fullPath: '/social-media'
+      preLoaderRoute: typeof SocialMediaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$postSlug': {
+      id: '/blog/$postSlug'
+      path: '/blog/$postSlug'
+      fullPath: '/blog/$postSlug'
+      preLoaderRoute: typeof BlogPostSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/author/$author': {
+      id: '/blog/author/$author'
+      path: '/blog/author/$author'
+      fullPath: '/blog/author/$author'
+      preLoaderRoute: typeof BlogAuthorAuthorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/category/$category': {
+      id: '/blog/category/$category'
+      path: '/blog/category/$category'
+      fullPath: '/blog/category/$category'
+      preLoaderRoute: typeof BlogCategoryCategoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/tag/$tag': {
+      id: '/blog/tag/$tag'
+      path: '/blog/tag/$tag'
+      fullPath: '/blog/tag/$tag'
+      preLoaderRoute: typeof BlogTagTagRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
+  AntiPiracyRoute: AntiPiracyRoute,
+  ContactRoute: ContactRoute,
+  ContentManagementRoute: ContentManagementRoute,
+  ContentManagementAndMonetizationIraqRoute:
+    ContentManagementAndMonetizationIraqRoute,
+  ContentProductionRoute: ContentProductionRoute,
+  GrowthMarketingRoute: GrowthMarketingRoute,
+  InfluencersMarketingRoute: InfluencersMarketingRoute,
+  PrivacyPolicyRoute: PrivacyPolicyRoute,
+  RightsheroRoute: RightsheroRoute,
+  ServicesRoute: ServicesRoute,
+  SocialMediaRoute: SocialMediaRoute,
+  BlogPostSlugRoute: BlogPostSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
+  BlogAuthorAuthorRoute: BlogAuthorAuthorRoute,
+  BlogCategoryCategoryRoute: BlogCategoryCategoryRoute,
+  BlogTagTagRoute: BlogTagTagRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
