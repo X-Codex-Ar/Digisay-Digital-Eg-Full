@@ -250,6 +250,28 @@
     background: transparent !important;
   }
 
+  /* Pre-hydration & intro loader scroll suppression */
+  html.loading-intro,
+  html.loading-intro body {
+    overflow: hidden !important;
+    height: 100% !important;
+    width: 100% !important;
+    touch-action: none !important;
+  }
+
+  /* Prevent Radix UI or any modal library from hiding the page scrollbar or causing layout shift */
+  html body[data-scroll-locked],
+  html body[style*="overflow: hidden"] {
+    overflow-y: scroll !important;
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  html,
+  body {
+    overflow-x: clip;
+  }
+
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);

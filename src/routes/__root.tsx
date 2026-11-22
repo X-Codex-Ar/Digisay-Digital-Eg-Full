@@ -122,6 +122,17 @@ function RootShell({ children }: { children: ReactNode }) {
     <html lang="en">
       <head>
         <HeadContent />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (!sessionStorage.getItem('digisay_intro_seen')) {
+                  document.documentElement.classList.add('loading-intro');
+                }
+              } catch(e) {}
+            `,
+          }}
+        />
       </head>
       <body>
         {children}

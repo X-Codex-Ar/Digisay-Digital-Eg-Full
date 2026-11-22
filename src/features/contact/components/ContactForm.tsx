@@ -150,7 +150,7 @@ export function ContactForm() {
             name="service"
             control={control}
             render={({ field }) => (
-              <Select onValueChange={field.onChange} value={field.value}>
+              <Select modal={false} onValueChange={field.onChange} value={field.value}>
                 <SelectTrigger
                   id="service"
                   className="w-full h-12 rounded-2xl border border-input bg-background px-4 text-sm text-foreground shadow-sm transition-all focus:border-[#d90a2c] focus:ring-2 focus:ring-[#d90a2c]/20"

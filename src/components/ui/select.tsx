@@ -6,7 +6,14 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-const Select = SelectPrimitive.Root;
+// Default modal={false} to prevent Radix from locking body scroll and hiding the page scrollbar
+const Select = ({
+  modal = false,
+  ...props
+}: React.ComponentPropsWithoutRef<typeof SelectPrimitive.Root>) => (
+  <SelectPrimitive.Root modal={modal} {...props} />
+);
+Select.displayName = "Select";
 
 const SelectGroup = SelectPrimitive.Group;
 
