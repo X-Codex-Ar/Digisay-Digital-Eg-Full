@@ -23,7 +23,7 @@ export function ScrollToTop({ className }: { className?: string }) {
         type="button"
         aria-label="Scroll to top"
         className={cn(
-          "fixed bottom-6 right-6 z-40 rounded-full border border-border bg-background p-3 shadow-lg transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring",
+          "fixed bottom-6 right-6 z-40 rounded-2xl border border-border bg-background p-3 shadow-lg transition-colors hover:bg-muted focus-visible:outline focus-visible:outline-2 focus-visible:outline-ring",
           className,
         )}
         initial={{ opacity: 0, scale: 0.85 }}

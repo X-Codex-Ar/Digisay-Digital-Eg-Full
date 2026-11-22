@@ -202,32 +202,52 @@
     border-color: var(--color-border);
   }
 
-  html {
+  /*
+   * Universal Scrollbar Architecture:
+   * Enforces uniform 6px brand-red scrollbar across all pages, inner menus,
+   * sheets, drawers, and modal dialogs while 100% suppressing stepper arrows.
+   */
+  *,
+  *::before,
+  *::after {
     scrollbar-width: thin;
-    scrollbar-color: rgba(217, 10, 44, 0.35) transparent;
+    scrollbar-color: rgba(217, 10, 44, 0.4) transparent;
   }
 
-  html::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  *::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
   }
 
-  html::-webkit-scrollbar-track {
-    background: transparent;
+  *::-webkit-scrollbar-track {
+    background: transparent !important;
   }
 
-  html::-webkit-scrollbar-thumb {
-    background: rgba(217, 10, 44, 0.35);
-    border-radius: 9999px;
+  *::-webkit-scrollbar-thumb {
+    background: rgba(217, 10, 44, 0.35) !important;
+    border-radius: 9999px !important;
     transition: background-color 0.2s ease;
   }
 
-  html::-webkit-scrollbar-thumb:hover {
-    background: rgba(217, 10, 44, 0.75);
+  *::-webkit-scrollbar-thumb:hover {
+    background: rgba(217, 10, 44, 0.8) !important;
   }
 
-  html::-webkit-scrollbar-button {
-    display: none;
+  /* Completely eliminate top/bottom stepper buttons and arrows on all elements */
+  *::-webkit-scrollbar-button,
+  *::-webkit-scrollbar-button:single-button,
+  *::-webkit-scrollbar-button:vertical:decrement,
+  *::-webkit-scrollbar-button:vertical:increment,
+  *::-webkit-scrollbar-button:horizontal:decrement,
+  *::-webkit-scrollbar-button:horizontal:increment {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent !important;
   }
 
   body {

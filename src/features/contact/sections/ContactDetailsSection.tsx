@@ -14,7 +14,7 @@ export function ContactIntroSection() {
         <div className="pointer-events-none absolute -left-20 -bottom-20 size-72 rounded-full bg-[#d90a2c]/5 blur-3xl" />
 
         <div className="relative z-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-[#d90a2c]/20 bg-[#d90a2c]/5 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-[#d90a2c]">
+          <div className="inline-flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-[0.25em] text-primary">
             Get In Touch
           </div>
           <h1 className="mt-4 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl md:text-5xl">

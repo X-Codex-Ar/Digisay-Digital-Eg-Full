@@ -40,7 +40,7 @@ export default function BlogPostDetailPage({ post }: { post: BlogPost | undefine
             {post.title}
           </h1>
           <div className="mt-4 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <span className="w-fit rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <span className="w-fit rounded-xl bg-primary/10 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-primary">
               {post.category}
             </span>
             <span aria-hidden="true">·</span>

@@ -28,7 +28,7 @@ export default function BlogListingPage() {
               <Link
                 key={c}
                 to={`/blog/category/${c}` as never}
-                className="rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                className="rounded-2xl border border-border px-3.5 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
               >
                 {c}
               </Link>

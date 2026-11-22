@@ -7,6 +7,22 @@ export function BrandIntroLoader() {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
+    // Lock scrollbar while intro is visible so no scrollbar appears on first load
+    if (visible) {
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    } else {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    }
+
+    return () => {
+      document.documentElement.style.overflow = "";
+      document.body.style.overflow = "";
+    };
+  }, [visible]);
+
+  useEffect(() => {
     // Check if already shown in this session
     const hasSeenIntro = sessionStorage.getItem("digisay_intro_seen");
     if (hasSeenIntro) {
@@ -47,7 +63,7 @@ export function BrandIntroLoader() {
             y: -20,
             transition: { duration: 0.6, ease: [0.76, 0, 0.24, 1] },
           }}
-          className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#090a0d] text-white selection:bg-[#d90a2c]/20"
+          className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-[#090a0d] text-white selection:bg-[#d90a2c]/20"
         >
           {/* Subtle ambient brand background glow (DigiSay Brand Red #d90a2c) */}
           <div className="pointer-events-none absolute inset-0 overflow-hidden">

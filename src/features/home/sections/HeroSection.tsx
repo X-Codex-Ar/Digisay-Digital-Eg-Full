@@ -69,15 +69,15 @@ export function HeroSection() {
         className="relative z-10 origin-top"
       >
         <Container className="flex min-h-[calc(85vh-5rem)] flex-col justify-center py-12 md:py-16">
-          {/* Eyebrow badge */}
+          {/* Eyebrow badge in rounded-2xl */}
           <motion.div
-            className="inline-flex items-center gap-2 self-start rounded-full border border-[#d90a2c]/20 bg-[#d90a2c]/5 px-3.5 py-1.5"
+            className="inline-flex items-center gap-2 self-start rounded-2xl border border-primary/30 bg-primary/10 px-3.5 py-1.5"
             initial={reduced ? { opacity: 1 } : { opacity: 0, y: 14 }}
             animate={reduced ? { opacity: 1 } : { opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
           >
-            <span className="size-2 rounded-full bg-[#d90a2c] animate-pulse" />
-            <span className="text-xs font-semibold uppercase tracking-[0.25em] text-[#d90a2c]">
+            <span className="size-2 rounded-full bg-primary animate-pulse" />
+            <span className="text-xs font-semibold uppercase tracking-[0.25em] text-primary">
               {hero.eyebrow}
             </span>
           </motion.div>

@@ -100,7 +100,7 @@ export default function ServicesOverviewPage() {
         <Container>
           <AnimatedSection>
             <div className="max-w-4xl">
-              <span className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+              <span className="inline-flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
                 <Sparkles className="h-3.5 w-3.5" />
                 Comprehensive Capabilities
               </span>

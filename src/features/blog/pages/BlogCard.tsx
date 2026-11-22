@@ -21,7 +21,7 @@ export function BlogCard({ post }: { post: BlogPost }) {
 
         <div className="mt-4 flex flex-col gap-2.5">
           <div className="flex items-center justify-between gap-2">
-            <span className="w-fit rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-primary">
+            <span className="w-fit rounded-xl bg-primary/10 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider text-primary">
               {post.category || "Insight"}
             </span>
             <time
