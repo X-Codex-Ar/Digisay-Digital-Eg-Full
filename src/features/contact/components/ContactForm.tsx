@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import {
@@ -33,6 +33,7 @@ const inputClass =
 
 export function ContactForm() {
   const [submissionResult, setSubmissionResult] = useState<ContactSubmissionResult | null>(null);
+  const [submittedData, setSubmittedData] = useState<ContactFormData | null>(null);
   const [copied, setCopied] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -41,6 +42,7 @@ export function ContactForm() {
     handleSubmit,
     control,
     getValues,
+    watch,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<ContactFormData>({
@@ -57,6 +59,20 @@ export function ContactForm() {
     },
   });
 
+  // Lock form inputs while a prepared submission result is active
+  const isLocked = isSubmitting || (!!submissionResult && submissionResult.success);
+
+  // Invalidate any prepared submission result if a field value is modified
+  useEffect(() => {
+    const subscription = watch(() => {
+      if (submissionResult) {
+        setSubmissionResult(null);
+        setSubmittedData(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, submissionResult]);
+
   const onSubmit = async (data: ContactFormData) => {
     setServerError(null);
     try {
@@ -65,16 +81,21 @@ export function ContactForm() {
         setServerError(result.message);
         return;
       }
+      // Store the exact validated inquiry snapshot to guarantee copy & mailto synchronization
+      setSubmittedData(data);
       setSubmissionResult(result);
     } catch (err) {
       console.error("Submission failed:", err);
-      setServerError("An unexpected error occurred while preparing your inquiry. Please try again or email info@digisay.com.");
+      setServerError(
+        "An unexpected error occurred while preparing your inquiry. Please try again or email info@digisay.com.",
+      );
     }
   };
 
   const handleCopySummary = async () => {
-    const data = getValues();
-    const summary = formatInquirySummary(data);
+    // Always use the validated inquiry snapshot that matches the mailto draft
+    const dataToCopy = submittedData ?? getValues();
+    const summary = formatInquirySummary(dataToCopy);
     try {
       await navigator.clipboard.writeText(summary);
       setCopied(true);
@@ -94,13 +115,15 @@ export function ContactForm() {
 
   const handleReset = () => {
     setSubmissionResult(null);
+    setSubmittedData(null);
     setServerError(null);
     reset();
   };
 
   const handleEdit = () => {
-    // Return to form editing while retaining all entered values
+    // Unlock form for editing while retaining entered values
     setSubmissionResult(null);
+    setSubmittedData(null);
     setServerError(null);
   };
 
@@ -233,7 +256,7 @@ export function ContactForm() {
               aria-required="true"
               aria-invalid={!!errors.firstName}
               aria-describedby={errors.firstName ? "firstName-error" : undefined}
-              disabled={isSubmitting}
+              disabled={isLocked}
               {...register("firstName")}
               className={inputClass}
             />
@@ -257,7 +280,7 @@ export function ContactForm() {
               aria-required="true"
               aria-invalid={!!errors.lastName}
               aria-describedby={errors.lastName ? "lastName-error" : undefined}
-              disabled={isSubmitting}
+              disabled={isLocked}
               {...register("lastName")}
               className={inputClass}
             />
@@ -282,7 +305,7 @@ export function ContactForm() {
               aria-required="true"
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? "email-error" : undefined}
-              disabled={isSubmitting}
+              disabled={isLocked}
               {...register("email")}
               className={inputClass}
             />
@@ -306,7 +329,7 @@ export function ContactForm() {
               autoComplete="tel"
               aria-invalid={!!errors.phone}
               aria-describedby={errors.phone ? "phone-error" : undefined}
-              disabled={isSubmitting}
+              disabled={isLocked}
               {...register("phone")}
               className={inputClass}
             />
@@ -329,7 +352,7 @@ export function ContactForm() {
             render={({ field }) => (
               <Select
                 modal={false}
-                disabled={isSubmitting}
+                disabled={isLocked}
                 onValueChange={field.onChange}
                 value={field.value}
               >
@@ -375,7 +398,7 @@ export function ContactForm() {
             placeholder="Tell us about your project, content catalog, or campaign goals..."
             aria-invalid={!!errors.message}
             aria-describedby={errors.message ? "message-error" : undefined}
-            disabled={isSubmitting}
+            disabled={isLocked}
             {...register("message")}
             className={inputClass}
           />
@@ -389,7 +412,7 @@ export function ContactForm() {
         <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
           <button
             type="submit"
-            disabled={isSubmitting}
+            disabled={isLocked}
             className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#d90a2c] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#d90a2c]/25 transition-all duration-300 hover:bg-[#bf0826] hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isSubmitting ? (

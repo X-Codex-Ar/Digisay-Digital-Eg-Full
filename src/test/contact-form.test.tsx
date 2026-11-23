@@ -121,4 +121,29 @@ describe("Contact Form Validation & Submission", () => {
     expect(result.delivered).toBe(false);
     expect(result.fallback).toBe(false); // No mailto or delivery triggered for bot
   });
+
+  it("ensures mailto URL and copy summary use the identical validated data snapshot", () => {
+    const validatedData: ContactFormData = {
+      firstName: "Marcus",
+      lastName: "Aurelius",
+      email: "marcus@meditations.org",
+      phone: "+1 555-4321",
+      service: "Anti-Piracy",
+      message: "Protect our philosophical literary rights globally.",
+      botField: "",
+    };
+
+    const mailto = generateMailtoUrl(validatedData);
+    const summary = formatInquirySummary(validatedData);
+
+    // Verify both artifacts reflect the exact same user identity and content
+    expect(mailto).toContain(encodeURIComponent("Marcus Aurelius"));
+    expect(summary).toContain("Marcus Aurelius");
+    expect(mailto).toContain(encodeURIComponent("marcus@meditations.org"));
+    expect(summary).toContain("marcus@meditations.org");
+    expect(mailto).toContain(encodeURIComponent("+1 555-4321"));
+    expect(summary).toContain("+1 555-4321");
+    expect(mailto).toContain(encodeURIComponent("Anti-Piracy"));
+    expect(summary).toContain("Anti-Piracy");
+  });
 });
