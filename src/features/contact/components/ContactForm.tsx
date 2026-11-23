@@ -1,10 +1,19 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
-import { z } from "zod";
-import { CheckCircle2, Send } from "lucide-react";
+import {
+  CheckCircle2,
+  Send,
+  Mail,
+  Copy,
+  Check,
+  AlertCircle,
+  Loader2,
+  ExternalLink,
+  RotateCcw,
+} from "lucide-react";
 
-import { contactServices } from "@/data/site";
+import { contactServices, brand } from "@/data/site";
 import {
   Select,
   SelectContent,
@@ -12,50 +21,117 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PrimaryButton } from "@/components/common/PrimaryButton";
-
-const schema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Please enter a valid email address"),
-  phone: z.string().optional(),
-  service: z.string().min(1, "Please select a service"),
-  message: z.string().optional(),
-});
-
-type FormData = z.infer<typeof schema>;
+import {
+  contactSchema,
+  type ContactFormData,
+  formatInquirySummary,
+} from "../schema";
+import { submitContactInquiry, type ContactSubmissionResult } from "../server";
 
 const inputClass =
-  "w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground shadow-sm transition-all duration-200 placeholder:text-muted-foreground focus:border-[#d90a2c] focus:outline-none focus:ring-2 focus:ring-[#d90a2c]/20";
+  "w-full rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground shadow-sm transition-all duration-200 placeholder:text-muted-foreground focus:border-[#d90a2c] focus:outline-none focus:ring-2 focus:ring-[#d90a2c]/20 disabled:cursor-not-allowed disabled:opacity-60";
 
 export function ContactForm() {
-  const [submitted, setSubmitted] = useState(false);
+  const [submissionResult, setSubmissionResult] = useState<ContactSubmissionResult | null>(null);
+  const [submittedData, setSubmittedData] = useState<ContactFormData | null>(null);
+  const [copied, setCopied] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
+
   const {
     register,
     handleSubmit,
     control,
+    getValues,
+    watch,
     formState: { errors, isSubmitting },
-  } = useForm<FormData>({
-    resolver: zodResolver(schema),
-    mode: "onSubmit",
+    reset,
+  } = useForm<ContactFormData>({
+    resolver: zodResolver(contactSchema),
+    mode: "onTouched",
     defaultValues: {
       firstName: "",
       lastName: "",
       email: "",
       phone: "",
-      service: "",
+      service: undefined,
       message: "",
+      botField: "",
     },
   });
 
-  const onSubmit = (_data: FormData) => {
-    setSubmitted(true);
+  // Lock form inputs while a prepared submission result is active
+  const isLocked = isSubmitting || (!!submissionResult && submissionResult.success);
+
+  // Invalidate any prepared submission result if a field value is modified
+  useEffect(() => {
+    const subscription = watch(() => {
+      if (submissionResult) {
+        setSubmissionResult(null);
+        setSubmittedData(null);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, submissionResult]);
+
+  const onSubmit = async (data: ContactFormData) => {
+    setServerError(null);
+    try {
+      const result = await submitContactInquiry(data);
+      if (!result.success && result.errors) {
+        setServerError(result.message);
+        return;
+      }
+      // Store the exact validated inquiry snapshot to guarantee copy & mailto synchronization
+      setSubmittedData(data);
+      setSubmissionResult(result);
+    } catch (err) {
+      console.error("Submission failed:", err);
+      setServerError(
+        "An unexpected error occurred while preparing your inquiry. Please try again or email info@digisay.com.",
+      );
+    }
+  };
+
+  const handleCopySummary = async () => {
+    // Always use the validated inquiry snapshot that matches the mailto draft
+    const dataToCopy = submittedData ?? getValues();
+    const summary = formatInquirySummary(dataToCopy);
+    try {
+      await navigator.clipboard.writeText(summary);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    } catch {
+      // Fallback if clipboard API is restricted
+      const textarea = document.createElement("textarea");
+      textarea.value = summary;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand("copy");
+      document.body.removeChild(textarea);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 3000);
+    }
+  };
+
+  const handleReset = () => {
+    setSubmissionResult(null);
+    setSubmittedData(null);
+    setServerError(null);
+    reset();
+  };
+
+  const handleEdit = () => {
+    // Unlock form for editing while retaining entered values
+    setSubmissionResult(null);
+    setSubmittedData(null);
+    setServerError(null);
   };
 
   return (
     <div className="mx-auto max-w-2xl">
       <form
         onSubmit={handleSubmit(onSubmit)}
+        noValidate
         className="space-y-6 rounded-3xl border border-border/80 bg-card p-6 shadow-xl md:p-10"
       >
         <div className="border-b border-border/40 pb-4">
@@ -67,21 +143,125 @@ export function ContactForm() {
           </p>
         </div>
 
+        {/* Server or Rate-Limit Error Banner */}
+        {serverError && (
+          <div
+            role="alert"
+            className="flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+          >
+            <AlertCircle className="size-5 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold">Submission Note</p>
+              <p className="text-xs mt-0.5 opacity-90">{serverError}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Successful / Prepared Inquiry Feedback Banner */}
+        {submissionResult && submissionResult.success && (
+          <div
+            role="status"
+            className="space-y-4 rounded-2xl border border-[#d90a2c]/30 bg-[#d90a2c]/5 p-5 text-sm dark:bg-[#d90a2c]/10"
+          >
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="size-5 shrink-0 text-[#d90a2c] mt-0.5" />
+              <div>
+                <h4 className="font-semibold text-foreground text-base">
+                  {submissionResult.delivered
+                    ? "Inquiry Sent to DigiSay!"
+                    : "Inquiry Draft Prepared"}
+                </h4>
+                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                  {submissionResult.delivered
+                    ? submissionResult.message
+                    : "Your inquiry details are validated and ready. Click below to launch your email client with your pre-filled inquiry, or copy the details to send directly to info@digisay.com."}
+                </p>
+              </div>
+            </div>
+
+            {/* Action buttons for transparent email delivery */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              {submissionResult.mailtoUrl && (
+                <a
+                  href={submissionResult.mailtoUrl}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#d90a2c] px-4 py-2.5 text-xs font-semibold text-white shadow-md shadow-[#d90a2c]/20 transition-all hover:bg-[#bf0826] hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  <Mail className="size-4" />
+                  <span>Open in Mail App</span>
+                  <ExternalLink className="size-3.5 opacity-80" />
+                </a>
+              )}
+
+              <button
+                type="button"
+                onClick={handleCopySummary}
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-background px-4 py-2.5 text-xs font-semibold text-foreground transition-all hover:bg-muted hover:border-border/80 active:scale-[0.98]"
+              >
+                {copied ? (
+                  <>
+                    <Check className="size-4 text-emerald-500" />
+                    <span className="text-emerald-600 dark:text-emerald-400">Copied to Clipboard!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="size-4 text-muted-foreground" />
+                    <span>Copy Inquiry Summary</span>
+                  </>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleEdit}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+              >
+                <span>Edit Details</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleReset}
+                className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors px-2 py-1"
+              >
+                <RotateCcw className="size-3.5" />
+                <span>New Inquiry</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Hidden Honeypot Field for Spam Protection */}
+        <div style={{ display: "none" }} aria-hidden="true">
+          <label htmlFor="botField">Do not fill this out if you are human</label>
+          <input
+            id="botField"
+            type="text"
+            tabIndex={-1}
+            autoComplete="off"
+            {...register("botField")}
+          />
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2">
           {/* First Name */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="firstName">
-              First Name *
+              First Name <span className="text-[#d90a2c]">*</span>
             </label>
             <input
               id="firstName"
               placeholder="e.g. John"
+              maxLength={50}
+              autoComplete="given-name"
+              aria-required="true"
+              aria-invalid={!!errors.firstName}
+              aria-describedby={errors.firstName ? "firstName-error" : undefined}
+              disabled={isLocked}
               {...register("firstName")}
               className={inputClass}
-              aria-invalid={!!errors.firstName}
             />
             {errors.firstName && (
-              <p role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+              <p id="firstName-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
                 {errors.firstName.message}
               </p>
             )}
@@ -90,17 +270,22 @@ export function ContactForm() {
           {/* Last Name */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="lastName">
-              Last Name *
+              Last Name <span className="text-[#d90a2c]">*</span>
             </label>
             <input
               id="lastName"
               placeholder="e.g. Doe"
+              maxLength={50}
+              autoComplete="family-name"
+              aria-required="true"
+              aria-invalid={!!errors.lastName}
+              aria-describedby={errors.lastName ? "lastName-error" : undefined}
+              disabled={isLocked}
               {...register("lastName")}
               className={inputClass}
-              aria-invalid={!!errors.lastName}
             />
             {errors.lastName && (
-              <p role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+              <p id="lastName-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
                 {errors.lastName.message}
               </p>
             )}
@@ -109,18 +294,23 @@ export function ContactForm() {
           {/* Email */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="email">
-              Email *
+              Email Address <span className="text-[#d90a2c]">*</span>
             </label>
             <input
               id="email"
               type="email"
               placeholder="you@company.com"
+              maxLength={100}
+              autoComplete="email"
+              aria-required="true"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "email-error" : undefined}
+              disabled={isLocked}
               {...register("email")}
               className={inputClass}
-              aria-invalid={!!errors.email}
             />
             {errors.email && (
-              <p role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+              <p id="email-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
                 {errors.email.message}
               </p>
             )}
@@ -135,26 +325,43 @@ export function ContactForm() {
               id="phone"
               type="tel"
               placeholder="+1 (555) 000-0000"
+              maxLength={25}
+              autoComplete="tel"
+              aria-invalid={!!errors.phone}
+              aria-describedby={errors.phone ? "phone-error" : undefined}
+              disabled={isLocked}
               {...register("phone")}
               className={inputClass}
             />
+            {errors.phone && (
+              <p id="phone-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+                {errors.phone.message}
+              </p>
+            )}
           </div>
         </div>
 
         {/* Reusable Radix Select Dropdown */}
         <div>
           <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="service">
-            Service of Interest *
+            Service of Interest <span className="text-[#d90a2c]">*</span>
           </label>
           <Controller
             name="service"
             control={control}
             render={({ field }) => (
-              <Select modal={false} onValueChange={field.onChange} value={field.value}>
+              <Select
+                modal={false}
+                disabled={isLocked}
+                onValueChange={field.onChange}
+                value={field.value}
+              >
                 <SelectTrigger
                   id="service"
                   className="w-full h-12 rounded-xl border border-input bg-background px-4 text-sm text-foreground shadow-sm transition-all focus:border-[#d90a2c] focus:ring-2 focus:ring-[#d90a2c]/20"
+                  aria-required="true"
                   aria-invalid={!!errors.service}
+                  aria-describedby={errors.service ? "service-error" : undefined}
                 >
                   <SelectValue placeholder="Select a service category" />
                 </SelectTrigger>
@@ -173,7 +380,7 @@ export function ContactForm() {
             )}
           />
           {errors.service && (
-            <p role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+            <p id="service-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
               {errors.service.message}
             </p>
           )}
@@ -182,42 +389,54 @@ export function ContactForm() {
         {/* Message */}
         <div>
           <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="message">
-            Message <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+            Message <span className="text-xs font-normal text-muted-foreground">(optional, min. 10 chars)</span>
           </label>
           <textarea
             id="message"
             rows={5}
+            maxLength={2000}
             placeholder="Tell us about your project, content catalog, or campaign goals..."
+            aria-invalid={!!errors.message}
+            aria-describedby={errors.message ? "message-error" : undefined}
+            disabled={isLocked}
             {...register("message")}
             className={inputClass}
           />
+          {errors.message && (
+            <p id="message-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+              {errors.message.message}
+            </p>
+          )}
         </div>
 
-        {/* Confirmation status banner */}
-        {submitted && (
-          <div
-            role="status"
-            className="flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-800 dark:text-emerald-300"
-          >
-            <CheckCircle2 className="size-5 shrink-0 text-emerald-500 mt-0.5" />
-            <div>
-              <p className="font-semibold">Inquiry sent successfully!</p>
-              <p className="text-xs mt-0.5 opacity-90">
-                Thank you for contacting DigiSay. Our team will review your message and reach out shortly.
-              </p>
-            </div>
-          </div>
-        )}
-
-        <div className="pt-2">
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-2">
           <button
             type="submit"
-            disabled={isSubmitting}
-            className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#d90a2c] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#d90a2c]/25 transition-all duration-300 hover:bg-[#bf0826] hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60"
+            disabled={isLocked}
+            className="group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-[#d90a2c] px-8 py-3.5 text-sm font-semibold text-white shadow-lg shadow-[#d90a2c]/25 transition-all duration-300 hover:bg-[#bf0826] hover:scale-[1.02] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            <span>Send Message</span>
-            <Send className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+            {isSubmitting ? (
+              <>
+                <Loader2 className="size-4 animate-spin" />
+                <span>Preparing Inquiry...</span>
+              </>
+            ) : (
+              <>
+                <span>Send Message</span>
+                <Send className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+              </>
+            )}
           </button>
+
+          <p className="text-xs text-muted-foreground">
+            Direct email:{" "}
+            <a
+              href={`mailto:${brand.email || "info@digisay.com"}`}
+              className="font-medium text-foreground underline underline-offset-4 hover:text-[#d90a2c] transition-colors"
+            >
+              {brand.email || "info@digisay.com"}
+            </a>
+          </p>
         </div>
       </form>
     </div>

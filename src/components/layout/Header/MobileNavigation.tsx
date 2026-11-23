@@ -111,11 +111,11 @@ export function MobileNavigation({ open, onClose }: { open: boolean; onClose: ()
         {/* Fixed Bottom Row: Options (Theme Toggle) & CTA Button */}
         <div className="shrink-0 border-t border-border/50 bg-card/95 px-5 py-4 backdrop-blur-md">
           <div className="flex items-center gap-3">
-            <ThemeToggle className="shrink-0 size-11 rounded-2xl" />
+            <ThemeToggle className="shrink-0 size-11 rounded-xl" />
             <SheetClose asChild>
               <PrimaryButton
                 to="/contact"
-                className="flex-1 justify-center rounded-xl text-sm py-3"
+                className="flex-1 justify-center h-11 rounded-xl text-sm"
               >
                 Let's Talk
               </PrimaryButton>

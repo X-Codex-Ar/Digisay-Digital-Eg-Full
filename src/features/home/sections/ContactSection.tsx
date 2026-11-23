@@ -38,8 +38,8 @@ export function ContactSection() {
           <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,#8080800a_1px,transparent_1px),linear-gradient(to_bottom,#8080800a_1px,transparent_1px)] bg-[size:28px_28px]" />
 
           <div className="relative z-10 flex flex-col items-center text-center">
-            {/* Pill badge in rounded-2xl */}
-            <div className="inline-flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-primary">
+            {/* Pill badge in rounded-xl */}
+            <div className="inline-flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.25em] text-primary">
               <MessageSquare className="size-3.5 text-primary" />
               <span>Let's Talk</span>
             </div>
