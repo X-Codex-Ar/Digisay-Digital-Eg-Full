@@ -16,6 +16,19 @@ export function ThemeToggle({ className }: ThemeToggleProps) {
     // Initialize based on current DOM state or saved preference
     const isDark = document.documentElement.classList.contains("dark");
     setTheme(isDark ? "dark" : "light");
+
+    const handleStorage = (e: StorageEvent) => {
+      if (e.key === "digisay_theme" && (e.newValue === "light" || e.newValue === "dark")) {
+        setTheme(e.newValue);
+        if (e.newValue === "dark") {
+          document.documentElement.classList.add("dark");
+        } else {
+          document.documentElement.classList.remove("dark");
+        }
+      }
+    };
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
 
   const handleToggle = (e: React.MouseEvent<HTMLButtonElement>) => {

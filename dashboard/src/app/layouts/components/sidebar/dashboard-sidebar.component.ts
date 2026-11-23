@@ -13,6 +13,9 @@ export interface DashboardNavItem {
   standalone: true,
   imports: [RouterLink, RouterLinkActive],
   templateUrl: './dashboard-sidebar.component.html',
+  host: {
+    class: 'shrink-0 lg:sticky lg:top-0 lg:h-screen lg:z-30 block',
+  },
 })
 export class DashboardSidebarComponent {
   protected readonly sidebar = inject(SidebarService);

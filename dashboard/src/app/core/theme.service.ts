@@ -18,6 +18,19 @@ export class ThemeService {
     } else {
       document.documentElement.classList.remove('dark');
     }
+
+    // Cross-tab theme sync with public app
+    window.addEventListener('storage', (e: StorageEvent) => {
+      if (e.key === 'digisay_theme' && (e.newValue === 'light' || e.newValue === 'dark')) {
+        const nextDark = e.newValue === 'dark';
+        this.isDark.set(nextDark);
+        if (nextDark) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+    });
   }
 
   toggle() {
