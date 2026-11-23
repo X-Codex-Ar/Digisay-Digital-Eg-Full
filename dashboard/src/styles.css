@@ -1,0 +1,29 @@
+@import "tailwindcss" source(none);
+@import "tw-animate-css";
+@import "../../packages/design-system/tailwind-theme.css";
+
+@source "./app";
+
+@layer base {
+  * { border-color: var(--color-border); }
+  html, body { min-width: 320px; min-height: 100%; margin: 0; }
+  body {
+    min-height: 100vh;
+    overflow-x: clip;
+    background: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, textarea, select { font: inherit; }
+  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+}
+
+.status-dot { display: inline-block; width: .45rem; height: .45rem; border-radius: 9999px; background: #d4a244; }
+.nav-icon { display: grid; width: 25px; height: 25px; flex: 0 0 25px; place-items: center; border: 1px solid var(--color-border); border-radius: .5rem; background: var(--color-card); color: var(--color-muted-foreground); font-size: .56rem; font-weight: 800; letter-spacing: -.03em; }
+.nav-item.active { background: var(--color-accent); color: var(--color-accent-foreground); font-weight: 700; }
+.nav-item.active .nav-icon { border-color: color-mix(in oklab, var(--color-primary) 24%, white); color: var(--color-primary); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}

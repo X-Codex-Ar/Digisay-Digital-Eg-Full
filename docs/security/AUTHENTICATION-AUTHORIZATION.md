@@ -1,0 +1,3 @@
+# Authentication and authorization
+
+There is no authentication implementation yet. The selected authority is ASP.NET Core Identity in the API, with permission-based policies and resource-level checks for tenant-owned resources. Supabase Auth and Firebase Authentication will not be independent identity providers. Token/cookie design, refresh rotation, verification, recovery, suspension, session revocation, role/permission administration, and organization membership require a reviewed implementation and tests before protected resources ship. Angular guards are navigation UX only; the API is authoritative.

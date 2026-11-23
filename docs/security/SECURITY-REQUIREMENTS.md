@@ -1,0 +1,3 @@
+# Security requirements
+
+The public contact endpoint accepts personal data but has no read endpoint. It validates server-side, applies a per-process rate limit, and persists through EF Core parameters. Before protected client/admin business data is exposed, enforce tenant/resource authorization, distributed rate limits, secure headers, account lifecycle controls, managed secrets, personal-data log redaction, protected audit records, and cross-client authorization tests. Do not place SQL, Supabase service-role, Firebase Admin, or signing secrets in either frontend. Revisit CSRF when cookie-based authentication is selected.

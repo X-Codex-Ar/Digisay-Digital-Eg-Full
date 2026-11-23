@@ -1,0 +1,11 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <RootNamespace>DigiSay.Api</RootNamespace>
+    <UserSecretsId>e407a865-b7f9-42c3-9b71-a31e863301bd</UserSecretsId>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DigiSay.Infrastructure\DigiSay.Infrastructure.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.23" />
+    <PackageReference Include="Asp.Versioning.Http" Version="8.1.0" />
+  </ItemGroup>
+</Project>

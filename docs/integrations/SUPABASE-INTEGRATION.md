@@ -1,0 +1,3 @@
+# Supabase integration
+
+The API has an optional Npgsql health check for the Supabase Postgres shared session pooler on port 5432. Configure `ConnectionStrings:SupabasePostgres` only through User Secrets or a managed secret store; TLS is required and the client pool is intentionally small. The supplied project string has no database password, so the connection is not verified yet. No Supabase tables or data operations are enabled. SQL Server remains authoritative for business transactions. Before adding Supabase-owned metadata or Storage workflows, define ownership, RLS, authorization, synchronization, and recovery; never copy SQL-owned business entities into Supabase.

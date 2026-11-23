@@ -1,0 +1,181 @@
+/*
+ * Tailwind v4 entry: config lives here, with no tailwind.config.js or PostCSS plugin.
+ * - Keep every @import in this top block, above @theme and the rest of the file. Install an
+ *   npm package before @importing its CSS. Never @import a remote URL (web fonts, CDN CSS): the
+ *   build resolves @import from the filesystem. Load those with a <link> in the head() of
+ *   src/routes/__root.tsx and name the family in a --font-* token in @theme inline below.
+ */
+@import "tailwindcss" source(none);
+@import "tw-animate-css";
+@import "../../packages/design-system/tailwind-theme.css";
+
+@source "../src";
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  /*
+   * Clean Universal Scrollbar Architecture:
+   * Enforces uniform 6px brand-red scrollbar across all pages, inner menus,
+   * sheets, drawers, and modal dialogs with ZERO stepper buttons/arrows.
+   *
+   * IMPORTANT: Standard `scrollbar-color` is scoped exclusively to Firefox via
+   * `@supports not selector(::-webkit-scrollbar)`. In Chromium/Edge/WebKit, setting
+   * `scrollbar-color` causes the browser to disable `::-webkit-scrollbar*` styling
+   * and fall back to the native OS scrollbar with stepper arrows.
+   */
+  @supports not selector(::-webkit-scrollbar) {
+    html,
+    body {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(217, 10, 44, 0.4) transparent;
+    }
+  }
+
+  /* Universal WebKit / Chromium Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(217, 10, 44, 0.35) !important;
+    border-radius: 9999px !important;
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(217, 10, 44, 0.8) !important;
+  }
+
+  /* Completely eliminate top/bottom stepper buttons and arrows */
+  ::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent !important;
+  }
+
+  /* Suppress scrollbars completely where intended (mobile drawer, select viewports, etc.) */
+  .no-scrollbar,
+  [data-radix-select-viewport],
+  [data-radix-scroll-area-viewport] {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .no-scrollbar::-webkit-scrollbar,
+  [data-radix-select-viewport]::-webkit-scrollbar,
+  [data-radix-scroll-area-viewport]::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
+  /* Pre-hydration & intro loader scroll suppression */
+  html.loading-intro,
+  html.loading-intro body {
+    overflow: hidden !important;
+    height: 100% !important;
+    width: 100% !important;
+    touch-action: none !important;
+  }
+
+  /* When Radix Sheet or mobile menu opens, completely lock the root window to eliminate duplicate scrollbars */
+  html.menu-open,
+  html.menu-open body,
+  html:has(body[data-scroll-locked]),
+  html body[data-scroll-locked] {
+    overflow: hidden !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    touch-action: none !important;
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  html,
+  body {
+    overflow-x: clip;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    font-feature-settings: "cv11", "ss01";
+    -webkit-font-smoothing: antialiased;
+  }
+
+  ::selection {
+    background-color: rgba(217, 10, 44, 0.22);
+    color: inherit;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+
+  /*
+   * View Transitions Architecture (motionsites.ai style):
+   * Suppress browser default cross-fade animations so the circular clip-path
+   * expands crisply and smoothly without ghosting, double-exposure, or washed-out blending.
+   */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+    mix-blend-mode: normal !important;
+  }
+
+  ::view-transition-old(root) {
+    z-index: 1 !important;
+  }
+
+  ::view-transition-new(root) {
+    z-index: 99999 !important;
+  }
+
+  /* Smooth CSS theme transition fallback for browsers without View Transitions */
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: background-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                border-color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                color 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                fill 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                stroke 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    transition-delay: 0s !important;
+  }
+}
+
+@layer components {
+  .container-digisay {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    max-width: none;
+  }
+}

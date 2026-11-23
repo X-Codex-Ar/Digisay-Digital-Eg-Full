@@ -1,0 +1,3 @@
+# Transactional outbox
+
+The outbox is planned, not implemented. A business transaction will commit its SQL Server changes and an outbox record atomically. A hosted worker will claim pending records with concurrency-safe leases, publish versioned integration events, and record attempts/results. Consumers must be idempotent, and retries must be bounded/backed off with visible dead-letter recovery. Events carry identifiers and minimal necessary data, never credentials or unnecessary personal information. SQL Server is authoritative; Supabase/Firebase projections can lag and must be rebuildable. No cross-database ACID guarantee is implied.
