@@ -18,3 +18,15 @@ Open `http://localhost:4200/`. `/client` and `/admin` have separate route bounda
 pnpm run build:dashboard
 pnpm run test:dashboard
 ```
+
+## Vercel Deployment
+
+[`dashboard/vercel.json`](vercel.json) is configured for Vercel. In your Vercel Project Settings:
+
+- **Root Directory:** `dashboard`
+- **Framework Preset:** `Other` (or Angular)
+- **Build Command:** `pnpm run build`
+- **Output Directory:** `dist/digisay-dashboard/browser`
+- **Install Command:** `pnpm install`
+
+The `vercel.json` provides SPA fallback rewrites (`/(.*)` → `/index.html`) so deep links like `/admin/overview` and `/client/overview` load without 404 errors.

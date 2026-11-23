@@ -35,6 +35,8 @@ function GroupCompanyCard({ name, src, body }: { name: string; src: string; body
         <img
           src={src}
           alt={name}
+          width={160}
+          height={48}
           className="max-h-12 w-auto max-w-[85%] object-contain transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
@@ -140,6 +142,8 @@ export function AwardsSection() {
                   <img
                     src={a.img}
                     alt={a.title}
+                    width={160}
+                    height={128}
                     className="max-h-32 w-auto max-w-full object-contain transition-transform duration-300 group-hover:scale-105"
                     loading="lazy"
                   />
@@ -182,6 +186,8 @@ export function TeamPhotosSection() {
                 <img
                   src={p.src}
                   alt="DigiSay team"
+                  width={640}
+                  height={400}
                   className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
                   loading="lazy"
                 />
@@ -218,6 +224,8 @@ export function PartnersSection() {
               <img
                 src={p.src}
                 alt={p.name}
+                width={140}
+                height={44}
                 className="max-h-11 w-auto max-w-[85%] object-contain opacity-70 grayscale contrast-125 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
                 loading="lazy"
               />

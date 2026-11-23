@@ -89,6 +89,8 @@ export function AgencyShowreelSection({
             <img
               src={thumbnailUrl}
               alt={title}
+              width={1280}
+              height={720}
               className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-105"
               loading="lazy"
             />

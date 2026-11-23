@@ -126,7 +126,7 @@ export function HeroSection() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.65, ease: "easeOut" }}
           >
-            <PrimaryButton to="/contact" size="lg">
+            <PrimaryButton to="/contact" variant="hero" subtitle="Get In Touch">
               {hero.cta}
             </PrimaryButton>
             <PlayVideoButton

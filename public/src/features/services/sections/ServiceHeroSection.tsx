@@ -19,8 +19,10 @@ export function ServiceHeroSection({ page }: { page: ServicePageType }) {
         titleAccent={page.heroAccent}
         description={page.summary}
       >
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <PrimaryButton to="/contact">Let's Talk</PrimaryButton>
+        <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-5">
+          <PrimaryButton to="/contact" variant="hero" subtitle="Get In Touch">
+            Let's Talk
+          </PrimaryButton>
           <PlayVideoButton
             onClick={() => setIsVideoOpen(true)}
             label="Watch Showreel"

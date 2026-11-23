@@ -29,6 +29,8 @@ export function PartnersSection() {
               <img
                 src={p.src}
                 alt={p.name}
+                width={140}
+                height={44}
                 className="max-h-11 w-auto max-w-[85%] object-contain opacity-70 grayscale contrast-125 transition-all duration-300 group-hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
                 loading="lazy"
               />
