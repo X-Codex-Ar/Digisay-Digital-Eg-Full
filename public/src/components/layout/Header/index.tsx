@@ -57,20 +57,18 @@ export function SiteHeader() {
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <ThemeToggle />
           <div className="hidden lg:block">
-            <Magnetic>
-              <Link
-                to="/contact"
-                className="group relative inline-flex h-10 items-center justify-center gap-2 overflow-hidden rounded-xl bg-primary px-4 xl:px-5 text-sm font-semibold text-primary-foreground shadow-md shadow-primary/20 transition-all duration-300 hover:scale-[1.02] hover:bg-[#bf0826] hover:shadow-lg hover:shadow-primary/30 active:scale-[0.98] whitespace-nowrap"
-                aria-label="Contact DigiSay"
-              >
-                <span>Let's Talk</span>
-                <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-              </Link>
-            </Magnetic>
+            <Link
+              to="/contact"
+              className="group relative inline-flex h-10 items-center justify-center gap-2 overflow-hidden rounded-2xl bg-primary px-4 xl:px-5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors duration-200 hover:bg-[#bf0826] hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring whitespace-nowrap"
+              aria-label="Contact DigiSay"
+            >
+              <span>Let's Talk</span>
+              <ArrowRight className="size-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
+            </Link>
           </div>
           <button
             type="button"
-            className="inline-flex size-10 items-center justify-center rounded-xl border border-border/60 bg-card/70 text-foreground transition-all duration-200 hover:bg-muted active:scale-95 lg:hidden"
+            className="inline-flex size-10 items-center justify-center rounded-2xl border border-border/60 bg-card/70 text-foreground transition-colors duration-200 hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring lg:hidden"
             aria-label="Open main menu"
             aria-expanded={open}
             onClick={() => setOpen(true)}

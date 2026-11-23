@@ -82,26 +82,22 @@
     height: 0 !important;
   }
 
+  /* Stable scrollbar gutter to prevent any layout shift during dialog/menu toggles */
+  html {
+    scrollbar-gutter: stable;
+  }
+
   /* Pre-hydration & intro loader scroll suppression */
   html.loading-intro,
   html.loading-intro body {
     overflow: hidden !important;
-    height: 100% !important;
-    width: 100% !important;
     touch-action: none !important;
   }
 
-  /* When Radix Sheet or mobile menu opens, completely lock the root window to eliminate duplicate scrollbars */
-  html.menu-open,
-  html.menu-open body,
+  /* Prevent page scroll while mobile menu or dialog is open without disturbing scroll position */
   html:has(body[data-scroll-locked]),
-  html body[data-scroll-locked] {
+  html.menu-open {
     overflow: hidden !important;
-    height: 100dvh !important;
-    max-height: 100dvh !important;
-    touch-action: none !important;
-    padding-right: 0 !important;
-    margin-right: 0 !important;
   }
 
   html,

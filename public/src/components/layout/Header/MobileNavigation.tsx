@@ -18,6 +18,7 @@ import { brand } from "@/data/site";
 import { PrimaryButton } from "@/components/common/PrimaryButton";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { ImageWithFallback } from "@/components/common/ImageWithFallback";
+import { SocialIcon } from "@/components/common/SocialIcons";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 
@@ -105,18 +106,7 @@ function MobileServicesAccordion() {
             transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
             className="overflow-hidden"
           >
-            <div className="space-y-1 p-2 pt-0 border-t border-border/40">
-              {/* Overview Link */}
-              <SheetClose asChild>
-                <Link
-                  to="/services"
-                  className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider text-primary hover:bg-primary/10 transition-colors"
-                >
-                  <span>Explore All Services</span>
-                  <ArrowRight className="size-3.5 text-primary" />
-                </Link>
-              </SheetClose>
-
+            <div className="space-y-1 p-2 pt-1 border-t border-border/40">
               {/* Individual Service Verticals */}
               {servicesMenu.map((s) => {
                 const Icon = serviceIcons[s.to] || ShieldCheck;
@@ -158,22 +148,11 @@ function MobileServicesAccordion() {
 export function MobileNavigation({ open, onClose }: { open: boolean; onClose: () => void }) {
   const topLinks = mainNav.filter((n) => n.label !== "Let's Talk" && n.label !== "Services");
 
-  useEffect(() => {
-    if (open) {
-      document.documentElement.classList.add("menu-open");
-    } else {
-      document.documentElement.classList.remove("menu-open");
-    }
-    return () => {
-      document.documentElement.classList.remove("menu-open");
-    };
-  }, [open]);
-
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent
         side="right"
-        className="flex h-full w-[88vw] max-w-sm flex-col justify-between overflow-hidden p-0 border-l border-border/60 bg-card rounded-l-3xl shadow-2xl"
+        className="flex flex-col justify-between overflow-hidden p-0 top-3 bottom-3 right-3 sm:top-4 sm:bottom-4 sm:right-4 h-[calc(100dvh-24px)] sm:h-[calc(100dvh-32px)] w-[calc(100vw-24px)] max-w-sm rounded-3xl border border-border/80 bg-card/98 shadow-2xl backdrop-blur-2xl"
       >
         {/* Top Header */}
         <SheetHeader className="flex flex-row items-center justify-between px-6 py-5 border-b border-border/40 shrink-0">
@@ -231,17 +210,17 @@ export function MobileNavigation({ open, onClose }: { open: boolean; onClose: ()
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Follow Us
             </span>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               {socialLinks.map((s) => (
                 <a
                   key={s.label}
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex size-7 items-center justify-center rounded-lg border border-border/60 bg-muted/40 text-[11px] font-bold text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+                  className="flex size-8 items-center justify-center rounded-xl border border-border/70 bg-card p-1.5 text-muted-foreground transition-all duration-200 hover:border-primary/50 hover:bg-primary/10 hover:text-primary hover:scale-105"
                   aria-label={s.label}
                 >
-                  {s.label.replace(".", "")}
+                  <SocialIcon name={s.label} className="size-4" />
                 </a>
               ))}
             </div>
@@ -249,11 +228,11 @@ export function MobileNavigation({ open, onClose }: { open: boolean; onClose: ()
 
           {/* Theme Toggle + Let's Talk CTA */}
           <div className="flex items-center gap-3">
-            <ThemeToggle className="shrink-0 size-11 rounded-xl" />
+            <ThemeToggle className="shrink-0 size-11 rounded-2xl" />
             <SheetClose asChild>
               <PrimaryButton
                 to="/contact"
-                className="flex-1 justify-center h-11 rounded-xl text-sm"
+                className="flex-1 justify-center h-11 rounded-2xl text-sm"
               >
                 Let's Talk
               </PrimaryButton>

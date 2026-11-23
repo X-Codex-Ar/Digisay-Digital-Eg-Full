@@ -22,7 +22,7 @@ const baseClass =
 
 const sizes = {
   sm: "h-9 px-4 text-xs font-semibold rounded-xl",
-  md: "h-11 px-6 text-sm font-semibold rounded-xl",
+  md: "h-11 px-6 text-sm font-semibold rounded-2xl",
   lg: "h-16 px-8 text-base font-bold rounded-2xl shadow-lg shadow-primary/25",
 } as const;
 
