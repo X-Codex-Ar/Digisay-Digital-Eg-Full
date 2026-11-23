@@ -14,7 +14,9 @@ import { AnimatePresence, motion } from "motion/react";
 import { mainNav, servicesMenu } from "@/data/navigation";
 import { cn } from "@/lib/utils";
 
-const navLinks = mainNav.filter((n) => n.label !== "Let's Talk");
+const navLinks = mainNav.filter(
+  (n) => n.label !== "Let's Talk" && n.label !== "Privacy Policy",
+);
 
 const serviceIcons: Record<string, typeof ShieldCheck> = {
   "/anti-piracy": ShieldCheck,
@@ -32,7 +34,7 @@ function NavLinkItem({ label, to }: { label: string; to: string }) {
       to={to as never}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "rounded-xl px-3.5 py-2 text-sm font-semibold transition-colors duration-200",
+        "rounded-xl px-2.5 py-1.5 xl:px-3.5 xl:py-2 text-xs xl:text-sm font-semibold whitespace-nowrap transition-colors duration-200",
         active
           ? "bg-muted/70 text-foreground font-bold"
           : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
@@ -100,7 +102,7 @@ function ServicesDropdown() {
         type="button"
         onClick={() => setOpen((prev) => !prev)}
         className={cn(
-          "inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-sm font-semibold transition-all duration-200",
+          "inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 xl:px-3.5 xl:py-2 text-xs xl:text-sm font-semibold whitespace-nowrap transition-all duration-200",
           open || isServicesActive
             ? "bg-muted/70 text-foreground font-bold"
             : "text-muted-foreground hover:bg-muted/40 hover:text-foreground",
@@ -111,7 +113,7 @@ function ServicesDropdown() {
         <span>Services</span>
         <ChevronDown
           className={cn(
-            "size-4 text-muted-foreground transition-transform duration-200",
+            "size-3.5 xl:size-4 text-muted-foreground transition-transform duration-200",
             open && "rotate-180 text-foreground",
           )}
         />
@@ -204,7 +206,7 @@ function ServicesDropdown() {
 
 export function DesktopNavigation() {
   return (
-    <nav className="hidden items-center gap-1 md:flex" aria-label="Main">
+    <nav className="hidden items-center gap-0.5 xl:gap-1.5 lg:flex" aria-label="Main">
       {navLinks.map((n) =>
         n.label === "Services" ? (
           <ServicesDropdown key={n.label} />

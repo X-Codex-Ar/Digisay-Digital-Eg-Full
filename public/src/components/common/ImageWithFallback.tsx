@@ -10,6 +10,7 @@ type ImageWithFallbackProps = {
   fallback?: ReactNode;
   width?: number | string;
   height?: number | string;
+  loading?: "lazy" | "eager";
 };
 
 export function ImageWithFallback({
@@ -19,6 +20,7 @@ export function ImageWithFallback({
   fallback,
   width,
   height,
+  loading = "lazy",
 }: ImageWithFallbackProps) {
   const [failed, setFailed] = useState(false);
   if (failed) {
@@ -41,7 +43,7 @@ export function ImageWithFallback({
       width={width}
       height={height}
       className={cn("h-full w-full object-cover", className)}
-      loading="lazy"
+      loading={loading}
       onError={() => setFailed(true)}
     />
   );

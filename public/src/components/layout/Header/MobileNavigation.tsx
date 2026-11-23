@@ -1,11 +1,33 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "@tanstack/react-router";
-import { ChevronRight } from "lucide-react";
-import { mainNav, servicesMenu } from "@/data/navigation";
+import {
+  ChevronDown,
+  ShieldCheck,
+  Film,
+  Video,
+  Share2,
+  TrendingUp,
+  ArrowRight,
+  Mail,
+  Phone,
+} from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+
+import { mainNav, servicesMenu, socialLinks } from "@/data/navigation";
 import { brand } from "@/data/site";
 import { PrimaryButton } from "@/components/common/PrimaryButton";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { ImageWithFallback } from "@/components/common/ImageWithFallback";
 import { Sheet, SheetClose, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { cn } from "@/lib/utils";
+
+const serviceIcons: Record<string, typeof ShieldCheck> = {
+  "/anti-piracy": ShieldCheck,
+  "/content-management": Film,
+  "/content-production": Video,
+  "/social-media": Share2,
+  "/growth-marketing": TrendingUp,
+};
 
 function MobileNavItem({
   label,
@@ -18,25 +40,118 @@ function MobileNavItem({
 }) {
   const { pathname } = useLocation();
   const active = pathname === to || (to !== "/" && pathname.startsWith(to));
+
   return (
     <SheetClose asChild>
       <Link
         to={to as never}
-        className={`flex items-center justify-between rounded-2xl px-4 py-3 text-base font-semibold transition-all duration-200 ${
+        className={cn(
+          "flex items-center justify-between rounded-2xl px-4 py-3.5 text-base font-semibold transition-all duration-200",
           active
             ? "bg-primary/10 text-primary font-bold border border-primary/20 shadow-sm"
-            : "text-foreground hover:bg-muted/60 hover:text-primary"
-        } ${className || ""}`}
+            : "text-foreground hover:bg-muted/60 hover:text-primary",
+          className,
+        )}
         aria-current={active ? "page" : undefined}
       >
         <span>{label}</span>
-        <ChevronRight
-          className={`size-4 transition-transform ${
-            active ? "text-primary" : "text-muted-foreground/60"
-          }`}
-        />
+        {active && <span className="size-2 rounded-full bg-primary animate-pulse" />}
       </Link>
     </SheetClose>
+  );
+}
+
+function MobileServicesAccordion() {
+  const { pathname } = useLocation();
+  const isServicesActive =
+    pathname === "/services" || servicesMenu.some((s) => pathname.startsWith(s.to));
+  const [expanded, setExpanded] = useState(isServicesActive);
+
+  return (
+    <div className="my-1 rounded-2xl border border-border/60 bg-muted/20 overflow-hidden transition-all duration-200">
+      {/* Accordion Header / Trigger Button */}
+      <button
+        type="button"
+        onClick={() => setExpanded((prev) => !prev)}
+        className={cn(
+          "flex w-full items-center justify-between px-4 py-3.5 text-base font-semibold transition-all duration-200",
+          isServicesActive
+            ? "bg-primary/10 text-primary font-bold"
+            : "text-foreground hover:bg-muted/50 hover:text-primary",
+        )}
+        aria-expanded={expanded}
+      >
+        <div className="flex items-center gap-2">
+          <span>Services</span>
+          <span className="rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+            5 Verticals
+          </span>
+        </div>
+        <ChevronDown
+          className={cn(
+            "size-4 text-muted-foreground transition-transform duration-300",
+            expanded && "rotate-180 text-primary",
+          )}
+        />
+      </button>
+
+      {/* Accordion Expandable Content */}
+      <AnimatePresence initial={false}>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            className="overflow-hidden"
+          >
+            <div className="space-y-1 p-2 pt-0 border-t border-border/40">
+              {/* Overview Link */}
+              <SheetClose asChild>
+                <Link
+                  to="/services"
+                  className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-wider text-primary hover:bg-primary/10 transition-colors"
+                >
+                  <span>Explore All Services</span>
+                  <ArrowRight className="size-3.5 text-primary" />
+                </Link>
+              </SheetClose>
+
+              {/* Individual Service Verticals */}
+              {servicesMenu.map((s) => {
+                const Icon = serviceIcons[s.to] || ShieldCheck;
+                const active = pathname === s.to;
+                return (
+                  <SheetClose key={s.label} asChild>
+                    <Link
+                      to={s.to as never}
+                      className={cn(
+                        "flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-all duration-150",
+                        active
+                          ? "bg-primary text-primary-foreground font-bold shadow-sm"
+                          : "text-foreground/90 hover:bg-background hover:text-primary",
+                      )}
+                    >
+                      <div
+                        className={cn(
+                          "flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors",
+                          active
+                            ? "bg-white/20 text-white"
+                            : "bg-muted text-muted-foreground",
+                        )}
+                      >
+                        <Icon className="size-3.5" />
+                      </div>
+                      <span className="truncate">{s.label}</span>
+                    </Link>
+                  </SheetClose>
+                );
+              })}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 
@@ -62,43 +177,32 @@ export function MobileNavigation({ open, onClose }: { open: boolean; onClose: ()
       >
         {/* Top Header */}
         <SheetHeader className="flex flex-row items-center justify-between px-6 py-5 border-b border-border/40 shrink-0">
-          <Link to="/" onClick={onClose} className="flex items-center">
-            <img src={brand.logo} alt={brand.name} className="h-8 w-auto object-contain" />
+          <Link to="/" onClick={onClose} className="flex items-center" aria-label={brand.name}>
+            <ImageWithFallback
+              src={brand.logo}
+              alt={brand.name}
+              fallback={
+                <span className="text-xl font-extrabold tracking-tight text-foreground">
+                  Digi<span className="text-primary">Say</span>
+                </span>
+              }
+              className="h-8 w-auto object-contain"
+              width={100}
+              height={32}
+              loading="eager"
+            />
           </Link>
-          <SheetTitle className="sr-only">Main Menu</SheetTitle>
+          <SheetTitle className="sr-only">Main Navigation Menu</SheetTitle>
         </SheetHeader>
 
-        {/* Scrollable Navigation Body (with internal scrollbar suppressed for clean touch UI) */}
-        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
+        {/* Scrollable Navigation Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           <div className="flex flex-col gap-1.5">
             <MobileNavItem label="Home" to="/" />
             <MobileNavItem label="Companies" to="/about" />
 
-            {/* Services Group Card */}
-            <div className="my-2 rounded-2xl border border-border/60 bg-muted/30 p-2.5">
-              <SheetClose asChild>
-                <Link
-                  to="/services"
-                  className="flex items-center justify-between px-3 py-2 text-xs font-bold uppercase tracking-wider text-primary hover:underline"
-                >
-                  <span>Services Verticals</span>
-                  <ChevronRight className="size-3.5 text-primary" />
-                </Link>
-              </SheetClose>
-
-              <div className="flex flex-col gap-1 pt-1.5 border-t border-border/40">
-                {servicesMenu.map((s) => (
-                  <SheetClose key={s.label} asChild>
-                    <Link
-                      to={s.to as never}
-                      className="rounded-xl px-3 py-2 text-sm font-medium text-foreground/90 transition-all hover:bg-background hover:text-primary hover:translate-x-1"
-                    >
-                      {s.label}
-                    </Link>
-                  </SheetClose>
-                ))}
-              </div>
-            </div>
+            {/* Services Expandable Accordion Dropdown */}
+            <MobileServicesAccordion />
 
             {topLinks
               .filter((n) => n.label !== "Home" && n.label !== "Companies")
@@ -106,10 +210,44 @@ export function MobileNavigation({ open, onClose }: { open: boolean; onClose: ()
                 <MobileNavItem key={n.label} label={n.label} to={n.to} />
               ))}
           </div>
+
+          {/* Quick contact info strip */}
+          <div className="pt-4 border-t border-border/40 text-xs text-muted-foreground space-y-1.5">
+            <div className="flex items-center gap-2">
+              <Mail className="size-3.5 text-primary" />
+              <span>{brand.email}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Phone className="size-3.5 text-primary" />
+              <span>{brand.phone}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Fixed Bottom Row: Options (Theme Toggle) & CTA Button */}
-        <div className="shrink-0 border-t border-border/50 bg-card/95 px-5 py-4 backdrop-blur-md">
+        {/* Fixed Bottom Action Row */}
+        <div className="shrink-0 border-t border-border/50 bg-card/95 px-5 py-4 backdrop-blur-md space-y-3">
+          {/* Social Links Row */}
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Follow Us
+            </span>
+            <div className="flex items-center gap-1.5">
+              {socialLinks.map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex size-7 items-center justify-center rounded-lg border border-border/60 bg-muted/40 text-[11px] font-bold text-muted-foreground transition-colors hover:border-primary/50 hover:bg-primary/10 hover:text-primary"
+                  aria-label={s.label}
+                >
+                  {s.label.replace(".", "")}
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Theme Toggle + Let's Talk CTA */}
           <div className="flex items-center gap-3">
             <ThemeToggle className="shrink-0 size-11 rounded-xl" />
             <SheetClose asChild>
