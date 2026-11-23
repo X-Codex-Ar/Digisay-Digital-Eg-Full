@@ -14,7 +14,7 @@ At initial audit the repository was a single-package React website. It has since
 - React Hook Form, Zod, TanStack Query, Motion, and Lucide icons.
 - Vitest with jsdom and Testing Library; ESLint and Prettier.
 - Public and dashboard dependencies are managed independently with pnpm lockfiles. Root scripts dispatch to the three app folders.
-- The ASP.NET Core 9 API and Angular workspace are present. The public and dashboard apps share Tailwind tokens from `packages/design-system/tailwind-theme.css`. SQL Server schema scripts and local environment templates are in `database/` and `backend/`; Docker Compose, CI, and deployment automation are not configured.
+- The ASP.NET Core 9 API and Angular app are present. The public React and Angular dashboard apps each keep their Tailwind tokens inside their own app; the two token files are intentionally identical to preserve the DigiSay visual language without a shared root package. SQL Server schema scripts and local environment templates are in `database/` and `backend/`; Docker Compose, CI, and deployment automation are not configured.
 
 ## Existing business features
 
@@ -36,7 +36,7 @@ The public contact form calls the versioned API with an environment-configured o
 
 ## Migration strategy
 
-1. Keep the public React app in the repository-root `public/` folder, separate from the root `dashboard/` app. Its static assets are stored in `public/static/`; both apps consume the shared Tailwind theme in `packages/design-system/`.
+1. Keep the public React app in the repository-root `public/` folder, separate from the root `dashboard/` app. Its static assets are stored in `public/static/`; each app owns its theme at `src/styles/tailwind-theme.css`, with matching token contents maintained in both apps.
 2. Add an isolated `backend/` solution with Domain, Application, Infrastructure, and API projects. SQL Server owns authoritative business transactions.
 3. Establish API conventions, configuration validation, health checks, and SQL persistence. The contact inquiry workflow is the first implementation.
 4. Add lead/service-request workflows and idempotent email/outbox delivery.

@@ -1,6 +1,6 @@
 @import "tailwindcss" source(none);
 @import "tw-animate-css";
-@import "../../packages/design-system/tailwind-theme.css";
+@import "./styles/tailwind-theme.css";
 
 @source "./app";
 

@@ -7,10 +7,9 @@ The existing public website is preserved as the React 19/TanStack Start app in r
 ## Repository structure
 
 ```text
-public/            React public website (existing routes, features and static assets)
-dashboard/         Angular client and admin dashboard
+public/            React public website (owns src/styles/tailwind-theme.css)
+dashboard/         Angular dashboard (owns matching src/styles/tailwind-theme.css)
 backend/           .NET Clean Architecture solution
-packages/design-system/ Shared DigiSay Tailwind theme and design tokens
 infrastructure/    Local/cloud deployment assets (later phase)
 database/          Versioned SQL Server scripts and database operations
 docs/              Architecture, API, security and operations documentation
