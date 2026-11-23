@@ -1,4 +1,7 @@
+import { brand } from "@/data/site";
 import { contactSchema, type ContactFormData, generateMailtoUrl } from "./schema";
+
+const DEFAULT_RECIPIENT = brand.email || "info@digisay.com";
 
 export interface ContactSubmissionResult {
   success: boolean;
@@ -55,7 +58,7 @@ export async function submitContactInquiry(
       delivered: false,
       fallback: false,
       message: "Please correct the highlighted errors in the form.",
-      recipient: "info@digisay.com",
+      recipient: DEFAULT_RECIPIENT,
       errors,
     };
   }
@@ -70,7 +73,7 @@ export async function submitContactInquiry(
       delivered: false,
       fallback: false,
       message: "Inquiry processed.",
-      recipient: "info@digisay.com",
+      recipient: DEFAULT_RECIPIENT,
     };
   }
 
@@ -82,7 +85,7 @@ export async function submitContactInquiry(
       fallback: false,
       message:
         "Too many submission attempts. Please wait a few minutes before trying again or email us directly.",
-      recipient: "info@digisay.com",
+      recipient: DEFAULT_RECIPIENT,
     };
   }
 
@@ -100,7 +103,7 @@ export async function submitContactInquiry(
         fallback: false,
         message:
           "Your inquiry was securely delivered to our team. We will reach back within 24 hours.",
-        recipient: "info@digisay.com",
+        recipient: DEFAULT_RECIPIENT,
       };
     } catch (sendError) {
       console.error("Failed to send contact inquiry via email provider:", sendError);
@@ -117,6 +120,6 @@ export async function submitContactInquiry(
     message:
       "Inquiry draft prepared. Click below to send directly to info@digisay.com or copy the inquiry details.",
     mailtoUrl,
-    recipient: "info@digisay.com",
+    recipient: DEFAULT_RECIPIENT,
   };
 }

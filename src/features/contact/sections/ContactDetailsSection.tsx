@@ -55,9 +55,13 @@ export function ContactDetailsSection() {
 
                 <div className="mt-6 border-t border-border/40 pt-4">
                   <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Official Inquiries
+                    Regional Scope
                   </span>
-                  <p className="mt-1 text-sm font-medium text-foreground">{brand.email}</p>
+                  <p className="mt-1 text-sm font-medium text-foreground">
+                    {office.name.includes("UAE")
+                      ? "Middle East & North Africa (MENA)"
+                      : "North America & International"}
+                  </p>
                 </div>
               </div>
             </motion.div>
