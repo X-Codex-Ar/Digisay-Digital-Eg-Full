@@ -21,11 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  contactSchema,
-  type ContactFormData,
-  formatInquirySummary,
-} from "../schema";
+import { contactSchema, type ContactFormData, formatInquirySummary } from "../schema";
 import { submitContactInquiry, type ContactSubmissionResult } from "../server";
 
 const inputClass =
@@ -47,7 +43,8 @@ export function ContactForm() {
     reset,
   } = useForm<ContactFormData>({
     resolver: zodResolver(contactSchema),
-    mode: "onTouched",
+    mode: "onSubmit",
+    reValidateMode: "onChange",
     defaultValues: {
       firstName: "",
       lastName: "",
@@ -200,7 +197,9 @@ export function ContactForm() {
                 {copied ? (
                   <>
                     <Check className="size-4 text-emerald-500" />
-                    <span className="text-emerald-600 dark:text-emerald-400">Copied to Clipboard!</span>
+                    <span className="text-emerald-600 dark:text-emerald-400">
+                      Copied to Clipboard!
+                    </span>
                   </>
                 ) : (
                   <>
@@ -261,7 +260,11 @@ export function ContactForm() {
               className={inputClass}
             />
             {errors.firstName && (
-              <p id="firstName-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+              <p
+                id="firstName-error"
+                role="alert"
+                className="mt-1.5 text-xs font-medium text-destructive"
+              >
                 {errors.firstName.message}
               </p>
             )}
@@ -285,7 +288,11 @@ export function ContactForm() {
               className={inputClass}
             />
             {errors.lastName && (
-              <p id="lastName-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+              <p
+                id="lastName-error"
+                role="alert"
+                className="mt-1.5 text-xs font-medium text-destructive"
+              >
                 {errors.lastName.message}
               </p>
             )}
@@ -310,7 +317,11 @@ export function ContactForm() {
               className={inputClass}
             />
             {errors.email && (
-              <p id="email-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+              <p
+                id="email-error"
+                role="alert"
+                className="mt-1.5 text-xs font-medium text-destructive"
+              >
                 {errors.email.message}
               </p>
             )}
@@ -319,7 +330,8 @@ export function ContactForm() {
           {/* Phone (Optional) */}
           <div>
             <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="phone">
-              Phone Number <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+              Phone Number{" "}
+              <span className="text-xs font-normal text-muted-foreground">(optional)</span>
             </label>
             <input
               id="phone"
@@ -334,7 +346,11 @@ export function ContactForm() {
               className={inputClass}
             />
             {errors.phone && (
-              <p id="phone-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+              <p
+                id="phone-error"
+                role="alert"
+                className="mt-1.5 text-xs font-medium text-destructive"
+              >
                 {errors.phone.message}
               </p>
             )}
@@ -358,14 +374,18 @@ export function ContactForm() {
               >
                 <SelectTrigger
                   id="service"
-                  className="w-full h-12 rounded-xl border border-input bg-background px-4 text-sm text-foreground shadow-sm transition-all focus:border-[#d90a2c] focus:ring-2 focus:ring-[#d90a2c]/20"
+                  className={`w-full h-12 rounded-xl border bg-background px-4 text-sm text-foreground shadow-sm transition-all focus:border-[#d90a2c] focus:ring-2 focus:ring-[#d90a2c]/20 ${
+                    errors.service
+                      ? "border-destructive focus:border-destructive focus:ring-destructive/20"
+                      : "border-input"
+                  }`}
                   aria-required="true"
                   aria-invalid={!!errors.service}
                   aria-describedby={errors.service ? "service-error" : undefined}
                 >
                   <SelectValue placeholder="Select a service category" />
                 </SelectTrigger>
-                <SelectContent className="rounded-2xl border border-border/80 bg-popover/95 p-1 shadow-2xl backdrop-blur-md">
+                <SelectContent>
                   {contactServices.map((service) => (
                     <SelectItem
                       key={service}
@@ -380,7 +400,11 @@ export function ContactForm() {
             )}
           />
           {errors.service && (
-            <p id="service-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+            <p
+              id="service-error"
+              role="alert"
+              className="mt-1.5 text-xs font-medium text-destructive"
+            >
               {errors.service.message}
             </p>
           )}
@@ -389,7 +413,10 @@ export function ContactForm() {
         {/* Message */}
         <div>
           <label className="mb-2 block text-sm font-semibold text-foreground" htmlFor="message">
-            Message <span className="text-xs font-normal text-muted-foreground">(optional, min. 10 chars)</span>
+            Message{" "}
+            <span className="text-xs font-normal text-muted-foreground">
+              (optional, min. 10 chars)
+            </span>
           </label>
           <textarea
             id="message"
@@ -403,7 +430,11 @@ export function ContactForm() {
             className={inputClass}
           />
           {errors.message && (
-            <p id="message-error" role="alert" className="mt-1.5 text-xs font-medium text-destructive">
+            <p
+              id="message-error"
+              role="alert"
+              className="mt-1.5 text-xs font-medium text-destructive"
+            >
               {errors.message.message}
             </p>
           )}
