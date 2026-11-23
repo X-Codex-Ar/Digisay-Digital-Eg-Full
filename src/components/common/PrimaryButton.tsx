@@ -15,12 +15,12 @@ type PrimaryButtonProps = {
 };
 
 const baseClass =
-  "group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl bg-primary text-sm font-semibold text-primary-foreground shadow-md transition-all duration-300 hover:scale-[1.02] hover:bg-[#bf0826] hover:shadow-xl hover:shadow-primary/25 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60";
+  "group relative inline-flex items-center justify-center gap-2.5 overflow-hidden bg-primary text-primary-foreground shadow-md transition-all duration-300 hover:scale-[1.02] hover:bg-[#bf0826] hover:shadow-xl hover:shadow-primary/25 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60";
 
 const sizes = {
-  sm: "h-9 px-4 text-xs rounded-xl",
-  md: "h-11 px-6 text-sm rounded-xl",
-  lg: "h-12 px-8 text-base rounded-xl",
+  sm: "h-9 px-4 text-xs font-semibold rounded-xl",
+  md: "h-11 px-6 text-sm font-semibold rounded-xl",
+  lg: "h-16 px-8 text-base font-bold rounded-2xl shadow-lg shadow-primary/25",
 } as const;
 
 export function PrimaryButton({

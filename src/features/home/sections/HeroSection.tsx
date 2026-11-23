@@ -121,7 +121,7 @@ export function HeroSection() {
 
           {/* Magnetic CTA buttons and Watch Video trigger */}
           <motion.div
-            className="mt-8 flex flex-wrap items-center gap-4"
+            className="mt-8 flex flex-wrap items-center gap-4 sm:gap-5"
             initial={reduced ? { opacity: 1 } : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.65, ease: "easeOut" }}
@@ -129,12 +129,9 @@ export function HeroSection() {
             <PrimaryButton to="/contact" size="lg">
               {hero.cta}
             </PrimaryButton>
-            <SecondaryButton to="/anti-piracy" size="lg">
-              Explore Anti-Piracy
-            </SecondaryButton>
             <PlayVideoButton
               onClick={() => setIsVideoOpen(true)}
-              label="Watch Video"
+              label="Watch Showreel"
               variant="hero"
             />
           </motion.div>

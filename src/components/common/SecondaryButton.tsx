@@ -21,13 +21,13 @@ export function SecondaryButton({
   magnetic = true,
 }: SecondaryButtonProps) {
   const sizes = {
-    sm: "h-9 px-4 text-xs rounded-xl",
-    md: "h-11 px-6 text-sm rounded-xl",
-    lg: "h-12 px-8 text-base rounded-xl",
+    sm: "h-9 px-4 text-xs font-semibold rounded-xl",
+    md: "h-11 px-6 text-sm font-semibold rounded-xl",
+    lg: "h-16 px-8 text-base font-semibold rounded-2xl",
   } as const;
 
   const classes = cn(
-    "group relative inline-flex items-center justify-center gap-2 overflow-hidden rounded-xl border border-border bg-card/80 text-sm font-semibold text-foreground backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:bg-primary/5 hover:text-primary active:scale-[0.98]",
+    "group relative inline-flex items-center justify-center gap-2.5 overflow-hidden border border-border bg-card/80 text-foreground backdrop-blur-sm transition-all duration-300 hover:border-primary/50 hover:bg-primary/5 hover:text-primary active:scale-[0.98]",
     sizes[size],
     className,
   );
