@@ -89,7 +89,7 @@ export async function submitContactInquiry(
   // 4. Provider Delivery Check
   // Check if server-side provider credentials are configured in environment
   const emailApiKey =
-    typeof process !== "undefined" ? process.env?.EMAIL_SERVICE_API_KEY : undefined;
+    typeof process !== "undefined" ? process.env?.["EMAIL_SERVICE_API_KEY"] : undefined;
 
   if (emailApiKey) {
     try {
