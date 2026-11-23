@@ -5,6 +5,64 @@
 @source "./app";
 
 @layer base {
+  /* Clean Universal Scrollbar Architecture matching public */
+  @supports not selector(::-webkit-scrollbar) {
+    html,
+    body {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(217, 10, 44, 0.4) transparent;
+    }
+  }
+
+  /* Universal WebKit / Chromium Scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px !important;
+    height: 6px !important;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(217, 10, 44, 0.35) !important;
+    border-radius: 9999px !important;
+    transition: background-color 0.2s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(217, 10, 44, 0.8) !important;
+  }
+
+  /* Completely eliminate top/bottom stepper buttons and arrows */
+  ::-webkit-scrollbar-button {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent !important;
+  }
+
+  /* Stable scrollbar gutter to prevent any layout shift during toggles */
+  html {
+    scrollbar-gutter: stable;
+  }
+
+  /* Suppress scrollbars completely where intended */
+  .no-scrollbar {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+
   * { border-color: var(--color-border); }
   html, body { min-width: 320px; min-height: 100%; margin: 0; }
   body {

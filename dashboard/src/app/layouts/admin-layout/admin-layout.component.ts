@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
+import { DashboardHeaderComponent } from '../components/header/dashboard-header.component';
+import { DashboardSidebarComponent } from '../components/sidebar/dashboard-sidebar.component';
 
 const ADMIN_NAVIGATION = [
   { label: 'Overview', path: '/admin/overview', icon: 'OV' },
@@ -20,9 +22,9 @@ const ADMIN_NAVIGATION = [
 
 @Component({
   selector: 'ds-admin-layout',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  standalone: true,
+  imports: [RouterOutlet, DashboardHeaderComponent, DashboardSidebarComponent],
   templateUrl: './admin-layout.component.html',
-  styleUrl: './admin-layout.component.css',
 })
 export class AdminLayoutComponent {
   protected readonly navigation = ADMIN_NAVIGATION;

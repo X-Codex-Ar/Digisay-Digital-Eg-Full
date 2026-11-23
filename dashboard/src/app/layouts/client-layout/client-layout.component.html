@@ -1,25 +1,21 @@
 <div class="flex min-h-screen bg-background text-foreground">
-  <aside class="sticky top-0 flex h-screen w-64 shrink-0 flex-col border-r border-border bg-card px-3 py-4 max-[760px]:w-[70px] max-[480px]:w-[58px]" aria-label="Client portal navigation">
-    <a class="flex min-h-14 items-center gap-3 px-2 pb-4 text-foreground no-underline max-[760px]:justify-center max-[760px]:px-0" routerLink="/client/overview" aria-label="DigiSay client overview">
-      <img src="favicon.svg" alt="DigiSay" class="size-[38px] shrink-0 rounded-xl object-contain p-1 bg-card border border-border shadow-sm" />
-      <span class="max-[760px]:hidden"><strong class="block text-sm">DigiSay</strong><small class="mt-1 block text-xs text-muted-foreground">Client portal</small></span>
-    </a>
-    <div class="mb-2 mt-5 px-2.5 text-[.63rem] font-bold tracking-[.14em] text-muted-foreground max-[760px]:hidden">YOUR WORKSPACE</div>
-    <nav class="grid gap-1 overflow-auto">
-      @for (item of navigation; track item.path) {
-        <a class="nav-item flex min-h-10 items-center gap-3 rounded-lg px-2.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-secondary hover:text-foreground max-[760px]:justify-center max-[760px]:px-1" [routerLink]="item.path" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
-          <span class="nav-icon" aria-hidden="true">{{ item.icon }}</span><span class="max-[760px]:hidden">{{ item.label }}</span>
-        </a>
-      }
-    </nav>
-    <div class="mt-auto flex items-center gap-2 border-t border-border px-2 py-4 text-xs text-muted-foreground max-[760px]:justify-center max-[760px]:px-0"><span class="status-dot"></span><span class="max-[760px]:hidden">Client workspace</span></div>
-  </aside>
+  <ds-dashboard-sidebar
+    [navigation]="navigation"
+    brandSubtitle="Client portal"
+    workspaceLabel="YOUR WORKSPACE"
+    footerLabel="Client workspace"
+    overviewLink="/client/overview"
+  />
 
-  <div class="min-w-0 flex-1">
-    <header class="sticky top-0 z-10 flex min-h-[72px] items-center justify-between border-b border-border bg-card/95 px-[clamp(1rem,3vw,2.5rem)] backdrop-blur">
-      <div class="grid gap-1"><span class="text-[.62rem] font-bold tracking-[.12em] text-muted-foreground">DIGISAY PLATFORM</span><strong class="text-sm">Client portal</strong></div>
-      <span class="flex items-center gap-2 rounded-full border border-border bg-background px-3 py-2 text-xs text-muted-foreground"><span class="status-dot"></span>Dashboard setup</span>
-    </header>
-    <main id="main-content" class="mx-auto min-h-[calc(100vh-72px)] max-w-[1440px] p-[clamp(1.25rem,3vw,2.6rem)] max-[480px]:px-3"><router-outlet /></main>
+  <div class="min-w-0 flex-1 flex flex-col">
+    <ds-dashboard-header
+      title="Client portal"
+      category="DIGISAY PLATFORM"
+      badge="Dashboard setup"
+    />
+
+    <main id="main-content" class="mx-auto w-full max-w-[1440px] flex-1 p-4 sm:p-6 lg:p-8">
+      <router-outlet />
+    </main>
   </div>
 </div>
