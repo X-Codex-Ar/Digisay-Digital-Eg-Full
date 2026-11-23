@@ -1,6 +1,4 @@
-import antiPiracyImg from "@/assets/services/anti-piracy.webp.asset.json";
-import acquisitionImg from "@/assets/services/customer-acquisition.png.asset.json";
-import agencyImg from "@/assets/services/one-stop-agency.jpg.asset.json";
+import { resolveMediaUrl } from "@/lib/storage";
 
 import type {
   ServiceItem,
@@ -33,7 +31,7 @@ export const servicePages: ServicePage[] = [
     summary: "Safeguarding digital content, securing creators' intellectual property",
     heroTitle: "Safeguard Your Digital Assets with DigiSay's Dynamic",
     heroAccent: "Anti-Piracy Solutions",
-    image: "/assets/services/rightshero-cyber-shield.jpg",
+    image: resolveMediaUrl("services/rightshero-cyber-shield.jpg", "public-media", "/assets/services/rightshero-cyber-shield.jpg"),
     groups: [
       {
         eyebrow: "Anti-Piracy & Content Protection",
@@ -110,7 +108,7 @@ export const servicePages: ServicePage[] = [
     summary: "Crafting captivating visual narratives for powerful brand storytelling",
     heroTitle: "Elevate, Captivate, and Resonate with our Comprehensive Suite of",
     heroAccent: "Content Production Services",
-    image: "/assets/services/content-production-studio.jpg",
+    image: resolveMediaUrl("services/content-production-studio.jpg", "public-media", "/assets/services/content-production-studio.jpg"),
     groups: [
       {
         eyebrow: "Content Production",
@@ -156,7 +154,7 @@ export const servicePages: ServicePage[] = [
     summary: "Optimizing content journeys from creation to global distribution",
     heroTitle: "Empower Your Business to Elevate & Strategically",
     heroAccent: "Monetize Your Content",
-    image: acquisitionImg.url,
+    image: resolveMediaUrl("services/customer-acquisition.png", "public-media", "/assets/services/customer-acquisition.png"),
     groups: [
       {
         eyebrow: "Content Management & Monetization",
@@ -224,7 +222,7 @@ export const servicePages: ServicePage[] = [
     summary: "Elevating brands through strategic, engaging social media strategies",
     heroTitle: "Skyrocket Your Success & Elevate Your Brand with Proven",
     heroAccent: "Social Media Mastery!",
-    image: "/assets/services/influencers-creator-network.jpg",
+    image: resolveMediaUrl("services/phoneSS1-min.png", "public-media", "/assets/services/phoneSS1-min.png"),
     groups: [
       {
         eyebrow: "Strategy & Digital Services",
@@ -315,7 +313,7 @@ export const servicePages: ServicePage[] = [
     summary: "Strategic performance marketing tactics that propel brands to new heights",
     heroTitle: "Elevate Growth with Our Dynamic",
     heroAccent: "Growth Marketing Solutions",
-    image: "/assets/blog/performance-marketing.jpg",
+    image: resolveMediaUrl("services/performance-marketing.jpg", "public-media", "/assets/services/performance-marketing.jpg"),
     groups: [
       {
         eyebrow: "Inbound & CRM Marketing",
@@ -440,7 +438,7 @@ export const servicePages: ServicePage[] = [
     heroTitle:
       "We Connect Your Story with Authentic Creators to Drive Real Impact and Audience Engagement",
     heroAccent: "",
-    image: "/assets/services/influencers-creator-network.jpg",
+    image: resolveMediaUrl("services/influencers-creator-network.jpg", "public-media", "/assets/services/influencers-creator-network.jpg"),
     groups: [
       {
         eyebrow: "Influencer Partnerships",

@@ -1,14 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { catchError, of, timeout } from 'rxjs';
+import './runtime-config';
 
 type ApiStatus = 'checking' | 'online' | 'offline';
-
-declare global {
-  interface Window {
-    digisayRuntimeConfig?: { apiBaseUrl?: string };
-  }
-}
 
 const API_BASE_URL = window.digisayRuntimeConfig?.apiBaseUrl ?? 'http://localhost:5080';
 

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { X, Play, Pause, Volume2, VolumeX, Maximize2, Minimize2, RotateCcw } from "lucide-react";
+import { resolveVideoUrl } from "@/lib/storage";
 
 export interface VideoModalProps {
   isOpen: boolean;
@@ -9,7 +10,10 @@ export interface VideoModalProps {
   title?: string;
 }
 
-const DEFAULT_VIDEO = "https://digisay.com/wp-content/uploads/2024/03/GFF-No-Logo-1.mp4";
+const DEFAULT_VIDEO = resolveVideoUrl(
+  "videos/showreel.mp4",
+  "https://digisay.com/wp-content/uploads/2024/03/GFF-No-Logo-1.mp4"
+);
 
 export function VideoModal({
   isOpen,

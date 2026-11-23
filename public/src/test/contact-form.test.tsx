@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   contactSchema,
   generateMailtoUrl,
@@ -8,6 +8,9 @@ import {
 import { submitContactInquiry } from "@/features/contact/server";
 
 describe("Contact Form Validation & Submission", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
   it("rejects invalid or incomplete form payloads", () => {
     const invalidPayload = {
       firstName: "",
@@ -92,7 +95,32 @@ describe("Contact Form Validation & Submission", () => {
     expect(summary).toContain("Service of Interest: Social Media Management");
   });
 
-  it("server handler safely provides fallback delivery when credentials are not configured", async () => {
+  it("stores inquiry via backend API when reachable", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValueOnce(
+      new Response(JSON.stringify({ id: "mock-id-123", createdAtUtc: new Date().toISOString() }), {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+
+    const validData: ContactFormData = {
+      firstName: "Elena",
+      lastName: "Rostova",
+      email: "elena@media-house.com",
+      service: "Content Production",
+      message: "Need 4K studio production and localized video editing.",
+      botField: "",
+    };
+
+    const result = await submitContactInquiry(validData, "test-client-live");
+    expect(result.success).toBe(true);
+    expect(result.stored).toBe(true);
+    expect(result.fallback).toBe(false);
+  });
+
+  it("server handler safely provides fallback delivery when API is unavailable", async () => {
+    vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new Error("Connection refused"));
+
     const validData: ContactFormData = {
       firstName: "Elena",
       lastName: "Rostova",

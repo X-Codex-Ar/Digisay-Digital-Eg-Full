@@ -19,7 +19,7 @@ import { ApiHealthService } from '../../core/api-health.service';
           <p class="mt-2 text-xs text-background/65">Live API connection: {{ apiHealth.status() }}. Business records will appear after authenticated API modules are enabled.</p>
           <a class="mt-3 inline-flex items-center gap-3 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground no-underline transition-transform hover:-translate-y-0.5" [routerLink]="audience() === 'Admin' ? '/admin/leads' : '/client/requests'">Explore workspace <span aria-hidden="true">→</span></a>
         </div>
-        <div class="orbit-art relative mr-[3%] grid size-[210px] shrink-0 place-items-center opacity-80 max-[850px]:mr-0 max-[850px]:scale-90 max-[600px]:absolute max-[600px]:-bottom-9 max-[600px]:-right-14 max-[600px]:opacity-30" aria-hidden="true"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><span class="orbit orbit-three"></span><span class="orbit-core">D</span></div>
+        <div class="orbit-art relative mr-[3%] grid size-[210px] shrink-0 place-items-center opacity-80 max-[850px]:mr-0 max-[850px]:scale-90 max-[600px]:absolute max-[600px]:-bottom-9 max-[600px]:-right-14 max-[600px]:opacity-30" aria-hidden="true"><span class="orbit orbit-one"></span><span class="orbit orbit-two"></span><span class="orbit orbit-three"></span><span class="orbit-core"><img src="favicon.svg" alt="DigiSay" class="size-8 object-contain" /></span></div>
       </div>
       <div><span class="text-[.7rem] font-bold uppercase tracking-[.14em] text-muted-foreground">WORKSPACE AREAS</span><h2 class="mb-4 mt-1 text-xl font-bold tracking-tight text-foreground">Start with a section</h2>
       <div class="grid grid-cols-3 gap-3 max-[850px]:grid-cols-2 max-[600px]:grid-cols-1">

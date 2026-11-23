@@ -10,8 +10,11 @@ The existing public website is preserved as the React 19/TanStack Start app in r
 public/            React public website (owns src/styles/tailwind-theme.css)
 dashboard/         Angular dashboard (owns matching src/styles/tailwind-theme.css)
 backend/           .NET Clean Architecture solution
-infrastructure/    Local/cloud deployment assets (later phase)
 database/          Versioned SQL Server scripts and database operations
+devops/            Deployment, CI/CD, containers, and infrastructure definitions
+storage/           Centralized media, static fallback, and Supabase Storage bucket schemas
+testing/           Cross-platform end-to-end and integration test suites
+ai-agents/         AI agent workflows, rights automation, and intelligence services
 docs/              Architecture, API, security and operations documentation
 ```
 
