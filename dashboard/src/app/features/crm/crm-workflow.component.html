@@ -1,0 +1,352 @@
+<section class="grid gap-6" aria-labelledby="crm-title">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <span class="text-[.7rem] font-bold uppercase tracking-[.14em] text-muted-foreground"
+        >Administration · CRM</span
+      >
+      <h1 id="crm-title" class="mb-2 mt-2 text-3xl font-bold tracking-tight">
+        {{ isLeads() ? 'Leads' : 'Service requests' }}
+      </h1>
+      <p class="m-0 text-sm text-muted-foreground">
+        {{
+          isLeads()
+            ? 'Review opportunities and move them through the sales lifecycle.'
+            : 'Review requests from your organization and update their delivery status.'
+        }}
+      </p>
+    </div>
+    <button
+      type="button"
+      class="rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground disabled:opacity-50"
+      (click)="openCreate()"
+      [disabled]="!canMutate() || busy()"
+    >
+      {{ isLeads() ? 'Add lead' : 'Create request' }}
+    </button>
+  </header>
+
+  @if (!canMutate()) {
+    <div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-4 text-sm" role="status">
+      Your administrator account can review records, but lifecycle changes require an Owner
+      membership in the selected organization.
+    </div>
+  }
+  @if (notice()) {
+    <div class="rounded-2xl border border-primary/25 bg-primary/10 p-4 text-sm" role="status">
+      {{ notice() }}
+    </div>
+  }
+  @if (error()) {
+    <div
+      class="flex items-start justify-between gap-4 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm"
+      role="alert"
+    >
+      <span>{{ error() }}</span>
+      @if (error().includes('sign-in expired')) {
+        <a class="shrink-0 font-bold underline" routerLink="/admin/sign-in">Sign in</a>
+      } @else {
+        <button type="button" class="shrink-0 font-bold underline" (click)="load()">Retry</button>
+      }
+    </div>
+  }
+  @if (busy() && !loaded()) {
+    <div
+      class="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground"
+      role="status"
+    >
+      Loading workspace records…
+    </div>
+  }
+  @if (permissionDenied()) {
+    <div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5" role="alert">
+      <h2 class="mt-0 text-base font-bold">Access denied</h2>
+      <p class="mb-0 text-sm text-muted-foreground">
+        Your account cannot review this organization’s CRM data. Contact a DigiSay administrator to
+        confirm your role and organization membership.
+      </p>
+    </div>
+  }
+
+  @if (loaded() && !permissionDenied()) {
+    <div class="grid gap-4 rounded-2xl border border-border bg-card p-4 sm:grid-cols-[1fr_220px]">
+      <label class="grid gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"
+        >Search<input
+          class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-foreground"
+          type="search"
+          [(ngModel)]="query"
+          [placeholder]="isLeads() ? 'Name, email, source…' : 'Title, service, description…'"
+      /></label>
+      <label class="grid gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"
+        >Status<select
+          class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-foreground"
+          [(ngModel)]="statusFilter"
+        >
+          <option value="">All statuses</option>
+          @for (status of statuses(); track status) {
+            <option [value]="status">{{ displayStatus(status) }}</option>
+          }
+        </select></label
+      >
+      @if (auth.organizations().length > 1) {
+        <label
+          class="grid gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground sm:col-span-2"
+          >Organization<select
+            class="rounded-xl border border-border bg-background px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-foreground"
+            [ngModel]="auth.activeOrganizationId()"
+            (ngModelChange)="selectOrganization($event)"
+          >
+            @for (organization of auth.organizations(); track organization.id) {
+              <option [value]="organization.id">
+                {{ organization.name }} · {{ organization.membershipRole }}
+              </option>
+            }
+          </select></label
+        >
+      }
+    </div>
+    <div class="overflow-hidden rounded-2xl border border-border bg-card">
+      @if (filteredRecords().length === 0) {
+        <div class="p-8 text-center">
+          <h2 class="mb-2 text-lg font-bold">
+            {{ records().length === 0 ? 'No records yet' : 'No matching records' }}
+          </h2>
+          <p class="m-0 text-sm text-muted-foreground">
+            {{
+              records().length === 0
+                ? 'New records for this organization will appear here.'
+                : 'Try a different search or status filter.'
+            }}
+          </p>
+        </div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[700px] border-collapse text-left text-sm">
+            <thead class="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+              <tr>
+                <th class="px-4 py-3">{{ isLeads() ? 'Lead' : 'Request' }}</th>
+                <th class="px-4 py-3">{{ isLeads() ? 'Contact' : 'Service' }}</th>
+                <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Updated</th>
+                <th class="px-4 py-3">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (record of filteredRecords(); track record.id) {
+                <tr class="border-t border-border align-top">
+                  <td class="px-4 py-4">
+                    <button
+                      type="button"
+                      class="text-left font-bold text-foreground underline-offset-4 hover:text-primary hover:underline"
+                      (click)="inspect(record)"
+                    >
+                      {{ primary(record) }}</button><span
+                      class="mt-1 block max-w-sm truncate text-xs text-muted-foreground"
+                      >{{ secondary(record) }}</span
+                    >
+                  </td>
+                  <td class="px-4 py-4 text-muted-foreground">{{ contact(record) }}</td>
+                  <td class="px-4 py-4">
+                    <span
+                      class="rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-accent-foreground"
+                      >{{ displayStatus(record.status) }}</span
+                    >
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 text-xs text-muted-foreground">
+                    {{ record.updatedAtUtc | date: 'mediumDate' }}
+                  </td>
+                  <td class="px-4 py-4">
+                    <select
+                      class="max-w-40 rounded-lg border border-border bg-background px-2 py-2 text-xs disabled:opacity-50"
+                      [disabled]="busy() || !canMutate() || nextStatuses(record).length === 0"
+                      (change)="transition(record, $any($event.target).value)"
+                    >
+                      <option value="">Move to…</option>
+                      @for (status of nextStatuses(record); track status) {
+                        <option [value]="status">{{ displayStatus(status) }}</option>
+                      }
+                    </select>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      <footer
+        class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 text-xs text-muted-foreground"
+      >
+        <span
+          >Showing {{ filteredRecords().length }} of {{ totalCount() }} records ·
+          {{ activeOrganizationName() }} · Page {{ page() }} of {{ totalPages() }}</span
+        >
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="rounded-lg border border-border px-3 py-2 disabled:opacity-50"
+            [disabled]="page() <= 1 || busy()"
+            (click)="changePage(page() - 1)"
+          >
+            Previous</button
+          ><button
+            type="button"
+            class="rounded-lg border border-border px-3 py-2 disabled:opacity-50"
+            [disabled]="page() >= totalPages() || busy()"
+            (click)="changePage(page() + 1)"
+          >
+            Next
+          </button>
+        </div>
+      </footer>
+    </div>
+  }
+
+  @if (selected()) {
+    <aside class="rounded-2xl border border-border bg-card p-5" aria-labelledby="detail-title">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+            >Record details</span
+          >
+          <h2 id="detail-title" class="mb-2 mt-1 text-xl font-bold">
+            {{ primary(selected()!) }}
+          </h2>
+        </div>
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="rounded-lg border border-border px-3 py-2 text-sm disabled:opacity-50"
+            [disabled]="!canMutate()"
+            (click)="openEdit()"
+          >
+            Edit</button
+          ><button
+            type="button"
+            class="rounded-lg border border-border px-3 py-2 text-sm"
+            (click)="selected.set(null)"
+          >
+            Close
+          </button>
+        </div>
+      </div>
+      <p class="text-sm text-muted-foreground">{{ secondary(selected()!) }}</p>
+      <p class="text-sm">
+        <strong>Status:</strong> {{ displayStatus(selected()!.status) }} · <strong>Updated:</strong>
+        {{ selected()!.updatedAtUtc | date: 'medium' }}
+      </p>
+      @if (isLeads()) {
+        <p class="text-sm text-muted-foreground">
+          Contact: {{ contact(selected()!) }} · {{ $any(selected()).phone || 'No phone' }}
+        </p>
+      } @else {
+        <p class="whitespace-pre-line text-sm text-muted-foreground">
+          {{ $any(selected()).description }}
+        </p>
+      }
+    </aside>
+  }
+
+  @if (formOpen()) {
+    <div
+      class="fixed inset-0 z-50 grid place-items-center overflow-y-auto bg-black/50 p-4"
+      (click)="closeForm()"
+    >
+      <form
+        class="grid w-full max-w-xl gap-4 rounded-3xl border border-border bg-card p-6 text-foreground shadow-2xl"
+        (click)="$event.stopPropagation()"
+        (ngSubmit)="save()"
+        aria-labelledby="form-title"
+      >
+        <div>
+          <h2 id="form-title" class="m-0 text-xl font-bold">
+            {{ editing() ? 'Edit record' : isLeads() ? 'Add lead' : 'Create service request' }}
+          </h2>
+          <p class="mb-0 mt-1 text-sm text-muted-foreground">
+            Organization: {{ activeOrganizationName() }}
+          </p>
+        </div>
+        @if (formError()) {
+          <div
+            class="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm"
+            role="alert"
+          >
+            {{ formError() }}
+          </div>
+        }
+        @if (isLeads()) {
+          <label class="grid gap-1 text-sm font-semibold"
+            >Name<input
+              class="rounded-xl border border-border bg-background px-3 py-2.5 font-normal"
+              name="name"
+              [(ngModel)]="form.name"
+              required
+              minlength="2"
+              maxlength="150" /></label
+          ><label class="grid gap-1 text-sm font-semibold"
+            >Email<input
+              class="rounded-xl border border-border bg-background px-3 py-2.5 font-normal"
+              type="email"
+              name="email"
+              [(ngModel)]="form.email"
+              required
+              maxlength="254" /></label
+          ><label class="grid gap-1 text-sm font-semibold"
+            >Phone <span class="font-normal text-muted-foreground">(optional)</span
+            ><input
+              class="rounded-xl border border-border bg-background px-3 py-2.5 font-normal"
+              name="phone"
+              [(ngModel)]="form.phone"
+              maxlength="25" /></label
+          ><label class="grid gap-1 text-sm font-semibold"
+            >Source <span class="font-normal text-muted-foreground">(optional)</span
+            ><input
+              class="rounded-xl border border-border bg-background px-3 py-2.5 font-normal"
+              name="source"
+              [(ngModel)]="form.source"
+              maxlength="80"
+          /></label>
+        } @else {
+          <label class="grid gap-1 text-sm font-semibold"
+            >Title<input
+              class="rounded-xl border border-border bg-background px-3 py-2.5 font-normal"
+              name="title"
+              [(ngModel)]="form.title"
+              required
+              minlength="3"
+              maxlength="150" /></label
+          ><label class="grid gap-1 text-sm font-semibold"
+            >Service<input
+              class="rounded-xl border border-border bg-background px-3 py-2.5 font-normal"
+              name="service"
+              [(ngModel)]="form.service"
+              required
+              minlength="2"
+              maxlength="80" /></label
+          ><label class="grid gap-1 text-sm font-semibold"
+            >Description<textarea
+              class="min-h-28 rounded-xl border border-border bg-background px-3 py-2.5 font-normal"
+              name="description"
+              [(ngModel)]="form.description"
+              required
+              maxlength="2000"
+            ></textarea>
+          </label>
+        }
+        <div class="flex justify-end gap-3">
+          <button
+            class="rounded-xl border border-border px-4 py-2.5 text-sm font-bold"
+            type="button"
+            (click)="closeForm()"
+          >
+            Cancel</button
+          ><button
+            class="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
+            type="submit"
+            [disabled]="busy()"
+          >
+            {{ busy() ? 'Saving…' : editing() ? 'Save changes' : 'Create record' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+</section>

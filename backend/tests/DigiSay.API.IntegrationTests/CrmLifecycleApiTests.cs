@@ -207,13 +207,36 @@ public sealed class CrmLifecycleApiTests
         Assert.Equal(HttpStatusCode.BadRequest, invalidPage.StatusCode);
     }
 
+    [Fact]
+    public async Task CRM_role_policies_allow_client_submission_but_require_admin_for_review()
+    {
+        using var factory = new DigiSayApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var client = await CreateOrganizationClientAsync(factory, "portal@example.test", "Portal Org", DigiSayRoles.Client);
+
+        using var submit = await client.PostAsJsonAsync("/api/v1/crm/service-requests", new
+        {
+            title = "Campaign planning",
+            description = "Please help plan our next campaign.",
+            service = "Marketing",
+        });
+        Assert.Equal(HttpStatusCode.Created, submit.StatusCode);
+
+        using var review = await client.GetAsync("/api/v1/crm/service-requests");
+        Assert.Equal(HttpStatusCode.Forbidden, review.StatusCode);
+
+        using var leadAccess = await client.GetAsync("/api/v1/crm/leads");
+        Assert.Equal(HttpStatusCode.Forbidden, leadAccess.StatusCode);
+    }
+
     private static async Task<HttpClient> CreateOrganizationClientAsync(
         DigiSayApiFactory factory,
         string email,
-        string organizationName)
+        string organizationName,
+        string role = DigiSayRoles.Admin)
     {
         var client = factory.CreateClient();
-        var token = await RegisterAndSignInAsync(factory, client, email);
+        var token = await RegisterAndSignInAsync(factory, client, email, role);
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
         using var response = await client.PostAsJsonAsync("/api/v1/organizations", new { name = organizationName });
@@ -229,12 +252,21 @@ public sealed class CrmLifecycleApiTests
         return Assert.Single(organizations!).Id;
     }
 
-    private static async Task<string> RegisterAndSignInAsync(DigiSayApiFactory factory, HttpClient client, string email)
+    private static async Task<string> RegisterAndSignInAsync(DigiSayApiFactory factory, HttpClient client, string email, string role)
     {
         var registration = await client.PostAsJsonAsync("/api/v1/auth/register", new { email, password = Password });
         Assert.Equal(HttpStatusCode.OK, registration.StatusCode);
         using var confirmation = await factory.ConfirmEmailAsync(client, email);
         Assert.Equal(HttpStatusCode.OK, confirmation.StatusCode);
+
+        using (var scope = factory.Services.CreateScope())
+        {
+            var userManager = scope.ServiceProvider.GetRequiredService<UserManager<DigiSayUser>>();
+            var user = await userManager.FindByEmailAsync(email);
+            Assert.NotNull(user);
+            var roleResult = await userManager.AddToRoleAsync(user!, role);
+            Assert.True(roleResult.Succeeded, string.Join("; ", roleResult.Errors.Select(error => error.Description)));
+        }
 
         var login = await client.PostAsJsonAsync("/api/v1/auth/login?useCookies=false", new { email, password = Password });
         Assert.Equal(HttpStatusCode.OK, login.StatusCode);
