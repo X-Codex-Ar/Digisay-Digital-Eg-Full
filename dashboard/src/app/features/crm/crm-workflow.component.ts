@@ -161,6 +161,9 @@ export class CrmWorkflowComponent implements OnInit {
   selectOrganization(id: string): void {
     if (!this.auth.organizations().some((organization) => organization.id === id)) return;
     this.auth.activeOrganizationId.set(id);
+    this.selected.set(null);
+    this.formOpen.set(false);
+    this.editing.set(false);
     this.page.set(1);
     this.records.set([]);
     this.loaded.set(false);
