@@ -13,8 +13,23 @@ public sealed class OrganizationContext : IOrganizationContext
             throw new InvalidOperationException("Organization context can only be set once per request.");
         }
 
+        if (organizationId == Guid.Empty)
+        {
+            throw new ArgumentException("Organization id is required.", nameof(organizationId));
+        }
+
+        if (userId == Guid.Empty)
+        {
+            throw new ArgumentException("User id is required.", nameof(userId));
+        }
+
+        if (string.IsNullOrWhiteSpace(membershipRole))
+        {
+            throw new ArgumentException("Membership role is required.", nameof(membershipRole));
+        }
+
         OrganizationId = organizationId;
         UserId = userId;
-        MembershipRole = membershipRole;
+        MembershipRole = membershipRole.Trim();
     }
 }
