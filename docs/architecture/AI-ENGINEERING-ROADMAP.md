@@ -8,18 +8,18 @@ That means AI must be introduced through a backend-owned feature slice. Browser 
 
 ## Ranked feature candidates
 
-| Priority | Candidate | Product value | Readiness | Data / error risk | Initial behavior |
-| --- | --- | --- | --- | --- | --- |
-| 1 | Inquiry and CRM triage suggestions | Reduces staff review time for incoming leads and service requests | Medium: contact and CRM workflows exist, but staff-facing inquiry review and AI processing do not form a complete workflow yet | Medium: free text may contain personal or confidential data; incorrect urgency can delay a response | Suggest category, urgency, and a short rationale; staff accepts or edits before any CRM change |
-| 2 | Uploaded-content metadata suggestions | Improves cataloging and search for media assets | Medium-low: private storage exists, but no metadata workflow or media analysis service exists | Medium-high: uploads may contain personal, licensed, or unreleased content | Propose tags/caption/language; require staff confirmation before saving |
-| 3 | Grounded campaign reporting and knowledge search | Speeds internal research and campaign reporting | Low: campaign data and an approved knowledge corpus are not yet modeled end to end | Medium: incorrect summaries or unauthorized cross-tenant retrieval | Answer only from authorized records and cite the records used; show uncertainty |
-| 4 | Rights and infringement analysis | Helps prioritize possible unauthorized distribution | Low: no detection/evidence pipeline is present | High: false positives can cause legal or commercial harm | Rank evidence for human investigators only; never issue notices or legal conclusions |
+| Priority | Candidate | Product value | Readiness | Data exposure | Consequence of an incorrect result | Initial behavior |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | Inquiry and CRM triage suggestions | Reduces staff review time for incoming leads and service requests | Medium: contact and CRM workflows exist, but staff-facing inquiry review and AI processing do not form a complete workflow yet | Medium-high: free text may contain personal or confidential data | Medium: incorrect urgency can delay a response; an incorrect category can misroute work | Suggest category, urgency, and a short rationale; staff accepts or edits before any CRM change |
+| 2 | Uploaded-content metadata suggestions | Improves cataloging and search for media assets | Medium-low: private storage exists, but no metadata workflow or media analysis service exists | High: uploads may contain personal, licensed, or unreleased content | Low-medium: incorrect tags or captions can impair search or misrepresent content | Propose tags/caption/language; require staff confirmation before saving |
+| 3 | Grounded campaign reporting and knowledge search | Speeds internal research and campaign reporting | Low: campaign data and an approved knowledge corpus are not yet modeled end to end | High: source material may include confidential tenant or campaign data | Medium-high: inaccurate claims or unauthorized disclosure can affect commercial decisions | Answer only from authorized records and cite the records used; show uncertainty |
+| 4 | Rights and infringement analysis | Helps prioritize possible unauthorized distribution | Low: no detection/evidence pipeline is present | High: source media and rights evidence can be confidential or licensed | Very high: false positives can cause legal or commercial harm | Rank evidence for human investigators only; never issue notices or legal conclusions |
 
 ## Recommended first vertical slice
 
 Start with **staff-reviewed inquiry/CRM triage**, only after product and privacy owners approve the use case and provider/data terms. It has a clear human operator and can be introduced as a suggestion without changing the SQL Server source record or taking an external action. Confirm whether the first target is public contact inquiries or tenant-scoped CRM leads; do not merge these data sets implicitly.
 
-The first product slice should return a small typed result: category, urgency, concise rationale, and confidence/evidence fields. Store the result as a separate, versioned suggestion linked to the source record. A staff member must accept or edit it before it affects routing or workflow state. A provider outage must leave the existing inquiry/CRM workflow usable.
+The first product slice should return a small typed result: category, urgency, concise rationale, and confidence/evidence fields. Store the result as a separate, versioned suggestion linked to the source record; never overwrite the source record with raw model output. Before implementation, product and security/privacy owners must agree the minimum persisted fields, retention/deletion period, and access policy. The audit trail must capture the suggestion ID and version, tenant and source-record references, provider/model/prompt versions, creation time, and the acting staff member's accept/edit/reject decision, timestamp, and accepted or edited values. Keep raw prompts, full model responses, and unnecessary personal data out of logs and audit records. A staff member must accept or edit a suggestion before it affects routing or workflow state. A provider outage must leave the existing inquiry/CRM workflow usable.
 
 ## Architecture and location
 
@@ -34,13 +34,16 @@ Avoid a standalone AI microservice, multi-agent orchestration, or a multi-provid
 
 ## Mandatory gates before external inference
 
-1. Product owner confirms the exact workflow, target records, user roles, success metric, and actions AI is forbidden to take.
-2. Security/privacy owners approve provider terms, region, retention/training settings, lawful data scope, and a PII minimization/redaction plan.
-3. Define tenant isolation, authorization, rate limits, per-tenant token/cost budgets, timeouts, safe failure behavior, and an operator kill switch.
-4. Version prompts and models; create representative, privacy-reviewed evaluation examples and measurable quality thresholds before enabling users.
-5. Record model/version, source record ID, suggestion status, and sanitized operational metrics. Do not log raw prompts, credentials, or unnecessary personal data.
-6. Require human review before a suggestion can change CRM lifecycle, send a message, affect billing, or drive legal/takedown action.
-7. Add tests for cross-tenant denial, malformed/untrusted model output, provider timeout/failure, rate and cost limits, and accept/edit/reject behavior.
+| Gate | Accountable approver | Evidence required to pass |
+| --- | --- | --- |
+| Product workflow and scope | Product owner (TBD) | Written workflow, target record type, authorized staff roles, success metric, prohibited AI actions, and agreed persistence fields/status lifecycle |
+| Provider and data processing | Security/privacy owner (TBD) | Approved provider terms and deployment region; documented lawful data scope, provider retention/training settings, and a reviewed minimization/redaction plan |
+| Tenant, runtime, and operations controls | Backend/security owner (TBD) | Passing cross-tenant/authorization tests; configured rate limits, per-tenant cost ceilings, timeout/failure behavior, and a tested operator kill switch |
+| Quality and safety evaluation | AI engineer plus product owner (TBD) | Versioned model/prompt, privacy-reviewed representative evaluation set, recorded results meeting an agreed threshold, and documented known failure modes |
+| Persistence, audit, and retention | Product and security/privacy owners (TBD) | Approved data schema and retention/deletion period; audit test evidence for accept/edit/reject actor, time, suggestion version, and final accepted values; proof that raw prompts and unnecessary personal data are not logged |
+| Human oversight | Product owner (TBD) | Tested staff review flow that blocks workflow changes, messages, billing effects, or legal/takedown actions until an authorized human accepts or edits the suggestion |
+
+Owners marked TBD are an explicit release blocker: assign named approvers before any external inference is enabled. Keep each gate's evidence with the feature's release record. Tests must cover malformed/untrusted model output, provider timeout/failure, rate and cost limits, and accept/edit/reject behavior as well as tenant isolation.
 
 ## Current decisions still needed
 
@@ -48,5 +51,6 @@ Avoid a standalone AI microservice, multi-agent orchestration, or a multi-provid
 - Select an approved model/provider and deployment region after reviewing data-processing terms.
 - Decide permitted retention for prompts and suggestions, including provider-side retention.
 - Set the success threshold and who is authorized to accept suggestions.
+- Confirm the persisted suggestion and audit fields, retention/deletion policy, and named approvers for every pre-inference gate.
 
 Until those are agreed, keep AI disabled and do not transmit customer or business data to a model provider.
