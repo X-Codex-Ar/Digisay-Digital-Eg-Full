@@ -127,6 +127,35 @@ public sealed class CrmLifecycleApiTests
     }
 
     [Fact]
+    public async Task Domain_validation_failures_are_returned_as_client_errors()
+    {
+        using var factory = new DigiSayApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var client = await CreateOrganizationClientAsync(factory, "validation@example.test", "Validation Org");
+
+        using var invalidLead = await client.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = " A ",
+            email = "valid@example.test",
+        });
+        using var invalidEmailLead = await client.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Valid Name",
+            email = "user@localhost",
+        });
+        using var invalidServiceRequest = await client.PostAsJsonAsync("/api/v1/crm/service-requests", new
+        {
+            title = " a ",
+            description = "A valid service request description.",
+            service = "Marketing",
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, invalidLead.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, invalidEmailLead.StatusCode);
+        Assert.Equal(HttpStatusCode.BadRequest, invalidServiceRequest.StatusCode);
+    }
+
+    [Fact]
     public async Task CRM_reads_and_writes_are_isolated_between_organizations()
     {
         using var factory = new DigiSayApiFactory();
@@ -204,7 +233,8 @@ public sealed class CrmLifecycleApiTests
     {
         var registration = await client.PostAsJsonAsync("/api/v1/auth/register", new { email, password = Password });
         Assert.Equal(HttpStatusCode.OK, registration.StatusCode);
-        await factory.ConfirmEmailAsync(email);
+        using var confirmation = await factory.ConfirmEmailAsync(client, email);
+        Assert.Equal(HttpStatusCode.OK, confirmation.StatusCode);
 
         var login = await client.PostAsJsonAsync("/api/v1/auth/login?useCookies=false", new { email, password = Password });
         Assert.Equal(HttpStatusCode.OK, login.StatusCode);
