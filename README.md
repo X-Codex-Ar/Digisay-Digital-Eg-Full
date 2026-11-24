@@ -2,7 +2,7 @@
 
 ## Platform status
 
-The existing public website is preserved as the React 19/TanStack Start app in root `public/`. A separate Angular app lives in root `dashboard/`. The ASP.NET Core 10 API and SQL Server schema scripts live in `backend/` and `database/`. The public site records Firebase Analytics page views and sends contact inquiries to the API when configured. Supabase Postgres is an optional API health-checked connection; no Supabase password was supplied, so it is not connected yet. Identity, protected client/admin workflows, containers, and deployment are **not implemented yet**.
+The existing public website is preserved as the React 19/TanStack Start app in root `public/`. A separate Angular app lives in root `dashboard/`. The ASP.NET Core 10 API and SQL Server schema migrations live in `backend/` and `database/`. The public site records Firebase Analytics page views and sends contact inquiries to the API when configured. The backend now has an ASP.NET Core Identity foundation with email confirmation, bearer authentication, persisted roles, and a protected current-user endpoint. Organization tenant isolation and protected client/admin business workflows are **not implemented yet**. Supabase Postgres remains an optional API health-checked connection.
 
 ## Repository structure
 
@@ -10,7 +10,7 @@ The existing public website is preserved as the React 19/TanStack Start app in r
 public/            React public website (owns src/styles/tailwind-theme.css)
 dashboard/         Angular dashboard (owns matching src/styles/tailwind-theme.css)
 backend/           .NET Clean Architecture solution
-database/          Versioned SQL Server scripts and database operations
+database/          SQL Server migration guidance and database operations
 devops/            Deployment, CI/CD, containers, and infrastructure definitions
 storage/           Centralized media, static fallback, and Supabase Storage bucket schemas
 testing/           Cross-platform end-to-end and integration test suites

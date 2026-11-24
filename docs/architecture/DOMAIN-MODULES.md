@@ -4,7 +4,7 @@ Planned modular-monolith capabilities and current status:
 
 | Module | Intended ownership | Status |
 | --- | --- | --- |
-| Identity and access | Users, organizations, roles, permissions, sessions | Not implemented |
+| Identity and access | Users, roles, email verification, password recovery, SPA bearer authentication | Initial Identity foundation implemented; organization membership and session revocation remain open |
 | Client management | Client organizations, contacts, membership | Not implemented |
 | Service catalog | Service metadata; public copy remains in React today | Not implemented in API |
 | Leads and requests | Guest and client inquiries, assignment, history | Not implemented; current form prepares email drafts |

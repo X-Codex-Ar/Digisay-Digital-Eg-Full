@@ -14,7 +14,7 @@ At initial audit the repository was a single-package React website. It has since
 - React Hook Form, Zod, TanStack Query, Motion, and Lucide icons.
 - Vitest with jsdom and Testing Library; ESLint and Prettier.
 - Public and dashboard dependencies are managed independently with pnpm lockfiles. Root scripts dispatch to the three app folders.
-- The ASP.NET Core 10 API and Angular app are present. Backend projects use Central Package Management and lock files, with API contract/use-case modules outside `Program.cs`. Unit, architecture-boundary, and API integration test projects are included. The public React and Angular dashboard apps each keep their Tailwind tokens inside their own app; the two token files are intentionally identical to preserve the DigiSay visual language without a shared root package. SQL Server schema scripts and local environment templates are in `database/` and `backend/`; Docker Compose, CI, and deployment automation are not configured.
+- The ASP.NET Core 10 API and Angular app are present. Backend projects use Central Package Management and lock files, with API contract/use-case modules outside `Program.cs`. ASP.NET Core Identity, SQL persistence, unit, architecture-boundary, and API integration test projects are included. The public React and Angular dashboard apps each keep their Tailwind tokens inside their own app; the two token files are intentionally identical to preserve the DigiSay visual language without a shared root package. SQL Server EF migrations and local environment templates are in `backend/` and `database/`; Docker Compose, CI, and deployment automation are not configured.
 
 ## Existing business features
 
@@ -24,11 +24,11 @@ The contact form validates with Zod and a honeypot, then posts to the versioned 
 
 ## Technical limitations and missing backend functionality
 
-- Client/admin dashboard workflows, identity, tenant/resource authorization, and protected data APIs are not implemented.
+- Client/admin dashboard workflows, organization tenant/resource authorization, and protected business APIs are not implemented. Identity authentication is implemented as an initial foundation; server-side refresh-token revocation and role-management workflows remain open.
 - API rate limiting is in-process; use a distributed limiter before scaling multiple API instances.
 - Supabase is only an optional PostgreSQL connectivity check. No Supabase schema, Storage workflow, Firebase Auth, Firestore, FCM, or Firebase Admin integration exists.
 - No real mail provider, file storage, event/outbox processing, SQL Server-backed automated integration environment, E2E suite, container setup, or CI/CD.
-- The dashboard API health check is not an authorization mechanism. Do not expose business data until API authentication and resource authorization are implemented.
+- The dashboard API health check is not an authorization mechanism. Do not expose business data until organization membership and resource authorization are implemented.
 
 ## Required frontend integrations
 
@@ -38,7 +38,7 @@ The public contact form calls the versioned API with an environment-configured o
 
 1. Keep the public React app in the repository-root `public/` folder, separate from the root `dashboard/` app. Its static assets are stored in `public/static/`; each app owns its theme at `src/styles/tailwind-theme.css`, with matching token contents maintained in both apps.
 2. Maintain the isolated `backend/` solution with Domain, Application, Infrastructure, API, and test projects. SQL Server owns authoritative business transactions.
-3. Establish API conventions, configuration validation, health checks, and SQL persistence. The contact inquiry workflow is the first implementation.
+3. Establish API conventions, configuration validation, health checks, SQL persistence, and Identity. The contact inquiry and account workflows are implemented foundations.
 4. Add lead/service-request workflows and idempotent email/outbox delivery.
 5. Add identity and tenant/resource authorization before exposing client data.
 6. Add selected Supabase and Firebase workloads only behind backend interfaces and documented ownership.
@@ -52,12 +52,12 @@ SQL Server is the system of record for contact inquiries and planned transaction
 ## Risks
 
 - The backend now targets ASP.NET Core 10 LTS and has centrally managed, locked NuGet dependencies. The .NET 10 SDK is selected by root `global.json`.
-- Authentication, tenant isolation, guest-request claiming, and refresh-token rotation need threat modeling and integration tests before any client data is exposed.
-- Email delivery needs a real provider and idempotent durable dispatch; the current placeholder is misleading.
+- Organization tenant isolation, guest-request claiming, one-time refresh-token rotation, and server-side session revocation need threat modeling and integration tests before any tenant-owned data is exposed.
+- SMTP delivery requires deployment credentials and provider verification; durable idempotent mail delivery remains unimplemented.
 - The Supabase pooler password was not supplied, so that connection cannot be verified. SQL credentials must remain in User Secrets or managed secrets, never Git.
 - Existing motion and SSR behavior must be exercised after API integration, especially around browser-only APIs and reduced-motion preferences.
 - The configured `origin` remote matches the requested GitHub repository URL. Push status is tracked in the commit history, not in this architecture audit.
 
 ## Phase status
 
-The public app, dashboard shell, API contact persistence, SQL schema script, Firebase Analytics page views, backend unit/architecture tests, and HTTP integration tests are implemented. Protected business workflows, authentication, Supabase data access, SQL Server-backed integration infrastructure, production infrastructure, and deployment remain future phases until implemented and verified.
+The public app, dashboard shell, API contact persistence, ASP.NET Core Identity foundation, initial EF schema migration, Firebase Analytics page views, backend unit/architecture tests, and SQLite-backed HTTP integration tests are implemented. Organization isolation, protected business workflows, Supabase data access, SQL Server-backed automated integration infrastructure, production infrastructure, and deployment remain future phases until implemented and verified.

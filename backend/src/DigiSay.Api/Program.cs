@@ -1,9 +1,15 @@
+using System.Net.Mail;
+using System.Threading.RateLimiting;
 using Asp.Versioning;
+using DigiSay.Api.Authentication;
 using DigiSay.Api.Endpoints;
 using DigiSay.Application;
 using DigiSay.Infrastructure;
+using DigiSay.Infrastructure.Identity;
+using DigiSay.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +35,16 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0,
                 AutoReplenishment = true,
             }));
+    options.AddPolicy("identity-auth", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 10,
+                Window = TimeSpan.FromMinutes(10),
+                QueueLimit = 0,
+                AutoReplenishment = true,
+            }));
 });
 builder.Services.AddApiVersioning(options =>
 {
@@ -39,10 +55,57 @@ builder.Services.AddApiVersioning(options =>
 });
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddIdentityApiEndpoints<DigiSayUser>(options =>
+    {
+        options.User.RequireUniqueEmail = true;
+        options.SignIn.RequireConfirmedEmail = true;
+        options.Password.RequiredLength = 12;
+        options.Password.RequireDigit = true;
+        options.Password.RequireLowercase = true;
+        options.Password.RequireUppercase = true;
+        options.Password.RequireNonAlphanumeric = true;
+        options.Lockout.MaxFailedAccessAttempts = 5;
+        options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+        options.Lockout.AllowedForNewUsers = true;
+    })
+    .AddRoles<IdentityRole<Guid>>()
+    .AddEntityFrameworkStores<DigiSayDbContext>();
+builder.Services.Configure<BearerTokenOptions>(options =>
+{
+    options.BearerTokenExpiration = TimeSpan.FromMinutes(15);
+    options.RefreshTokenExpiration = TimeSpan.FromDays(7);
+});
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdminAccess", policy =>
+        policy.RequireRole(DigiSayRoles.SuperAdmin, DigiSayRoles.Admin, DigiSayRoles.Manager));
+    options.AddPolicy("ClientAccess", policy => policy.RequireRole(DigiSayRoles.Client));
+});
+
+var smtpConfigured = !string.IsNullOrWhiteSpace(
+    builder.Configuration[$"{SmtpEmailOptions.SectionName}:Host"]);
+if (builder.Environment.IsDevelopment() && !smtpConfigured)
+{
+    builder.Services.AddTransient<IEmailSender<DigiSayUser>, DevelopmentIdentityEmailSender>();
+}
+else
+{
+    builder.Services.AddOptions<SmtpEmailOptions>()
+        .Bind(builder.Configuration.GetSection(SmtpEmailOptions.SectionName))
+        .Validate(options => !string.IsNullOrWhiteSpace(options.Host), "Email:Smtp:Host is required.")
+        .Validate(options => options.Port is > 0 and <= 65535, "Email:Smtp:Port must be a valid TCP port.")
+        .Validate(options => !string.IsNullOrWhiteSpace(options.UserName), "Email:Smtp:UserName is required.")
+        .Validate(options => !string.IsNullOrWhiteSpace(options.Password), "Email:Smtp:Password is required.")
+        .Validate(options => MailAddress.TryCreate(options.FromAddress, out _), "Email:Smtp:FromAddress must be a valid email address.")
+        .ValidateOnStart();
+    builder.Services.AddTransient<IEmailSender<DigiSayUser>, SmtpIdentityEmailSender>();
+}
 
 var app = builder.Build();
 app.UseExceptionHandler();
 app.UseCors("frontends");
+app.UseAuthentication();
+app.UseAuthorization();
 app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
@@ -56,7 +119,7 @@ var apiVersionSet = app.NewApiVersionSet()
     .Build();
 
 app.MapApiEndpoints(apiVersionSet);
-app.MapHealthChecks("/health/ready", new HealthCheckOptions());
+app.MapHealthChecks("/health/ready", new HealthCheckOptions()).AllowAnonymous();
 app.Run();
 
 public partial class Program { }
