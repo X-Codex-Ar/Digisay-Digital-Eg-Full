@@ -285,7 +285,7 @@ public sealed class IdentityApiTests
     {
         var registration = await client.PostAsJsonAsync("/api/v1/auth/register", new { email, password = Password });
         Assert.Equal(HttpStatusCode.OK, registration.StatusCode);
-        await factory.ConfirmEmailAsync(email);
+        await factory.ConfirmEmailAsync(client, email);
     }
 
     private static async Task<string> SignInForAccessTokenAsync(HttpClient client, string email)
