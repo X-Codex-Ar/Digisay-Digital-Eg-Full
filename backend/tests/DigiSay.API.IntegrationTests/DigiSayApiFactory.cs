@@ -33,12 +33,10 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
         RateLimitStoreUnavailable = rateLimitStoreUnavailable;
         TrustLoopbackProxy = trustLoopbackProxy;
         IdentityBootstrapSecret = identityBootstrapSecret;
-        IdentityBootstrapSecret = identityBootstrapSecret;
     }
 
     private bool RateLimitStoreUnavailable { get; }
     private bool TrustLoopbackProxy { get; }
-    private string? IdentityBootstrapSecret { get; }
     private string? IdentityBootstrapSecret { get; }
 
     public RecordingContactInquiryWriter Writer { get; } = new();
