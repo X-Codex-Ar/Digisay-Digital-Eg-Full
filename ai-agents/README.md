@@ -10,6 +10,7 @@ This folder is the home for AI product specifications, evaluations, prompts, and
 - **Rights and infringement analysis:** A later, higher-risk capability that may prioritize evidence for reviewers; it must never issue a takedown or make a legal determination automatically.
 
 See [`docs/architecture/AI-ENGINEERING-ROADMAP.md`](../docs/architecture/AI-ENGINEERING-ROADMAP.md) for the repository audit, priorities, and implementation gates.
+The provider-neutral first slice contract and its disabled-by-default status are documented in [`triage/README.md`](triage/README.md).
 
 ## Roles & Developer Responsibilities
 

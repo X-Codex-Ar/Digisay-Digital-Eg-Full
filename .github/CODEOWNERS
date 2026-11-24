@@ -5,4 +5,6 @@
 # AI engineering scope; keep the existing repository review owner involved.
 /ai-agents/ @eng-teto @x-code-ar
 /docs/architecture/AI-*.md @eng-teto @x-code-ar
+/backend/src/DigiSay.Application/Features/AI/ @eng-teto @x-code-ar
+/backend/tests/DigiSay.Application.Tests/ServiceRequestTriageTests.cs @eng-teto @x-code-ar
 

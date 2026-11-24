@@ -54,3 +54,7 @@ Owners marked TBD are an explicit release blocker: assign named approvers before
 - Confirm the persisted suggestion and audit fields, retention/deletion policy, and named approvers for every pre-inference gate.
 
 Until those are agreed, keep AI disabled and do not transmit customer or business data to a model provider.
+
+## Phase 2 foundation status
+
+The provider-neutral service-request triage port and Application use case are being added under `backend/src/DigiSay.Application/Features/AI/ServiceRequestTriage/`. The use case looks up requests only through the verified organization scope, runs an explicit data minimizer before the provider boundary, validates bounded model output, and marks every result for human review. Synthetic Application tests cover tenant scoping and output validation. This foundation does not register a provider, expose an API endpoint, add a dashboard action, or transmit request content. Those runtime pieces remain gated on the decisions above.
