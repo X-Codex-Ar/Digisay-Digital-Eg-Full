@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Data.Sqlite;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -21,7 +21,26 @@ namespace DigiSay.API.IntegrationTests;
 
 internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
 {
-    private readonly SqliteConnection _connection = new("Data Source=:memory:");
+    private readonly string _databaseName = $"DigiSayIntegrationTests_{Guid.NewGuid():N}";
+
+    private string TestConnectionString
+    {
+        get
+        {
+            var configuredConnectionString = Environment.GetEnvironmentVariable("TEST_SQLSERVER_CONNECTION_STRING");
+            if (string.IsNullOrWhiteSpace(configuredConnectionString))
+            {
+                throw new InvalidOperationException(
+                    "Set TEST_SQLSERVER_CONNECTION_STRING to a disposable SQL Server test instance.");
+            }
+
+            var connectionString = new SqlConnectionStringBuilder(configuredConnectionString)
+            {
+                InitialCatalog = _databaseName,
+            };
+            return connectionString.ConnectionString;
+        }
+    }
 
     public RecordingIdentityEmailSender EmailSender { get; } = new();
     public RecordingContactInquiryWriter Writer { get; } = new();
@@ -30,11 +49,11 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        _connection.Open();
+        var connectionString = TestConnectionString;
         builder.ConfigureLogging(logging => logging.AddProvider(new RecordingLoggerProvider(Logs)));
         builder.UseSetting(
             "ConnectionStrings:SqlServer",
-            "Server=localhost;Database=DigiSayTests;User Id=test;Password=test;TrustServerCertificate=True");
+            connectionString);
         builder.UseSetting("Storage:Supabase:ProjectUrl", "https://storage.example.test");
         builder.UseSetting("Storage:Supabase:SecretKey", "test-only-server-secret");
         builder.UseSetting("Storage:Supabase:PrivateBucket", "digisay-private");
@@ -44,7 +63,7 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
             services.RemoveAll<DigiSayDbContext>();
             services.AddScoped(_ => new DigiSayDbContext(
                 new DbContextOptionsBuilder<DigiSayDbContext>()
-                    .UseSqlite(_connection)
+                    .UseSqlServer(connectionString)
                     .Options));
             services.RemoveAll<IContactInquiryWriter>();
             services.AddSingleton<IContactInquiryWriter>(Writer);
@@ -69,15 +88,6 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
         return await client.GetAsync(confirmationUri.PathAndQuery);
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
-            _connection.Dispose();
-        }
-
-        base.Dispose(disposing);
-    }
 }
 
 internal sealed class RecordingIdentityEmailSender : IEmailSender<DigiSayUser>

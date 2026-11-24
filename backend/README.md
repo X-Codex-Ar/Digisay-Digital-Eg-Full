@@ -23,6 +23,8 @@ dotnet test DigiSay.sln --configuration Release
 dotnet run --project src/DigiSay.API
 ```
 
+The API integration tests use a disposable SQL Server database. Set `TEST_SQLSERVER_CONNECTION_STRING` to a SQL Server instance where the test user can create databases before running the suite. Each test factory creates a uniquely named database; never point this variable at production or a database with user data. CI starts an isolated SQL Server service for this job.
+
 Install the matching EF Core CLI and apply versioned schema changes deliberately (the API never migrates at startup):
 
 ```powershell
