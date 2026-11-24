@@ -27,7 +27,7 @@ dotnet test DigiSay.sln --configuration Release
 dotnet run --project src/DigiSay.API
 ```
 
-The API integration tests use a disposable SQL Server database. Set `TEST_SQLSERVER_CONNECTION_STRING` to a SQL Server instance where the test user can create databases before running the suite. Each test factory creates a uniquely named database; never point this variable at production or a database with user data. CI starts an isolated SQL Server service for this job.
+Backend tests are split across `tests/DigiSay.Domain.Tests`, `tests/DigiSay.Application.Tests`, `tests/DigiSay.Infrastructure.Tests`, and `tests/DigiSay.API.IntegrationTests`. From the repository root, run `dotnet restore backend/DigiSay.sln --locked-mode` and `dotnet test backend/DigiSay.sln --configuration Release`. For focused commands and suite details, see [`testing/README.md`](../testing/README.md). API integration tests require a disposable SQL Server instance configured through `TEST_SQLSERVER_CONNECTION_STRING`; each test factory creates a uniquely named database, so never point it at production or a database with user data. CI starts an isolated SQL Server service for these tests.
 
 Install the matching EF Core CLI and apply versioned schema changes deliberately (the API never migrates at startup):
 
