@@ -1,11 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, input, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthService } from '../../core/auth.service';
+import { AuthService, PortalAudience } from '../../core/auth.service';
 
 @Component({
-  selector: 'ds-admin-sign-in',
+  selector: 'ds-portal-sign-in',
   imports: [FormsModule],
   template: `
     <main class="grid min-h-screen place-items-center bg-background p-5 text-foreground">
@@ -16,11 +16,11 @@ import { AuthService } from '../../core/auth.service';
       >
         <div>
           <span class="text-xs font-bold uppercase tracking-[.14em] text-primary"
-            >DigiSay Administration</span
+            >DigiSay {{ audience() }} portal</span
           >
           <h1 id="sign-in-title" class="mb-2 mt-3 text-3xl font-bold">Sign in</h1>
           <p class="m-0 text-sm text-muted-foreground">
-            Use your administrator account to open the workspace.
+            Use your {{ audience().toLowerCase() }} account to open the workspace.
           </p>
         </div>
         @if (error()) {
@@ -63,7 +63,8 @@ import { AuthService } from '../../core/auth.service';
     </main>
   `,
 })
-export class AdminSignInComponent {
+export class PortalSignInComponent {
+  readonly audience = input.required<PortalAudience>();
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   email = '';
@@ -76,15 +77,17 @@ export class AdminSignInComponent {
     this.busy.set(true);
     this.error.set('');
     try {
-      await this.auth.signIn(this.email.trim(), this.password);
-      await this.router.navigateByUrl('/admin/overview');
+      await this.auth.signIn(this.email.trim(), this.password, this.audience());
+      await this.router.navigateByUrl(
+        this.audience() === 'Admin' ? '/admin/overview' : '/client/overview',
+      );
     } catch (error) {
       this.error.set(
         error instanceof HttpErrorResponse
           ? error.status === 401
             ? 'Email or password is incorrect, or the account is not confirmed.'
             : error.status === 403
-              ? 'Your account does not have permission to use administration.'
+              ? `Your account does not have permission to use the ${this.audience().toLowerCase()} portal.`
               : 'The API could not complete sign in. Check the connection and try again.'
           : error instanceof Error
             ? error.message

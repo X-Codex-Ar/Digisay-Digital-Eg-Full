@@ -52,6 +52,21 @@ export class CrmApiService {
     });
   }
 
+  listRequests(page = 1) {
+    return this.http.get<CrmPage<ServiceRequestRecord>>(
+      `${apiUrl}/service-requests?page=${page}&pageSize=100`,
+      {
+        headers: this.auth.authorizationHeaders(),
+      },
+    );
+  }
+
+  createRequest(value: { title: string; service: string; description: string }) {
+    return this.http.post<ServiceRequestRecord>(`${apiUrl}/service-requests`, value, {
+      headers: this.auth.authorizationHeaders(),
+    });
+  }
+
   create(kind: CrmKind, value: CrmInput) {
     return this.http.post<CrmRecord>(
       `${apiUrl}/${kind === 'leads' ? 'leads' : 'service-requests'}`,

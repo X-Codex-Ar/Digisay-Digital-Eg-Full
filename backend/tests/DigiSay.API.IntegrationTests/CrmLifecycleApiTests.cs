@@ -208,11 +208,12 @@ public sealed class CrmLifecycleApiTests
     }
 
     [Fact]
-    public async Task CRM_role_policies_allow_client_submission_but_require_admin_for_review()
+    public async Task Clients_can_submit_and_track_only_requests_in_their_organization()
     {
         using var factory = new DigiSayApiFactory();
         await factory.InitializeDatabaseAsync();
         using var client = await CreateOrganizationClientAsync(factory, "portal@example.test", "Portal Org", DigiSayRoles.Client);
+        using var otherClient = await CreateOrganizationClientAsync(factory, "other-portal@example.test", "Other Portal Org", DigiSayRoles.Client);
 
         using var submit = await client.PostAsJsonAsync("/api/v1/crm/service-requests", new
         {
@@ -222,8 +223,29 @@ public sealed class CrmLifecycleApiTests
         });
         Assert.Equal(HttpStatusCode.Created, submit.StatusCode);
 
-        using var review = await client.GetAsync("/api/v1/crm/service-requests");
-        Assert.Equal(HttpStatusCode.Forbidden, review.StatusCode);
+        using var created = await JsonDocument.ParseAsync(await submit.Content.ReadAsStreamAsync());
+        var requestId = created.RootElement.GetProperty("id").GetGuid();
+
+        using var ownHistory = await client.GetAsync("/api/v1/crm/service-requests");
+        Assert.Equal(HttpStatusCode.OK, ownHistory.StatusCode);
+        var ownPage = await ownHistory.Content.ReadFromJsonAsync<PagedResponse<ServiceRequestResponse>>();
+        Assert.NotNull(ownPage);
+        Assert.Single(ownPage.Items);
+
+        using var ownDetails = await client.GetAsync($"/api/v1/crm/service-requests/{requestId}");
+        Assert.Equal(HttpStatusCode.OK, ownDetails.StatusCode);
+
+        using var otherHistory = await otherClient.GetAsync("/api/v1/crm/service-requests");
+        Assert.Equal(HttpStatusCode.OK, otherHistory.StatusCode);
+        var otherPage = await otherHistory.Content.ReadFromJsonAsync<PagedResponse<ServiceRequestResponse>>();
+        Assert.NotNull(otherPage);
+        Assert.Empty(otherPage.Items);
+
+        using var crossOrganizationDetails = await otherClient.GetAsync($"/api/v1/crm/service-requests/{requestId}");
+        Assert.Equal(HttpStatusCode.NotFound, crossOrganizationDetails.StatusCode);
+
+        using var transition = await client.PostAsJsonAsync($"/api/v1/crm/service-requests/{requestId}/transitions", new { status = "UnderReview" });
+        Assert.Equal(HttpStatusCode.Forbidden, transition.StatusCode);
 
         using var leadAccess = await client.GetAsync("/api/v1/crm/leads");
         Assert.Equal(HttpStatusCode.Forbidden, leadAccess.StatusCode);

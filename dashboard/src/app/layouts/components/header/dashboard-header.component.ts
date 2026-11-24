@@ -20,7 +20,8 @@ export class DashboardHeaderComponent {
   readonly badge = input<string>('Dashboard setup');
 
   protected signOut(): void {
+    const signInPath = this.router.url.startsWith('/client') ? '/client/sign-in' : '/admin/sign-in';
     this.auth.signOut();
-    void this.router.navigateByUrl('/admin/sign-in');
+    void this.router.navigateByUrl(signInPath);
   }
 }
