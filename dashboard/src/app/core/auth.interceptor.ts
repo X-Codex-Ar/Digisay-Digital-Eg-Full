@@ -15,7 +15,6 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
     return req.clone({ headers });
   };
   const secured = authEndpoint ? request : attachAuth(request);
-  const secured = authEndpoint ? request : attachAuth(request);
 
   return next(secured).pipe(
     catchError((error: unknown) => {
