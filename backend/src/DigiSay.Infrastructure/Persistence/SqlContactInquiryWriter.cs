@@ -1,5 +1,5 @@
-using DigiSay.Application.ContactInquiries;
-using DigiSay.Domain;
+using DigiSay.Application.Features.ContactInquiries;
+using DigiSay.Domain.Entities;
 
 namespace DigiSay.Infrastructure.Persistence;
 

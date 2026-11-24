@@ -1,9 +1,9 @@
 # Clean Architecture boundaries
 
-The backend solution is split into four projects. Domain has no project/package references. Application depends on Domain. Infrastructure implements external and persistence concerns and depends inward on Application. API is the composition root and depends on Infrastructure.
+The backend solution uses four layers with inward dependencies. Domain has no project/package references. Application contains common application services, contracts, and feature use cases and depends on Domain. Infrastructure implements persistence, identity, storage, and external integrations and depends inward on Application. API is the composition root and exposes transport endpoints.
 
 ```text
-DigiSay.Api -> DigiSay.Infrastructure -> DigiSay.Application -> DigiSay.Domain
+DigiSay.API -> DigiSay.Infrastructure -> DigiSay.Application -> DigiSay.Domain
 ```
 
-The API contains a `ContactInquiry` domain entity, an Application writer boundary, SQL Server persistence in Infrastructure, versioned minimal API endpoints, and an Identity user/role store backed by the same SQL Server context. The optional Supabase adapter is limited to connectivity health. Controllers are not present. Avoid adding generic repositories until a concrete use case demonstrates the need.
+Domain types live under `DigiSay.Domain/Entities`, with shared abstractions, enums, exceptions, and value objects in their own folders. Application code is grouped by feature; CRM commands, queries, handlers, and persistence contracts are separated by use case. Infrastructure keeps EF Core configuration, context, migrations, and SQL-backed stores under `Persistence`, Identity types under `Identity`, and Supabase connectivity checks under `Integrations`. API request/response models and route mapping stay in Minimal API endpoint modules under `Endpoints`; there are no MVC controllers. Tests are divided by Domain, Application, Infrastructure, and API integration boundary. Add folders for future capabilities when they contain real code, and avoid generic repositories or empty layers without a concrete use case.
