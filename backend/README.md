@@ -1,10 +1,10 @@
 # DigiSay API foundation
 
-This folder contains the ASP.NET Core 9 modular-monolith API with SQL Server contact-inquiry persistence and an optional Supabase Postgres connectivity check. It also provides OpenAPI in Development, ProblemDetails, versioned routes, CORS, rate limiting, and database readiness checks. Identity and protected client/admin workflows remain unimplemented.
+This folder contains the ASP.NET Core 10 modular-monolith API with SQL Server contact-inquiry persistence and an optional Supabase Postgres connectivity check. It also provides OpenAPI in Development, ProblemDetails, versioned routes, CORS, rate limiting, and database readiness checks. Identity and protected client/admin workflows remain unimplemented.
 
 ## Prerequisites
 
-- .NET 9 SDK.
+- .NET 10 SDK (the repository `global.json` selects the latest installed .NET 10 feature band).
 - SQL Server for readiness checks.
 
 ## Configure and run
@@ -16,8 +16,11 @@ Optional Supabase database reachability uses `ConnectionStrings:SupabasePostgres
 ```powershell
 dotnet restore DigiSay.sln
 dotnet build DigiSay.sln --no-restore
+dotnet test DigiSay.sln --no-build
 dotnet run --project src/DigiSay.Api
 ```
+
+NuGet versions are centrally managed in `Directory.Packages.props`. Restore writes per-project lock files; commit lock-file changes when package references change. Package vulnerability auditing is enabled during restore.
 
 `GET /api/v1/health` reports API process liveness. `GET /health/ready` checks SQL Server and also Supabase Postgres when configured. `POST /api/v1/contact-inquiries` validates and rate-limits public inquiries before storing them in SQL Server. OpenAPI is available only in Development.
 

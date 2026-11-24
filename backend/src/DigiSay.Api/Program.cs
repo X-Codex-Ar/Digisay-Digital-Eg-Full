@@ -1,9 +1,8 @@
 using Asp.Versioning;
-using DigiSay.Application.ContactInquiries;
-using DigiSay.Domain;
+using DigiSay.Api.Endpoints;
+using DigiSay.Application;
 using DigiSay.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -38,6 +37,7 @@ builder.Services.AddApiVersioning(options =>
     options.ReportApiVersions = true;
     options.ApiVersionReader = new UrlSegmentApiVersionReader();
 });
+builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
 var app = builder.Build();
@@ -55,75 +55,8 @@ var apiVersionSet = app.NewApiVersionSet()
     .ReportApiVersions()
     .Build();
 
-app.MapGet("/api/v{version:apiVersion}/health", () => Results.Ok(new { status = "ok" }))
-    .WithName("GetApiHealth")
-    .WithApiVersionSet(apiVersionSet)
-    .MapToApiVersion(new ApiVersion(1, 0));
-
-app.MapPost("/api/v{version:apiVersion}/contact-inquiries", async (
-        ContactInquiryRequest request,
-        HttpContext httpContext,
-        IContactInquiryWriter inquiryWriter,
-        CancellationToken cancellationToken) =>
-    {
-        var validationResults = new List<ValidationResult>();
-        var validationContext = new ValidationContext(request);
-        if (!Validator.TryValidateObject(request, validationContext, validationResults, validateAllProperties: true))
-        {
-            var errors = validationResults
-                .SelectMany(result => result.MemberNames.Select(member => new { member, result.ErrorMessage }))
-                .GroupBy(item => item.member)
-                .ToDictionary(group => group.Key, group => group.Select(item => item.ErrorMessage ?? "Invalid value.").ToArray());
-            return Results.ValidationProblem(errors);
-        }
-
-        if (!string.IsNullOrWhiteSpace(request.BotField))
-        {
-            return Results.Accepted();
-        }
-
-        var inquiry = ContactInquiry.Create(
-            request.FirstName!,
-            request.LastName!,
-            request.Email!,
-            request.Phone,
-            request.Service!,
-            request.Message,
-            httpContext.Connection.RemoteIpAddress?.ToString());
-
-        await inquiryWriter.SaveAsync(inquiry, cancellationToken);
-        return Results.Json(new { inquiry.Id, inquiry.CreatedAtUtc }, statusCode: StatusCodes.Status201Created);
-    })
-    .WithName("CreateContactInquiry")
-    .WithApiVersionSet(apiVersionSet)
-    .MapToApiVersion(new ApiVersion(1, 0))
-    .RequireRateLimiting("public-contact");
-
+app.MapApiEndpoints(apiVersionSet);
 app.MapHealthChecks("/health/ready", new HealthCheckOptions());
 app.Run();
 
 public partial class Program { }
-
-public sealed record ContactInquiryRequest
-{
-    [Required, StringLength(50, MinimumLength = 1)]
-    public string? FirstName { get; init; }
-
-    [Required, StringLength(50, MinimumLength = 1)]
-    public string? LastName { get; init; }
-
-    [Required, EmailAddress, StringLength(254)]
-    public string? Email { get; init; }
-
-    [StringLength(25)]
-    public string? Phone { get; init; }
-
-    [Required, StringLength(80, MinimumLength = 2)]
-    public string? Service { get; init; }
-
-    [StringLength(2000)]
-    public string? Message { get; init; }
-
-    [StringLength(200)]
-    public string? BotField { get; init; }
-}
