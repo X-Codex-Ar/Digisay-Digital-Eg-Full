@@ -1,16 +1,19 @@
 # DigiSay AI Agents & Intelligence Services
 
-This folder is the home for AI product specifications, evaluations, prompts, and (when approved) agent workflows supporting DigiSay's business capabilities. It currently contains planning only: there is no model SDK, provider integration, AI API, or autonomous agent in production.
+This folder is the home for AI product specifications, evaluations, prompts, and (when approved) agent workflows supporting DigiSay's business capabilities. The current feature branch also contains a provider-neutral service-request triage contract in the backend, but there is no model SDK configured, provider integration, AI API, chatbot, or autonomous agent in production.
 
 ## Scope & Purpose
 
-- **Inquiry and CRM triage (first candidate):** Suggest a category, urgency, and short rationale for staff review. Keep the suggestion separate from the authoritative SQL Server record; do not auto-reply, assign, or transition a CRM record.
+- **CRM service-request triage (backend foundation in review):** Future suggestions may include category, urgency, and rationale for staff review. Keep them separate from the authoritative SQL Server record; do not auto-reply, assign, or transition a CRM record.
+- **Public website FAQ chatbot (recommended first user-facing pilot):** Answer from curated public service information only, link sources, state uncertainty, and direct contact intent to the existing contact form. Do not access CRM or client data, make commitments, or invoke write-capable tools.
+- **Authenticated client support assistant (later):** Requires functional support APIs, tenant/resource authorization, permission-aware knowledge retrieval, transcript consent/retention, and staff handoff before it can safely answer client-specific questions.
 - **Content metadata suggestions:** Propose captions, language, and tags for uploaded media, with staff correction before saving.
 - **Campaign reporting and knowledge search:** Summarize authorized campaign data and approved company materials with source references.
 - **Rights and infringement analysis:** A later, higher-risk capability that may prioritize evidence for reviewers; it must never issue a takedown or make a legal determination automatically.
 
 See [`docs/architecture/AI-ENGINEERING-ROADMAP.md`](../docs/architecture/AI-ENGINEERING-ROADMAP.md) for the repository audit, priorities, and implementation gates.
 The provider-neutral first slice contract and its disabled-by-default status are documented in [`triage/README.md`](triage/README.md).
+No provider is currently enabled; do not put provider keys or customer content into the React or Angular apps.
 
 ## Roles & Developer Responsibilities
 

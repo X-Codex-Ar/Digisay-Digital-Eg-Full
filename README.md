@@ -14,7 +14,7 @@ database/          SQL Server migration guidance and database operations
 devops/            Deployment, CI/CD, containers, and infrastructure definitions
 storage/           Centralized media, static fallback, and Supabase Storage bucket schemas
 testing/           Cross-platform end-to-end and integration test suites
-ai-agents/         AI agent workflows, rights automation, and intelligence services
+ai-agents/         AI feature specifications, evaluations, and gated future workflows
 docs/              Architecture, API, security and operations documentation
 ```
 
