@@ -76,6 +76,13 @@ export class CrmWorkflowComponent implements OnInit {
       this.auth.organizations().find((org) => org.id === this.auth.activeOrganizationId())
         ?.membershipRole === 'Owner',
   );
+  readonly canCreate = computed(
+    () =>
+      this.auth.isAdmin() &&
+      (!this.isLeads() ||
+        this.auth.organizations().find((org) => org.id === this.auth.activeOrganizationId())
+          ?.membershipRole === 'Owner'),
+  );
   readonly activeOrganizationName = computed(
     () =>
       this.auth.organizations().find((org) => org.id === this.auth.activeOrganizationId())?.name ??
