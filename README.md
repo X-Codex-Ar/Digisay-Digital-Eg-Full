@@ -46,7 +46,7 @@ pnpm --dir public test
 pnpm --dir public build
 
 pnpm --dir dashboard install --frozen-lockfile
-pnpm --dir dashboard test -- --watch=false
+pnpm --dir dashboard test --watch=false
 pnpm --dir dashboard build
 
 dotnet restore backend/DigiSay.sln --locked-mode
