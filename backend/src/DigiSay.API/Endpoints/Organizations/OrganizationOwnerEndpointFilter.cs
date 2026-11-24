@@ -1,6 +1,6 @@
 using DigiSay.Application.Common.Organizations;
 
-namespace DigiSay.API.Endpoints.Crm;
+namespace DigiSay.API.Endpoints.Organizations;
 
 internal sealed class OrganizationOwnerEndpointFilter(IOrganizationContext organizationContext) : IEndpointFilter
 {

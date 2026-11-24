@@ -11,7 +11,7 @@ public sealed class PersistenceModelTests
     public void Tenant_owned_crm_entities_use_organization_composite_keys_and_email_storage_conversion()
     {
         var options = new DbContextOptionsBuilder<DigiSayDbContext>()
-            .UseSqlite("Data Source=:memory:")
+            .UseSqlServer("Server=localhost;Database=DigiSayModelTests;User Id=sa;Password=Local-only-Not-Used!2026;TrustServerCertificate=True")
             .Options;
         using var context = new DigiSayDbContext(options);
         var lead = context.Model.FindEntityType(typeof(Lead))!;

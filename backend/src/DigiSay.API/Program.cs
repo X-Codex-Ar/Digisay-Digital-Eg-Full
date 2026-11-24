@@ -5,6 +5,7 @@ using DigiSay.API.Authentication;
 using DigiSay.API.Endpoints;
 using DigiSay.API.Endpoints.Crm;
 using DigiSay.API.Endpoints.Organizations;
+using DigiSay.API.Endpoints.Storage;
 using DigiSay.Application;
 using DigiSay.Infrastructure;
 using DigiSay.Infrastructure.Identity;
@@ -133,6 +134,7 @@ var apiVersionSet = app.NewApiVersionSet()
 app.MapApiEndpoints(apiVersionSet);
 app.MapOrganizationEndpoints(apiVersionSet);
 app.MapCrmEndpoints(apiVersionSet);
+app.MapStorageEndpoints(apiVersionSet);
 app.MapHealthChecks("/health/ready", new HealthCheckOptions()).AllowAnonymous();
 app.Run();
 

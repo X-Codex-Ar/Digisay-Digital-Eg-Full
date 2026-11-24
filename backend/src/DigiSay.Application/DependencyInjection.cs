@@ -13,6 +13,9 @@ using DigiSay.Application.Features.CRM.ServiceRequests.Queries.ListServiceReques
 using DigiSay.Application.Features.Organizations.Commands.CreateOrganization;
 using DigiSay.Application.Features.Organizations.Queries.ListMyOrganizations;
 using DigiSay.Application.Features.Organizations.Queries.GetCurrentOrganization;
+using DigiSay.Application.Features.Content.Commands.UploadObject;
+using DigiSay.Application.Features.Content.Commands.DeleteObject;
+using DigiSay.Application.Features.Content.Queries.CreateDownloadLink;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DigiSay.Application;
@@ -27,6 +30,9 @@ public static class DependencyInjection
         services.AddScoped<CreateOrganizationHandler>();
         services.AddScoped<ListMyOrganizationsHandler>();
         services.AddScoped<GetCurrentOrganizationHandler>();
+        services.AddScoped<UploadObjectHandler>();
+        services.AddScoped<CreateDownloadLinkHandler>();
+        services.AddScoped<DeleteObjectHandler>();
         services.AddScoped<CreateLeadHandler>();
         services.AddScoped<GetLeadHandler>();
         services.AddScoped<ListLeadsHandler>();
