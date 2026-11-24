@@ -13,5 +13,6 @@
     <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" />
     <PackageReference Include="Microsoft.Extensions.Http" />
     <PackageReference Include="Npgsql" />
+    <PackageReference Include="StackExchange.Redis" />
   </ItemGroup>
 </Project>

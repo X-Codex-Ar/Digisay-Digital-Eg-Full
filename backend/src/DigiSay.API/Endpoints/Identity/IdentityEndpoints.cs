@@ -1,5 +1,6 @@
 using Asp.Versioning.Builder;
 using DigiSay.Infrastructure.Identity;
+using DigiSay.API.RateLimiting;
 using Microsoft.AspNetCore.Identity;
 
 namespace DigiSay.API.Endpoints.Identity;
@@ -10,7 +11,8 @@ internal static class IdentityEndpoints
     {
         var auth = versionedApi.MapGroup("/auth")
             .WithTags("Identity")
-            .RequireRateLimiting("identity-auth");
+            .WithMetadata(new RateLimitPolicy("identity-auth", 10, TimeSpan.FromMinutes(10)))
+            .AddEndpointFilter<DistributedRateLimitFilter>();
 
         auth.MapIdentityApi<DigiSayUser>();
         auth.MapPost("/logout", async (SignInManager<DigiSayUser> signInManager) =>

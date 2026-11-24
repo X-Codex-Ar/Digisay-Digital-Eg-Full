@@ -3,14 +3,17 @@ using DigiSay.Application.Features.CRM.Leads.Abstractions;
 using DigiSay.Application.Features.CRM.ServiceRequests.Abstractions;
 using DigiSay.Application.Features.Organizations.Abstractions;
 using DigiSay.Application.Features.Content.Abstractions;
+using DigiSay.Application.Common.RateLimiting;
 using DigiSay.Infrastructure.Persistence;
 using DigiSay.Infrastructure.Integrations.Supabase;
 using DigiSay.Infrastructure.Storage.Supabase;
+using DigiSay.Infrastructure.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Npgsql;
+using StackExchange.Redis;
 
 namespace DigiSay.Infrastructure;
 
@@ -72,6 +75,34 @@ public static class DependencyInjection
             healthChecks.AddCheck<SupabasePostgresHealthCheck>("supabase-postgres");
         }
 
+        return services;
+    }
+
+    public static IServiceCollection AddRateLimitStore(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        bool isDevelopment)
+    {
+        var redisConnection = configuration["RateLimiting:RedisConnectionString"];
+        if (string.IsNullOrWhiteSpace(redisConnection))
+        {
+            if (!isDevelopment)
+            {
+                throw new InvalidOperationException(
+                    "RateLimiting:RedisConnectionString must be configured outside Development.");
+            }
+
+            services.AddSingleton<IRateLimitStore, InMemoryRateLimitStore>();
+            return services;
+        }
+
+        services.AddSingleton<IConnectionMultiplexer>(_ =>
+        {
+            var redisOptions = ConfigurationOptions.Parse(redisConnection);
+            redisOptions.AbortOnConnectFail = false;
+            return ConnectionMultiplexer.Connect(redisOptions);
+        });
+        services.AddSingleton<IRateLimitStore, RedisRateLimitStore>();
         return services;
     }
 }
