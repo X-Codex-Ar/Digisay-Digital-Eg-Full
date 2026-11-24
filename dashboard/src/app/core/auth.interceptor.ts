@@ -23,6 +23,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
       try {
         return auth.refreshAccessToken().pipe(
           switchMap(() => next(attachAuth(request))),
+          catchError((refreshError: unknown) => {
             auth.signOut();
             return throwError(() => refreshError);
           }),

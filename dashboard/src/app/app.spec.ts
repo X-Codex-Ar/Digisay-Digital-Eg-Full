@@ -49,6 +49,7 @@ describe('Dashboard route boundaries', () => {
     crmApi.transition.mockReset().mockReturnValue(of({}));
     auth.authenticated.set(true);
     auth.isAdmin.set(true);
+    auth.organizations.set([{ id: 'org-1', name: 'DigiSay test org', membershipRole: 'Owner' }]);
     TestBed.configureTestingModule({
       providers: [
         provideRouter(routes, withComponentInputBinding()),
@@ -77,7 +78,7 @@ describe('Dashboard route boundaries', () => {
     await harness.navigateByUrl('/admin/leads');
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent?.trim()).toBe('Leads');
     expect(harness.routeNativeElement?.textContent).toContain('Ada Lovelace');
-    expect(harness.routeNativeElement?.textContent).toContain('Move to');
+    expect(harness.routeNativeElement?.textContent).toContain('Change status…');
   });
 
   it('submits only an allowed lead lifecycle transition', async () => {
@@ -89,6 +90,29 @@ describe('Dashboard route boundaries', () => {
     action.dispatchEvent(new Event('change'));
     await harness.fixture.whenStable();
     expect(crmApi.transition).toHaveBeenCalledWith('leads', 'lead-1', 'Contacted');
+  });
+
+  it('allows non-owner organization members to create service requests', async () => {
+    auth.organizations.set([{ id: 'org-1', name: 'DigiSay test org', membershipRole: 'Member' }]);
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/admin/requests');
+    const createButton = [...(harness.routeNativeElement?.querySelectorAll('button') ?? [])].find(
+      (button) => button.textContent?.includes('Create request'),
+    );
+    expect(createButton?.disabled).toBe(false);
+  });
+
+  it('keeps the CRM workspace available when a record transition is forbidden', async () => {
+    crmApi.transition.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 403 })));
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/admin/leads');
+    const action = harness.routeNativeElement?.querySelectorAll('select')[1] as HTMLSelectElement;
+    action.value = 'Contacted';
+    action.dispatchEvent(new Event('change'));
+    await harness.fixture.whenStable();
+    expect(harness.routeNativeElement?.textContent).toContain('not allowed to perform this action');
+    expect(harness.routeNativeElement?.textContent).not.toContain('Access denied');
+    expect(harness.routeNativeElement?.textContent).toContain('Ada Lovelace');
   });
 
   it('shows API failure state with a retry action', async () => {

@@ -126,7 +126,7 @@ export class CrmWorkflowComponent implements OnInit {
   }
 
   openCreate(): void {
-    if (!this.canMutate()) return;
+    if (!this.canCreate()) return;
     this.selected.set(null);
     Object.assign(this.form, this.emptyForm());
     this.editing.set(false);
@@ -182,7 +182,7 @@ export class CrmWorkflowComponent implements OnInit {
   }
 
   save(): void {
-    if (this.busy() || !this.canMutate()) return;
+    if (this.busy() || (this.editing() ? !this.canMutate() : !this.canCreate())) return;
     const payload = this.isLeads()
       ? {
           name: this.form['name'].trim(),
@@ -231,7 +231,6 @@ export class CrmWorkflowComponent implements OnInit {
         this.notice.set(`Status changed to ${this.displayStatus(status)}.`);
         this.load();
       },
-      error: (error: unknown) => {
       error: (error: unknown) => {
         this.busy.set(false);
         this.error.set(this.errorMessage(error));
