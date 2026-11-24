@@ -60,4 +60,4 @@ SQL Server is the system of record for contact inquiries and planned transaction
 
 ## Phase status
 
-The public app, dashboard shell, API contact persistence, ASP.NET Core Identity foundation, verified organization membership, EF schema migrations, Firebase Analytics page views, backend unit/architecture tests, and SQLite-backed HTTP integration tests are implemented. Tenant-owned business-resource isolation, protected workflows, Supabase data access, SQL Server-backed automated integration infrastructure, production infrastructure, and deployment remain future phases until implemented and verified.
+The public app, dashboard shell, API contact persistence, ASP.NET Core Identity foundation, verified organization membership, EF schema migrations, Firebase Analytics page views, backend unit/architecture tests, and SQL Server-backed HTTP integration tests are implemented. Production infrastructure and deployment remain future phases until implemented and verified.
