@@ -1,6 +1,6 @@
 # DigiSay API foundation
 
-This folder contains the ASP.NET Core 10 modular-monolith API with SQL Server persistence, ASP.NET Core Identity, organization memberships, an optional Supabase Postgres connectivity check, OpenAPI in Development, ProblemDetails, versioned routes, CORS, rate limiting, and readiness checks. Identity registration, email confirmation/recovery, sign-in, refresh, role persistence, and a protected current-user route are implemented. Organizations can be created by authenticated users; membership lists are scoped to the current user, and organization context is resolved only after active membership is checked. Tenant-owned business workflows and invitations remain unimplemented.
+This folder contains the .NET 10 modular-monolith backend split into Domain, Application, Infrastructure, and API projects. It includes SQL Server persistence, ASP.NET Core Identity, organization membership and tenant-scoped CRM lead and service-request workflows, an optional Supabase Postgres connectivity check, versioned Minimal API routes, OpenAPI in Development, ProblemDetails, CORS, rate limiting, and readiness checks.
 
 ## Prerequisites
 
@@ -20,21 +20,23 @@ Optional Supabase database reachability uses `ConnectionStrings:SupabasePostgres
 dotnet restore DigiSay.sln
 dotnet build DigiSay.sln --no-restore
 dotnet test DigiSay.sln --configuration Release
-dotnet run --project src/DigiSay.Api
+dotnet run --project src/DigiSay.API
 ```
 
 Install the matching EF Core CLI and apply versioned schema changes deliberately (the API never migrates at startup):
 
 ```powershell
 dotnet tool install --global dotnet-ef --version 10.0.15
-dotnet ef database update --project src/DigiSay.Infrastructure --startup-project src/DigiSay.Api
+dotnet ef database update --project src/DigiSay.Infrastructure --startup-project src/DigiSay.API
 ```
 
 NuGet versions are centrally managed in `Directory.Packages.props`. Restore writes per-project lock files; commit lock-file changes when package references change. Package vulnerability auditing is enabled during restore.
 
 `GET /api/v1/health` reports API process liveness. `GET /health/ready` checks SQL Server and also Supabase Postgres when configured. `POST /api/v1/contact-inquiries` validates and rate-limits public inquiries before storing them in SQL Server. Identity endpoints are under `/api/v1/auth`; use short-lived bearer tokens for the separate SPA clients, keep tokens in memory, and use `/refresh` to obtain replacement credentials. The API uses 15-minute access tokens and 7-day refresh tokens. OpenAPI is available only in Development.
 
-`GET /api/v1/users/me` requires authentication. New registrations have no application role and cannot access role-protected workflows. The role list is seeded by the EF migration; administrative role assignment remains follow-up work. `POST /api/v1/organizations` creates an organization and active owner membership; `GET /api/v1/organizations` returns only the signed-in user's active memberships. `GET /api/v1/organizations/current` requires an `X-Organization-Id` selector and verifies the authenticated user has an active membership before resolving it. The header is only a selector and never grants access. Tenant-owned resource endpoints are not implemented yet; each such route must apply the same verified organization filter and scope every query by `IOrganizationContext.OrganizationId`.
+`GET /api/v1/users/me` requires authentication. New registrations have no application role and cannot access role-protected workflows. The role list is seeded by the EF migration; administrative role assignment remains follow-up work. `POST /api/v1/organizations` creates an organization and active owner membership; `GET /api/v1/organizations` returns only the signed-in user's active memberships. `GET /api/v1/organizations/current` requires an `X-Organization-Id` selector and verifies the authenticated user has an active membership before resolving it. CRM routes are under `/api/v1/crm/leads` and `/api/v1/crm/service-requests`; their queries and writes are scoped to the verified organization, with owner-only mutation operations.
+
+The source projects follow inward dependency direction: Domain has no project dependencies, Application depends on Domain, Infrastructure implements persistence and integrations for Application, and API composes the application. HTTP routes use Minimal API endpoint modules under `DigiSay.API/Endpoints`. Tests are separated into Domain, Application, Infrastructure, and API integration projects under `tests/`.
 
 Bearer clients sign out by deleting both tokens; the built-in bearer scheme does not track single-use refresh-token rotation or immediately revoke a copied access token. Cookie clients can call `/api/v1/auth/logout`.
 

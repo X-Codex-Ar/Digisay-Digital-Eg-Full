@@ -1,4 +1,4 @@
-using DigiSay.Domain;
+using DigiSay.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
