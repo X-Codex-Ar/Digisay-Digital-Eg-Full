@@ -16,6 +16,7 @@ using DigiSay.Application.Features.CRM.ServiceRequests.Queries.ListServiceReques
 using DigiSay.Application.Common.Pagination;
 using DigiSay.Domain.Entities.CRM;
 using DigiSay.Domain.Enums;
+using DigiSay.Domain.Exceptions;
 
 namespace DigiSay.API.Endpoints.Crm;
 
@@ -28,7 +29,8 @@ internal static class CrmEndpoints
             .MapToApiVersion(new ApiVersion(1, 0))
             .WithTags("CRM")
             .RequireAuthorization()
-            .AddEndpointFilter<VerifiedOrganizationEndpointFilter>();
+            .AddEndpointFilter<VerifiedOrganizationEndpointFilter>()
+            .AddEndpointFilter<DomainValidationEndpointFilter>();
 
         MapLeadEndpoints(crm.MapGroup("/leads"));
         MapServiceRequestEndpoints(crm.MapGroup("/service-requests"));
@@ -340,5 +342,23 @@ internal static class RequestValidation
             })
             .GroupBy(item => item.Member)
             .ToDictionary(group => group.Key, group => group.Select(item => item.Message).ToArray());
+    }
+}
+
+internal sealed class DomainValidationEndpointFilter : IEndpointFilter
+{
+    public async ValueTask<object?> InvokeAsync(EndpointFilterInvocationContext context, EndpointFilterDelegate next)
+    {
+        try
+        {
+            return await next(context);
+        }
+        catch (DomainValidationException exception)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                [exception.PropertyName] = [exception.Message],
+            });
+        }
     }
 }
