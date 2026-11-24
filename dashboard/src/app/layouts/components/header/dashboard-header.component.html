@@ -53,5 +53,8 @@
         </svg>
       }
     </button>
+    @if (auth.authenticated()) {
+      <button type="button" class="rounded-xl border border-border px-3 py-2 text-xs font-bold text-muted-foreground hover:text-foreground" (click)="signOut()">Sign out</button>
+    }
   </div>
 </header>

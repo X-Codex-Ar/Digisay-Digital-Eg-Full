@@ -93,6 +93,8 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("AdminAccess", policy =>
         policy.RequireRole(DigiSayRoles.SuperAdmin, DigiSayRoles.Admin, DigiSayRoles.Manager));
     options.AddPolicy("ClientAccess", policy => policy.RequireRole(DigiSayRoles.Client));
+    options.AddPolicy("AdminOrClientAccess", policy =>
+        policy.RequireRole(DigiSayRoles.SuperAdmin, DigiSayRoles.Admin, DigiSayRoles.Manager, DigiSayRoles.Client));
 });
 builder.Services.Configure<SecurityStampValidatorOptions>(options =>
     options.ValidationInterval = TimeSpan.FromMinutes(5));

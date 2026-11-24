@@ -32,7 +32,7 @@ internal static class CrmEndpoints
             .AddEndpointFilter<VerifiedOrganizationEndpointFilter>()
             .AddEndpointFilter<DomainValidationEndpointFilter>();
 
-        MapLeadEndpoints(crm.MapGroup("/leads"));
+        MapLeadEndpoints(crm.MapGroup("/leads").RequireAuthorization("AdminAccess"));
         MapServiceRequestEndpoints(crm.MapGroup("/service-requests"));
     }
 
@@ -154,6 +154,7 @@ internal static class CrmEndpoints
                 var serviceRequest = await handler.HandleAsync(request.ToCreateCommand(), scope, cancellationToken);
                 return Results.Created($"/api/v1/crm/service-requests/{serviceRequest.Id}", ToResponse(serviceRequest));
             })
+            .RequireAuthorization("AdminOrClientAccess")
             .WithName("CreateServiceRequest")
             .WithSummary("Submit a service request for the verified organization.");
 
@@ -172,6 +173,7 @@ internal static class CrmEndpoints
                 var slice = await handler.HandleAsync(new ListServiceRequestsQuery((currentPage - 1) * size, size), scope, cancellationToken);
                 return Results.Ok(ToPage(slice, currentPage, size, slice.Items.Select(ToResponse).ToArray()));
             })
+            .RequireAuthorization("AdminAccess")
             .WithName("ListServiceRequests")
             .WithSummary("List service requests belonging to the verified organization.");
 
@@ -184,6 +186,7 @@ internal static class CrmEndpoints
                 var serviceRequest = await handler.HandleAsync(new GetServiceRequestQuery(id), scope, cancellationToken);
                 return serviceRequest is null ? Results.NotFound() : Results.Ok(ToResponse(serviceRequest));
             })
+            .RequireAuthorization("AdminAccess")
             .WithName("GetServiceRequest")
             .WithSummary("Get a service request only when it belongs to the verified organization.");
 
@@ -203,6 +206,7 @@ internal static class CrmEndpoints
                 var serviceRequest = await handler.HandleAsync(id, request.ToUpdateCommand(), scope, cancellationToken);
                 return serviceRequest is null ? Results.NotFound() : Results.Ok(ToResponse(serviceRequest));
             })
+            .RequireAuthorization("AdminAccess")
             .AddEndpointFilter<OrganizationOwnerEndpointFilter>()
             .WithName("UpdateServiceRequest")
             .WithSummary("Update service request details in the verified organization.");
@@ -232,6 +236,7 @@ internal static class CrmEndpoints
                     ? Results.Ok(ToResponse(result.Request!))
                     : Results.Problem(statusCode: StatusCodes.Status409Conflict, title: "Invalid service request status transition.");
             })
+            .RequireAuthorization("AdminAccess")
             .AddEndpointFilter<OrganizationOwnerEndpointFilter>()
             .WithName("TransitionServiceRequest")
             .WithSummary("Move a service request through its allowed lifecycle states.");
