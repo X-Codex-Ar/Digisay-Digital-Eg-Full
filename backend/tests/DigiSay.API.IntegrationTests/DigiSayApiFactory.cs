@@ -3,6 +3,7 @@ using System.Net;
 using DigiSay.Application.Features.ContactInquiries;
 using DigiSay.Application.Features.Content;
 using DigiSay.Application.Features.Content.Abstractions;
+using DigiSay.Application.Common.RateLimiting;
 using DigiSay.Domain.Entities;
 using DigiSay.Infrastructure.Identity;
 using DigiSay.Infrastructure.Persistence;
@@ -43,6 +44,15 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
     }
 
     public RecordingIdentityEmailSender EmailSender { get; } = new();
+    public DigiSayApiFactory(bool rateLimitStoreUnavailable = false, bool trustLoopbackProxy = false)
+    {
+        RateLimitStoreUnavailable = rateLimitStoreUnavailable;
+        TrustLoopbackProxy = trustLoopbackProxy;
+    }
+
+    private bool RateLimitStoreUnavailable { get; }
+    private bool TrustLoopbackProxy { get; }
+
     public RecordingContactInquiryWriter Writer { get; } = new();
     public RecordingPrivateObjectStorage Storage { get; } = new();
     public ConcurrentQueue<string> Logs { get; } = new();
@@ -57,6 +67,11 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Storage:Supabase:ProjectUrl", "https://storage.example.test");
         builder.UseSetting("Storage:Supabase:SecretKey", "test-only-server-secret");
         builder.UseSetting("Storage:Supabase:PrivateBucket", "digisay-private");
+        if (TrustLoopbackProxy)
+        {
+            builder.UseSetting("ForwardedHeaders:KnownProxies:0", "127.0.0.1");
+            builder.UseSetting("ForwardedHeaders:KnownProxies:1", "::1");
+        }
 
         builder.ConfigureTestServices(services =>
         {
@@ -71,6 +86,11 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
             services.AddSingleton<IEmailSender<DigiSayUser>>(EmailSender);
             services.RemoveAll<IPrivateObjectStorage>();
             services.AddSingleton<IPrivateObjectStorage>(Storage);
+            if (RateLimitStoreUnavailable)
+            {
+                services.RemoveAll<IRateLimitStore>();
+                services.AddSingleton<IRateLimitStore, UnavailableRateLimitStore>();
+            }
         });
     }
 
@@ -108,6 +128,12 @@ internal sealed class RecordingIdentityEmailSender : IEmailSender<DigiSayUser>
 
     public Task SendPasswordResetLinkAsync(DigiSayUser user, string email, string resetLink) => Task.CompletedTask;
     public Task SendPasswordResetCodeAsync(DigiSayUser user, string email, string resetCode) => Task.CompletedTask;
+}
+
+internal sealed class UnavailableRateLimitStore : IRateLimitStore
+{
+    public Task<RateLimitDecision> TryAcquireAsync(string key, int permitLimit, TimeSpan window, CancellationToken cancellationToken) =>
+        throw new InvalidOperationException("Test rate-limit backend unavailable.");
 }
 
 internal sealed class RecordingPrivateObjectStorage : IPrivateObjectStorage

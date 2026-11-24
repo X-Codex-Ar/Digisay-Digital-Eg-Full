@@ -1,5 +1,5 @@
 using System.Net.Mail;
-using System.Threading.RateLimiting;
+using System.Text;
 using Asp.Versioning;
 using DigiSay.API.Authentication;
 using DigiSay.API.Endpoints;
@@ -10,9 +10,12 @@ using DigiSay.Application;
 using DigiSay.Infrastructure;
 using DigiSay.Infrastructure.Identity;
 using DigiSay.Infrastructure.Persistence;
+using DigiSay.API.Configuration;
+using DigiSay.API.RateLimiting;
 using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,40 +28,21 @@ builder.Services.AddCors(options =>
     options.AddPolicy("frontends", policy =>
         policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod());
 });
-builder.Services.AddRateLimiter(options =>
-{
-    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-    options.AddPolicy("public-contact", context =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = 5,
-                Window = TimeSpan.FromMinutes(10),
-                QueueLimit = 0,
-                AutoReplenishment = true,
-            }));
-    options.AddPolicy("identity-auth", context =>
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+    ForwardedHeadersConfiguration.Configure(options, builder.Configuration));
+builder.Services.AddOptions<RateLimitKeyOptions>()
+    .Bind(builder.Configuration.GetSection(RateLimitKeyOptions.SectionName))
+    .Configure(options =>
     {
-        var path = context.Request.Path.Value ?? string.Empty;
-        var isCredentialEndpoint = path.EndsWith("/register", StringComparison.OrdinalIgnoreCase)
-            || path.EndsWith("/login", StringComparison.OrdinalIgnoreCase)
-            || path.EndsWith("/forgotPassword", StringComparison.OrdinalIgnoreCase)
-            || path.EndsWith("/resetPassword", StringComparison.OrdinalIgnoreCase)
-            || path.EndsWith("/resendConfirmationEmail", StringComparison.OrdinalIgnoreCase);
-        var category = isCredentialEndpoint ? "credentials" : path;
-
-        return RateLimitPartition.GetFixedWindowLimiter(
-            $"{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}:{category}",
-            _ => new FixedWindowRateLimiterOptions
-            {
-                PermitLimit = isCredentialEndpoint ? 10 : 60,
-                Window = TimeSpan.FromMinutes(10),
-                QueueLimit = 0,
-                AutoReplenishment = true,
-            });
-    });
-});
+        if (builder.Environment.IsDevelopment() && string.IsNullOrWhiteSpace(options.KeyHashSecret))
+        {
+            options.KeyHashSecret = "development-only-rate-limit-key-hash-secret";
+        }
+    })
+    .Validate(options => Encoding.UTF8.GetByteCount(options.KeyHashSecret) >= 32,
+        "RateLimiting:KeyHashSecret must contain at least 32 UTF-8 bytes.")
+    .ValidateOnStart();
+builder.Services.AddRateLimitStore(builder.Configuration, builder.Environment.IsDevelopment());
 builder.Services.AddApiVersioning(options =>
 {
     options.DefaultApiVersion = new ApiVersion(1, 0);
@@ -116,10 +100,10 @@ else
 
 var app = builder.Build();
 app.UseExceptionHandler();
+app.UseForwardedHeaders();
 app.UseCors("frontends");
 app.UseAuthentication();
 app.UseAuthorization();
-app.UseRateLimiter();
 
 if (app.Environment.IsDevelopment())
 {

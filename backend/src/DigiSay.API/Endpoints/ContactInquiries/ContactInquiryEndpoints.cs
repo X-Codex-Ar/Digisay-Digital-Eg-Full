@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using Asp.Versioning.Builder;
 using DigiSay.Application.Features.ContactInquiries;
+using DigiSay.API.RateLimiting;
 
 namespace DigiSay.API.Endpoints.ContactInquiries;
 
@@ -39,7 +40,8 @@ internal static class ContactInquiryEndpoints
             .WithSummary("Submit a public contact inquiry.")
             .MapToApiVersion(new ApiVersion(1, 0))
             .AllowAnonymous()
-            .RequireRateLimiting("public-contact");
+            .WithMetadata(new RateLimitPolicy("public-contact", 5, TimeSpan.FromMinutes(10)))
+            .AddEndpointFilter<DistributedRateLimitFilter>();
 
         return versionedApi;
     }
