@@ -34,11 +34,26 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
     {
         var query = dbContext.Leads.AsNoTracking().Where(lead => lead.OrganizationId == organizationId);
         var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .OrderByDescending(lead => lead.CreatedAtUtc)
-            .Skip(skip)
-            .Take(take)
-            .ToListAsync(cancellationToken);
+        List<Lead> items;
+        if (dbContext.Database.IsSqlite())
+        {
+            // SQLite cannot translate DateTimeOffset ordering; integration tests sort the scoped result in memory.
+            items = (await query.ToListAsync(cancellationToken))
+                .OrderByDescending(lead => lead.CreatedAtUtc)
+                .ThenBy(lead => lead.Id)
+                .Skip(skip)
+                .Take(take)
+                .ToList();
+        }
+        else
+        {
+            items = await query
+                .OrderByDescending(lead => lead.CreatedAtUtc)
+                .ThenBy(lead => lead.Id)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync(cancellationToken);
+        }
 
         return new PageSlice<Lead>(items, totalCount);
     }
@@ -48,11 +63,26 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
         var query = dbContext.ServiceRequests.AsNoTracking()
             .Where(request => request.OrganizationId == organizationId);
         var totalCount = await query.CountAsync(cancellationToken);
-        var items = await query
-            .OrderByDescending(request => request.CreatedAtUtc)
-            .Skip(skip)
-            .Take(take)
-            .ToListAsync(cancellationToken);
+        List<ServiceRequest> items;
+        if (dbContext.Database.IsSqlite())
+        {
+            // SQLite cannot translate DateTimeOffset ordering; integration tests sort the scoped result in memory.
+            items = (await query.ToListAsync(cancellationToken))
+                .OrderByDescending(request => request.CreatedAtUtc)
+                .ThenBy(request => request.Id)
+                .Skip(skip)
+                .Take(take)
+                .ToList();
+        }
+        else
+        {
+            items = await query
+                .OrderByDescending(request => request.CreatedAtUtc)
+                .ThenBy(request => request.Id)
+                .Skip(skip)
+                .Take(take)
+                .ToListAsync(cancellationToken);
+        }
 
         return new PageSlice<ServiceRequest>(items, totalCount);
     }
