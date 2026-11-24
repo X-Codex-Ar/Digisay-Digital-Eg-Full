@@ -46,9 +46,9 @@ internal static class OrganizationEndpoints
                     OrganizationMembership.CreateOwner(organization.Id, userId));
                 await dbContext.SaveChangesAsync(cancellationToken);
 
-                return Results.Created(
-                    $"/api/v1/organizations/{organization.Id}",
-                    new OrganizationResponse(organization.Id, organization.Name, "Owner"));
+                return Results.Json(
+                    new OrganizationResponse(organization.Id, organization.Name, "Owner"),
+                    statusCode: StatusCodes.Status201Created);
             })
             .WithName("CreateOrganization")
             .WithSummary("Create an organization and grant the creator its owner membership.");
@@ -105,9 +105,9 @@ internal static class OrganizationEndpoints
                 candidate.Id,
                 candidate.Name,
                 organizationContext.MembershipRole))
-            .SingleAsync(cancellationToken);
+            .SingleOrDefaultAsync(cancellationToken);
 
-        return Results.Ok(organization);
+        return organization is null ? Results.NotFound() : Results.Ok(organization);
     }
 }
 
