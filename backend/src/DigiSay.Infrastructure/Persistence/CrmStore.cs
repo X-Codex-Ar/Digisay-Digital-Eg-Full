@@ -35,7 +35,7 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
         var query = dbContext.Leads.AsNoTracking().Where(lead => lead.OrganizationId == organizationId);
         var totalCount = await query.CountAsync(cancellationToken);
         var items = await query
-            .OrderBy(lead => lead.Id)
+            .OrderByDescending(lead => lead.CreatedAtUtc)
             .Skip(skip)
             .Take(take)
             .ToListAsync(cancellationToken);
