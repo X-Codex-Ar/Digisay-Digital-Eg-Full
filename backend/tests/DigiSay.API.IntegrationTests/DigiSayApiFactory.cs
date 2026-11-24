@@ -25,14 +25,21 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
     private readonly SqliteConnection _connection = new("Data Source=:memory:");
 
     public RecordingIdentityEmailSender EmailSender { get; } = new();
-    public DigiSayApiFactory(bool rateLimitStoreUnavailable = false, bool trustLoopbackProxy = false)
+    public DigiSayApiFactory(
+        bool rateLimitStoreUnavailable = false,
+        bool trustLoopbackProxy = false,
+        string? identityBootstrapSecret = null)
     {
         RateLimitStoreUnavailable = rateLimitStoreUnavailable;
         TrustLoopbackProxy = trustLoopbackProxy;
+        IdentityBootstrapSecret = identityBootstrapSecret;
+        IdentityBootstrapSecret = identityBootstrapSecret;
     }
 
     private bool RateLimitStoreUnavailable { get; }
     private bool TrustLoopbackProxy { get; }
+    private string? IdentityBootstrapSecret { get; }
+    private string? IdentityBootstrapSecret { get; }
 
     public RecordingContactInquiryWriter Writer { get; } = new();
     public RecordingPrivateObjectStorage Storage { get; } = new();
@@ -48,6 +55,10 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Storage:Supabase:ProjectUrl", "https://storage.example.test");
         builder.UseSetting("Storage:Supabase:SecretKey", "test-only-server-secret");
         builder.UseSetting("Storage:Supabase:PrivateBucket", "digisay-private");
+        if (IdentityBootstrapSecret is not null)
+        {
+            builder.UseSetting("Identity:BootstrapAdminSecret", IdentityBootstrapSecret);
+        }
         if (TrustLoopbackProxy)
         {
             builder.UseSetting("ForwardedHeaders:KnownProxies:0", "127.0.0.1");
