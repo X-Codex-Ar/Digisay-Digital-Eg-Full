@@ -35,7 +35,7 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
         var query = dbContext.Leads.AsNoTracking().Where(lead => lead.OrganizationId == organizationId);
         var totalCount = await query.CountAsync(cancellationToken);
         List<Lead> items;
-        if (dbContext.Database.IsSqlite())
+        if (dbContext.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
         {
             // SQLite cannot translate DateTimeOffset ordering; integration tests sort the scoped result in memory.
             items = (await query.ToListAsync(cancellationToken))
@@ -64,7 +64,7 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
             .Where(request => request.OrganizationId == organizationId);
         var totalCount = await query.CountAsync(cancellationToken);
         List<ServiceRequest> items;
-        if (dbContext.Database.IsSqlite())
+        if (dbContext.Database.ProviderName == "Microsoft.EntityFrameworkCore.Sqlite")
         {
             // SQLite cannot translate DateTimeOffset ordering; integration tests sort the scoped result in memory.
             items = (await query.ToListAsync(cancellationToken))
