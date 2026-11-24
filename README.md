@@ -35,7 +35,7 @@ The backend targets ASP.NET Core 10 and requires the SQL Server connection from 
 
 ## Continuous integration
 
-GitHub Actions runs three independent status checks on pull requests targeting `main` and pushes to `main`: **Public React**, **Angular Dashboard**, and **Backend .NET 10**. The frontend jobs install pnpm 12.14.0 and Node.js 22.22.3, use each app's own `pnpm-lock.yaml`, and run frozen installs before lint/test/build (Angular has no lint script). The backend job reads `global.json`, restores with `--locked-mode`, then builds and tests Release without restoring again. The workflow requires no secrets and has read-only repository permissions, so fork pull requests use the same checks. Make these checks required in repository rulesets as described below.
+GitHub Actions runs three independent status checks on every pull request and pushes to `main`: **Public React**, **Angular Dashboard**, and **Backend .NET 10**. The frontend jobs install pnpm 12.14.0 and Node.js 22.22.3, use each app's own `pnpm-lock.yaml`, and run frozen installs before lint/test/build (Angular has no lint script). The backend job reads `global.json`, restores with `--locked-mode`, then builds and tests Release without restoring again. The workflow requires no secrets and has read-only repository permissions, so fork pull requests use the same checks. Make these checks required in repository rulesets as described below.
 
 Run the same checks locally from the repository root:
 
