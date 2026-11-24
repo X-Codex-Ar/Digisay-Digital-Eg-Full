@@ -43,7 +43,7 @@ export function PrimaryButton({
     const IconComponent = icon || MessageSquare;
     const heroClasses = cn(
       "group relative inline-flex h-16 items-center gap-3.5 rounded-2xl bg-primary text-primary-foreground px-5 sm:px-6 shadow-md shadow-primary/25 transition-all duration-300 hover:scale-[1.02] hover:bg-[#bf0826] hover:shadow-xl hover:shadow-primary/35 focus-visible:ring-2 focus-visible:ring-ring active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60",
-      className
+      className,
     );
 
     const heroContent = (
@@ -70,7 +70,13 @@ export function PrimaryButton({
         {heroContent}
       </Link>
     ) : href ? (
-      <a href={href} className={heroClasses} target="_blank" rel="noopener noreferrer" onClick={onClick}>
+      <a
+        href={href}
+        className={heroClasses}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onClick}
+      >
         {heroContent}
       </a>
     ) : (

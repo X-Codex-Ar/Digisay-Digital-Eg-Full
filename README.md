@@ -33,6 +33,29 @@ pnpm run build
 
 The backend targets ASP.NET Core 10 and requires the SQL Server connection from local User Secrets for readiness and contact storage. Supabase Postgres uses an optional separate secret. Review [`database/README.md`](database/README.md) and [`backend/README.md`](backend/README.md) before configuring local access. The repository requires the .NET 10 SDK; the [official support policy](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core) lists .NET 10 LTS support through November 2028.
 
+## Continuous integration
+
+GitHub Actions runs three independent status checks on pull requests targeting `main` and pushes to `main`: **Public React**, **Angular Dashboard**, and **Backend .NET 10**. The frontend jobs install pnpm 12.14.0 and Node.js 22.22.3, use each app's own `pnpm-lock.yaml`, and run frozen installs before lint/test/build (Angular has no lint script). The backend job reads `global.json`, restores with `--locked-mode`, then builds and tests Release without restoring again. The workflow requires no secrets and has read-only repository permissions, so fork pull requests use the same checks. Make these checks required in repository rulesets as described below.
+
+Run the same checks locally from the repository root:
+
+```powershell
+pnpm --dir public install --frozen-lockfile
+pnpm --dir public lint
+pnpm --dir public test
+pnpm --dir public build
+
+pnpm --dir dashboard install --frozen-lockfile
+pnpm --dir dashboard test -- --watch=false
+pnpm --dir dashboard build
+
+dotnet restore backend/DigiSay.sln --locked-mode
+dotnet build backend/DigiSay.sln --configuration Release --no-restore
+dotnet test backend/DigiSay.sln --configuration Release --no-build --no-restore
+```
+
+To make these gates mandatory, configure a repository ruleset or branch protection rule for `main`, require pull requests, and require the exact status checks **Public React**, **Angular Dashboard**, and **Backend .NET 10**. Enable “Require branches to be up to date before merging” if the team wants checks to run against the latest base. GitHub repository administrators must save that ruleset; workflow files cannot enable branch protection themselves.
+
 ## Architecture documentation
 
 - [System architecture](docs/architecture/SYSTEM-ARCHITECTURE.md)
