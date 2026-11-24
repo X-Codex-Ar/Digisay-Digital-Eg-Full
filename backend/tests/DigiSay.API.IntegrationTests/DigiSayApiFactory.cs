@@ -24,7 +24,7 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
 {
     private readonly string _databaseName = $"DigiSayIntegrationTests_{Guid.NewGuid():N}";
 
-    private string TestConnectionString
+    internal string TestConnectionString
     {
         get
         {

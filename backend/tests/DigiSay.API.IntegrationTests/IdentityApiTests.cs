@@ -23,9 +23,7 @@ public sealed class IdentityApiTests
         var connectionString = factory.Services.GetRequiredService<IConfiguration>()
             .GetConnectionString("SqlServer");
 
-        Assert.Equal(
-            "Server=localhost;Database=DigiSayTests;User Id=test;Password=test;TrustServerCertificate=True",
-            connectionString);
+        Assert.Equal(factory.TestConnectionString, connectionString);
     }
 
     [Fact]
