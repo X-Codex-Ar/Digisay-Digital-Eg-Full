@@ -2,3 +2,7 @@
 # Contact: x.code.arabic@gmail.com
 * @x-code-ar
 
+# AI engineering scope; keep the existing repository review owner involved.
+/ai-agents/ @eng-teto @x-code-ar
+/docs/architecture/AI-*.md @eng-teto @x-code-ar
+

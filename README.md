@@ -61,6 +61,7 @@ To make these gates mandatory, configure a repository ruleset or branch protecti
 - [System architecture](docs/architecture/SYSTEM-ARCHITECTURE.md)
 - [Clean Architecture boundaries](docs/architecture/CLEAN-ARCHITECTURE.md)
 - [Domain modules and status](docs/architecture/DOMAIN-MODULES.md)
+- [AI engineering roadmap](docs/architecture/AI-ENGINEERING-ROADMAP.md)
 - [Database ownership](docs/database/DATABASE-OWNERSHIP.md)
 - [API conventions](docs/api/API-CONVENTIONS.md)
 - [Security requirements](docs/security/SECURITY-REQUIREMENTS.md)
