@@ -4,7 +4,7 @@ SQL Server is the source of truth for DigiSay business records. Supabase Postgre
 
 ## SQL Server
 
-The first versioned schema change is `sqlserver/001_contact_inquiries.sql`. Review it, then apply it to the configured SQL Server database using a migration runner or SQL client. The app does not run schema changes automatically at startup. Contact records contain personal data; restrict database access and apply the retention policy documented in `sqlserver/README.md`.
+EF Core migrations in `backend/src/DigiSay.Infrastructure/Persistence/Migrations` are the SQL Server schema source of truth. Review migrations and apply them explicitly with `dotnet ef database update`; the API does not run schema changes automatically at startup. The initial migration detects an existing `ContactInquiries` table created by the legacy `sqlserver/001_contact_inquiries.sql` script and preserves its records. Contact records contain personal data; restrict database access and apply the retention policy documented in `sqlserver/README.md`.
 
 Use ASP.NET User Secrets for local configuration:
 

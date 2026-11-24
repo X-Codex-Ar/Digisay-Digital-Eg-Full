@@ -38,6 +38,7 @@ internal static class ContactInquiryEndpoints
             .WithName("CreateContactInquiry")
             .WithSummary("Submit a public contact inquiry.")
             .MapToApiVersion(new ApiVersion(1, 0))
+            .AllowAnonymous()
             .RequireRateLimiting("public-contact");
 
         return versionedApi;

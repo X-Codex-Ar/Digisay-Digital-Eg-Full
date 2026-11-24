@@ -6,4 +6,4 @@ The backend solution is split into four projects. Domain has no project/package 
 DigiSay.Api -> DigiSay.Infrastructure -> DigiSay.Application -> DigiSay.Domain
 ```
 
-The API contains a `ContactInquiry` domain entity, an Application writer boundary, SQL Server persistence in Infrastructure, and versioned minimal API endpoints. The optional Supabase adapter is limited to connectivity health. Controllers are not present. Avoid adding generic repositories until a concrete use case demonstrates the need.
+The API contains a `ContactInquiry` domain entity, an Application writer boundary, SQL Server persistence in Infrastructure, versioned minimal API endpoints, and an Identity user/role store backed by the same SQL Server context. The optional Supabase adapter is limited to connectivity health. Controllers are not present. Avoid adding generic repositories until a concrete use case demonstrates the need.
