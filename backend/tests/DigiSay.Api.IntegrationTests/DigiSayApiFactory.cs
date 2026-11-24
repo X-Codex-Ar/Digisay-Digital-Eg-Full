@@ -3,7 +3,6 @@ using DigiSay.Domain;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -15,11 +14,9 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((_, configuration) => configuration.AddInMemoryCollection(
-            new Dictionary<string, string?>
-            {
-                ["ConnectionStrings:SqlServer"] = "Server=localhost;Database=DigiSayTests;User Id=test;Password=test;TrustServerCertificate=True",
-            }));
+        builder.UseSetting(
+            "ConnectionStrings:SqlServer",
+            "Server=localhost;Database=DigiSayTests;User Id=test;Password=test;TrustServerCertificate=True");
 
         builder.ConfigureTestServices(services =>
         {
