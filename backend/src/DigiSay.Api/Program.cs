@@ -3,6 +3,7 @@ using System.Threading.RateLimiting;
 using Asp.Versioning;
 using DigiSay.Api.Authentication;
 using DigiSay.Api.Endpoints;
+using DigiSay.Api.Endpoints.Organizations;
 using DigiSay.Application;
 using DigiSay.Infrastructure;
 using DigiSay.Infrastructure.Identity;
@@ -129,6 +130,7 @@ var apiVersionSet = app.NewApiVersionSet()
     .Build();
 
 app.MapApiEndpoints(apiVersionSet);
+app.MapOrganizationEndpoints(apiVersionSet);
 app.MapHealthChecks("/health/ready", new HealthCheckOptions()).AllowAnonymous();
 app.Run();
 

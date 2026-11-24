@@ -2,7 +2,7 @@
 
 ## Platform status
 
-The existing public website is preserved as the React 19/TanStack Start app in root `public/`. A separate Angular app lives in root `dashboard/`. The ASP.NET Core 10 API and SQL Server schema migrations live in `backend/` and `database/`. The public site records Firebase Analytics page views and sends contact inquiries to the API when configured. The backend now has an ASP.NET Core Identity foundation with email confirmation, bearer authentication, persisted roles, and a protected current-user endpoint. Organization tenant isolation and protected client/admin business workflows are **not implemented yet**. Supabase Postgres remains an optional API health-checked connection.
+The existing public website is preserved as the React 19/TanStack Start app in root `public/`. A separate Angular app lives in root `dashboard/`. The ASP.NET Core 10 API and SQL Server schema migrations live in `backend/` and `database/`. The public site records Firebase Analytics page views and sends contact inquiries to the API when configured. The backend has ASP.NET Core Identity, email confirmation, bearer authentication, persisted roles, organization memberships, and membership-verified organization context. Tenant-owned CRM and client/admin workflows remain **unimplemented** until their data queries enforce that context. Supabase Postgres remains an optional API health-checked connection.
 
 ## Repository structure
 
