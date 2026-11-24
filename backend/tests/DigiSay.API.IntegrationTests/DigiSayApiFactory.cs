@@ -1,9 +1,12 @@
 using System.Collections.Concurrent;
 using System.Net;
 using DigiSay.Application.Features.ContactInquiries;
+using DigiSay.Application.Features.Content;
+using DigiSay.Application.Features.Content.Abstractions;
 using DigiSay.Domain.Entities;
 using DigiSay.Infrastructure.Identity;
 using DigiSay.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -22,6 +25,7 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
 
     public RecordingIdentityEmailSender EmailSender { get; } = new();
     public RecordingContactInquiryWriter Writer { get; } = new();
+    public RecordingPrivateObjectStorage Storage { get; } = new();
     public ConcurrentQueue<string> Logs { get; } = new();
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
@@ -31,6 +35,9 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
         builder.UseSetting(
             "ConnectionStrings:SqlServer",
             "Server=localhost;Database=DigiSayTests;User Id=test;Password=test;TrustServerCertificate=True");
+        builder.UseSetting("Storage:Supabase:ProjectUrl", "https://storage.example.test");
+        builder.UseSetting("Storage:Supabase:SecretKey", "test-only-server-secret");
+        builder.UseSetting("Storage:Supabase:PrivateBucket", "digisay-private");
 
         builder.ConfigureTestServices(services =>
         {
@@ -43,6 +50,8 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
             services.AddSingleton<IContactInquiryWriter>(Writer);
             services.RemoveAll<IEmailSender<DigiSayUser>>();
             services.AddSingleton<IEmailSender<DigiSayUser>>(EmailSender);
+            services.RemoveAll<IPrivateObjectStorage>();
+            services.AddSingleton<IPrivateObjectStorage>(Storage);
         });
     }
 
@@ -89,6 +98,51 @@ internal sealed class RecordingIdentityEmailSender : IEmailSender<DigiSayUser>
 
     public Task SendPasswordResetLinkAsync(DigiSayUser user, string email, string resetLink) => Task.CompletedTask;
     public Task SendPasswordResetCodeAsync(DigiSayUser user, string email, string resetCode) => Task.CompletedTask;
+}
+
+internal sealed class RecordingPrivateObjectStorage : IPrivateObjectStorage
+{
+    private readonly ConcurrentDictionary<(Guid OrganizationId, Guid ObjectId), (string ContentType, byte[] Content)> _objects = new();
+
+    public IReadOnlyCollection<Guid> OrganizationIds => _objects.Keys.Select(key => key.OrganizationId).ToArray();
+    public int? ProviderFailureStatusCode { get; set; }
+
+    public async Task UploadAsync(Guid organizationId, Guid objectId, Stream content, string verifiedContentType, CancellationToken cancellationToken)
+    {
+        using var buffer = new MemoryStream();
+        await content.CopyToAsync(buffer, cancellationToken);
+        _objects[(organizationId, objectId)] = (verifiedContentType, buffer.ToArray());
+    }
+
+    public Task<Uri> CreateSignedDownloadUrlAsync(Guid organizationId, Guid objectId, TimeSpan expiresIn, CancellationToken cancellationToken)
+    {
+        if (ProviderFailureStatusCode is int statusCode)
+        {
+            throw new StorageProviderException("The test storage provider failed.", statusCode);
+        }
+
+        if (!_objects.ContainsKey((organizationId, objectId)))
+        {
+            throw new StorageProviderException("Object not found.", StatusCodes.Status404NotFound);
+        }
+
+        return Task.FromResult(new Uri($"https://storage.example.test/sign/{organizationId:N}/{objectId:N}?download=true&expires={expiresIn.TotalSeconds}"));
+    }
+
+    public Task DeleteAsync(Guid organizationId, Guid objectId, CancellationToken cancellationToken)
+    {
+        if (ProviderFailureStatusCode is int statusCode)
+        {
+            throw new StorageProviderException("The test storage provider failed.", statusCode);
+        }
+
+        if (!_objects.TryRemove((organizationId, objectId), out _))
+        {
+            throw new StorageProviderException("Object not found.", StatusCodes.Status404NotFound);
+        }
+
+        return Task.CompletedTask;
+    }
 }
 
 internal sealed class RecordingLoggerProvider(ConcurrentQueue<string> logs) : ILoggerProvider
