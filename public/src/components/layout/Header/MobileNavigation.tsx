@@ -125,9 +125,7 @@ function MobileServicesAccordion() {
                       <div
                         className={cn(
                           "flex size-7 shrink-0 items-center justify-center rounded-lg transition-colors",
-                          active
-                            ? "bg-white/20 text-white"
-                            : "bg-muted text-muted-foreground",
+                          active ? "bg-white/20 text-white" : "bg-muted text-muted-foreground",
                         )}
                       >
                         <Icon className="size-3.5" />

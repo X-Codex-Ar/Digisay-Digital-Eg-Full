@@ -2,16 +2,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { Plugin } from "vite";
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-function serveStaticPlugin() {
+function serveStaticPlugin(): Plugin {
   const staticDir = path.resolve(__dirname, "static");
   return {
     name: "digisay-serve-static",
-    configureServer(server: any) {
-      server.middlewares.use((req: any, res: any, next: any) => {
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
         if (!req.url) return next();
         const rawUrl = req.url.split("?")[0] || "";
         const cleanPath = rawUrl.replace(/^\/+/, "");

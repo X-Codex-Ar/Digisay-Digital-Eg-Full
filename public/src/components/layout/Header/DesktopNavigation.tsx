@@ -14,9 +14,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { mainNav, servicesMenu } from "@/data/navigation";
 import { cn } from "@/lib/utils";
 
-const navLinks = mainNav.filter(
-  (n) => n.label !== "Let's Talk" && n.label !== "Privacy Policy",
-);
+const navLinks = mainNav.filter((n) => n.label !== "Let's Talk" && n.label !== "Privacy Policy");
 
 const serviceIcons: Record<string, typeof ShieldCheck> = {
   "/anti-piracy": ShieldCheck,

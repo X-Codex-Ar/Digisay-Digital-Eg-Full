@@ -1,0 +1,105 @@
+name: Issue and PR triage
+
+on:
+  issues:
+    types: [opened, reopened, edited]
+  pull_request_target:
+    types: [opened, reopened, ready_for_review, synchronize, edited]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set labels, owners, milestone, and reviewer
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const isIssue = context.eventName === 'issues';
+            const item = isIssue ? context.payload.issue : context.payload.pull_request;
+            const number = item.number;
+            let title = item.title || '';
+            let body = item.body || '';
+            let changedFiles = [];
+
+            if (!isIssue) {
+              const { data: files } = await github.rest.pulls.listFiles({
+                ...context.repo,
+                pull_number: number,
+                per_page: 100,
+              });
+              changedFiles = files.map(file => file.filename);
+            }
+
+            let linkedIssue = null;
+            if (!isIssue) {
+              const refs = [...body.matchAll(/(?:close[sd]?|fix(?:es|ed)?|resolve[sd]?)\s+#(\d+)/gi)];
+              for (const ref of refs) {
+                try {
+                  const { data } = await github.rest.issues.get({
+                    ...context.repo,
+                    issue_number: Number(ref[1]),
+                  });
+                  linkedIssue = data;
+                  break;
+                } catch (error) {
+                  core.warning(`Unable to read linked issue #${ref[1]}: ${error.message}`);
+                }
+              }
+            }
+
+            const sourceText = `${title}\n${body}\n${changedFiles.join('\n')}`.toLowerCase();
+            const rules = [
+              { test: /\.net 10|runtime upgrade|identity|authentication|tenant isolation|device activation|security/, priority: 'P0', milestone: 1, owners: ['dev-saffo'] },
+              { test: /rate limit|proxy awareness|distributed rate/, priority: 'P2', milestone: 2, owners: ['dev-saffo', 'dev-elbasha'] },
+              { test: /contact form/, priority: 'P2', milestone: 2, owners: ['eng-shimo'] },
+              { test: /public frontend|angular|dashboard|client portal|admin workflow/, priority: 'P1', milestone: 3, owners: ['eng-shimo'] },
+              { test: /github actions|quality gates|ci\b|workflow/, priority: 'P1', milestone: 3, owners: ['dev-elbasha'] },
+              { test: /storage|supabase|crm|lead|service request|test project|integration test/, priority: 'P1', milestone: 3, owners: ['dev-saffo'] },
+            ];
+            const rule = rules.find(candidate => candidate.test.test(sourceText)) ||
+              { priority: 'P1', milestone: 3, owners: ['dev-saffo'] };
+
+            const issue = linkedIssue;
+            const existingAssignees = (issue?.assignees || item.assignees || []).map(user => user.login);
+            const owners = [...new Set([...existingAssignees, ...rule.owners])];
+            const milestone = issue?.milestone?.number || rule.milestone;
+            const existingLabels = (issue?.labels || item.labels || []).map(label => typeof label === 'string' ? label : label.name);
+            const priority = existingLabels.find(label => /^P[012]$/.test(label)) || rule.priority;
+
+            await github.rest.issues.update({
+              ...context.repo,
+              issue_number: number,
+              assignees: owners,
+              milestone,
+            });
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: number,
+              labels: [priority],
+            });
+
+            if (!isIssue) {
+              const reviewers = new Set();
+              if (changedFiles.some(file => file.startsWith('backend/'))) reviewers.add('dev-saffo');
+              if (changedFiles.some(file => file.startsWith('dashboard/') || file.startsWith('public/'))) reviewers.add('eng-shimo');
+              if (changedFiles.some(file => file.startsWith('.github/'))) reviewers.add('dev-elbasha');
+              reviewers.add('x-code-ar');
+              reviewers.delete(item.user.login);
+              const { data: requested } = await github.rest.pulls.listRequestedReviewers({
+                ...context.repo,
+                pull_number: number,
+              });
+              for (const reviewer of requested.users) reviewers.delete(reviewer.login);
+              if (reviewers.size > 0) {
+                await github.rest.pulls.requestReviewers({
+                  ...context.repo,
+                  pull_number: number,
+                  reviewers: [...reviewers],
+                });
+              }
+            }

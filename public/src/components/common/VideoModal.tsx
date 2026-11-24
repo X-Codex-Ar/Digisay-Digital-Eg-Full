@@ -12,7 +12,7 @@ export interface VideoModalProps {
 
 const DEFAULT_VIDEO = resolveVideoUrl(
   "videos/showreel.mp4",
-  "https://digisay.com/wp-content/uploads/2024/03/GFF-No-Logo-1.mp4"
+  "https://digisay.com/wp-content/uploads/2024/03/GFF-No-Logo-1.mp4",
 );
 
 export function VideoModal({

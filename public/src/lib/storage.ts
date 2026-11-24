@@ -4,9 +4,7 @@
  * Seamlessly resolves asset URLs across local static assets and Supabase Storage CDN.
  */
 
-const SUPABASE_STORAGE_URL = (
-  import.meta.env.VITE_SUPABASE_STORAGE_URL || ""
-).replace(/\/$/, "");
+const SUPABASE_STORAGE_URL = (import.meta.env.VITE_SUPABASE_STORAGE_URL || "").replace(/\/$/, "");
 
 export const PUBLIC_MEDIA_BUCKET = "public-media";
 
@@ -29,7 +27,7 @@ export interface ImageTransformOptions {
 export function resolveMediaUrl(
   path: string,
   bucket: string = PUBLIC_MEDIA_BUCKET,
-  fallback?: string
+  fallback?: string,
 ): string {
   const cleanPath = path.replace(/^\/+/, "");
 
@@ -64,7 +62,7 @@ export function resolveVideoUrl(path: string, fallbackUrl: string): string {
 export function getTransformedImageUrl(
   path: string,
   options: ImageTransformOptions = {},
-  bucket: string = PUBLIC_MEDIA_BUCKET
+  bucket: string = PUBLIC_MEDIA_BUCKET,
 ): string {
   const baseUrl = resolveMediaUrl(path, bucket);
 
@@ -75,7 +73,7 @@ export function getTransformedImageUrl(
   // Supabase Image Transformation endpoint structure: /render/image/public/{bucket}/{path}
   const transformEndpoint = SUPABASE_STORAGE_URL.replace(
     /\/v1\/object\/public$/,
-    "/v1/render/image/public"
+    "/v1/render/image/public",
   );
 
   const cleanPath = path.replace(/^\/+/, "");
