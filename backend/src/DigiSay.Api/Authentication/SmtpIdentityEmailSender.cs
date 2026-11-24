@@ -10,10 +10,10 @@ internal sealed class SmtpIdentityEmailSender(IOptions<SmtpEmailOptions> emailOp
     : IEmailSender<DigiSayUser>
 {
     public Task SendConfirmationLinkAsync(DigiSayUser user, string email, string confirmationLink) =>
-        SendAsync(email, "Confirm your DigiSay account", $"Confirm your email address: {confirmationLink}");
+        SendAsync(email, "Confirm your DigiSay account", $"Confirm your email address: {WebUtility.HtmlDecode(confirmationLink)}");
 
     public Task SendPasswordResetLinkAsync(DigiSayUser user, string email, string resetLink) =>
-        SendAsync(email, "Reset your DigiSay password", $"Reset your password: {resetLink}");
+        SendAsync(email, "Reset your DigiSay password", $"Reset your password: {WebUtility.HtmlDecode(resetLink)}");
 
     public Task SendPasswordResetCodeAsync(DigiSayUser user, string email, string resetCode) =>
         SendAsync(email, "Reset your DigiSay password", $"Your password reset code is: {resetCode}");
