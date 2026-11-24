@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set labels, owners, milestone, and reviewer
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const isIssue = context.eventName === 'issues';
@@ -56,7 +56,8 @@ jobs:
             const rules = [
               { test: /\.net 10|runtime upgrade|identity|authentication|tenant isolation|device activation|security/, priority: 'P0', milestone: 1, owners: ['dev-saffo'] },
               { test: /rate limit|proxy awareness|distributed rate/, priority: 'P2', milestone: 2, owners: ['dev-saffo', 'dev-elbasha'] },
-              { test: /contact form|public frontend|angular|dashboard|client portal|admin workflow/, priority: 'P1', milestone: 3, owners: ['eng-shimo'] },
+              { test: /contact form/, priority: 'P2', milestone: 2, owners: ['eng-shimo'] },
+              { test: /public frontend|angular|dashboard|client portal|admin workflow/, priority: 'P1', milestone: 3, owners: ['eng-shimo'] },
               { test: /github actions|quality gates|ci\b|workflow/, priority: 'P1', milestone: 3, owners: ['dev-elbasha'] },
               { test: /storage|supabase|crm|lead|service request|test project|integration test/, priority: 'P1', milestone: 3, owners: ['dev-saffo'] },
             ];
