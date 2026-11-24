@@ -33,6 +33,7 @@ export class AuthService {
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
   private refreshRequest: Observable<void> | null = null;
+  private sessionVersion = 0;
 
   readonly user = signal<AuthUser | null>(null);
   readonly organizations = signal<OrganizationMembership[]>([]);
@@ -42,6 +43,7 @@ export class AuthService {
   readonly isClient = signal(false);
 
   async signIn(email: string, password: string, audience: PortalAudience): Promise<void> {
+    this.clearSession();
     const tokens = await firstValueFrom(
       this.http.post<TokenResponse>(`${apiUrl}/auth/login?useCookies=false`, {
         email,
@@ -103,23 +105,30 @@ export class AuthService {
   refreshAccessToken(): Observable<void> {
     if (this.refreshRequest) return this.refreshRequest;
     if (!this.refreshToken) throw new Error('No refresh token is available.');
-    this.refreshRequest = this.http
+    const sessionVersion = this.sessionVersion;
+    let refreshRequest: Observable<void>;
+    refreshRequest = this.http
       .post<TokenResponse>(`${apiUrl}/auth/refresh`, { refreshToken: this.refreshToken })
       .pipe(
         tap((tokens) => {
-          this.accessToken = tokens.accessToken;
-          this.refreshToken = tokens.refreshToken;
+          if (this.sessionVersion === sessionVersion) {
+            this.accessToken = tokens.accessToken;
+            this.refreshToken = tokens.refreshToken;
+          }
         }),
         map(() => void 0),
         shareReplay(1),
         finalize(() => {
-          this.refreshRequest = null;
+          if (this.refreshRequest === refreshRequest) this.refreshRequest = null;
         }),
       );
-    return this.refreshRequest;
+    this.refreshRequest = refreshRequest;
+    return refreshRequest;
   }
 
   private clearSession(): void {
+    this.sessionVersion += 1;
+    this.refreshRequest = null;
     this.accessToken = null;
     this.refreshToken = null;
     this.user.set(null);
