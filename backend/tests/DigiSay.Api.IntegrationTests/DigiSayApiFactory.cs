@@ -1,9 +1,11 @@
+using System.Collections.Concurrent;
+using System.Net;
 using DigiSay.Application.ContactInquiries;
 using DigiSay.Domain;
 using DigiSay.Infrastructure.Identity;
 using DigiSay.Infrastructure.Persistence;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Data.Sqlite;
@@ -16,6 +18,8 @@ namespace DigiSay.Api.IntegrationTests;
 internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
 {
     private readonly SqliteConnection _connection = new("Data Source=:memory:");
+
+    public RecordingIdentityEmailSender EmailSender { get; } = new();
 
     public RecordingContactInquiryWriter Writer { get; } = new();
 
@@ -35,6 +39,8 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
                     .Options));
             services.RemoveAll<IContactInquiryWriter>();
             services.AddSingleton<IContactInquiryWriter>(Writer);
+            services.RemoveAll<IEmailSender<DigiSayUser>>();
+            services.AddSingleton<IEmailSender<DigiSayUser>>(EmailSender);
         });
     }
 
@@ -45,18 +51,11 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
         await dbContext.Database.EnsureCreatedAsync();
     }
 
-    public async Task ConfirmEmailAsync(string email)
+    public async Task<HttpResponseMessage> ConfirmEmailAsync(HttpClient client, string email)
     {
-        using var scope = Services.CreateScope();
-        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<DigiSayUser>>();
-        var user = await userManager.FindByEmailAsync(email)
-            ?? throw new InvalidOperationException("Test user was not created.");
-        user.EmailConfirmed = true;
-        var result = await userManager.UpdateAsync(user);
-        if (!result.Succeeded)
-        {
-            throw new InvalidOperationException("Test user email could not be confirmed.");
-        }
+        var confirmationLink = EmailSender.GetConfirmationLink(email);
+        var confirmationUri = new Uri(WebUtility.HtmlDecode(confirmationLink));
+        return await client.GetAsync(confirmationUri.PathAndQuery);
     }
 
     protected override void Dispose(bool disposing)
@@ -68,6 +67,27 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
 
         base.Dispose(disposing);
     }
+}
+
+internal sealed class RecordingIdentityEmailSender : IEmailSender<DigiSayUser>
+{
+    private readonly ConcurrentDictionary<string, string> _confirmationLinks = new(
+        StringComparer.OrdinalIgnoreCase);
+
+    public Task SendConfirmationLinkAsync(DigiSayUser user, string email, string confirmationLink)
+    {
+        _confirmationLinks[email] = confirmationLink;
+        return Task.CompletedTask;
+    }
+
+    public string GetConfirmationLink(string email) =>
+        _confirmationLinks.TryGetValue(email, out var link)
+            ? link
+            : throw new InvalidOperationException("No confirmation link was generated for the test user.");
+
+    public Task SendPasswordResetLinkAsync(DigiSayUser user, string email, string resetLink) => Task.CompletedTask;
+
+    public Task SendPasswordResetCodeAsync(DigiSayUser user, string email, string resetCode) => Task.CompletedTask;
 }
 
 internal sealed class RecordingContactInquiryWriter : IContactInquiryWriter

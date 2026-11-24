@@ -51,7 +51,8 @@ public sealed class IdentityApiTests
             password = Password,
         });
         Assert.Equal(HttpStatusCode.OK, registration.StatusCode);
-        await factory.ConfirmEmailAsync(Email);
+        var confirmation = await factory.ConfirmEmailAsync(client, Email);
+        Assert.Equal(HttpStatusCode.OK, confirmation.StatusCode);
 
         var login = await client.PostAsJsonAsync("/api/v1/auth/login?useCookies=false", new
         {
@@ -97,7 +98,8 @@ public sealed class IdentityApiTests
             password = Password,
         });
         Assert.Equal(HttpStatusCode.OK, registration.StatusCode);
-        await factory.ConfirmEmailAsync(Email);
+        var confirmation = await factory.ConfirmEmailAsync(client, Email);
+        Assert.Equal(HttpStatusCode.OK, confirmation.StatusCode);
 
         var login = await client.PostAsJsonAsync("/api/v1/auth/login?useCookies=false", new
         {
@@ -121,7 +123,8 @@ public sealed class IdentityApiTests
             password = Password,
         });
         Assert.Equal(HttpStatusCode.OK, registration.StatusCode);
-        await factory.ConfirmEmailAsync(Email);
+        var confirmation = await factory.ConfirmEmailAsync(client, Email);
+        Assert.Equal(HttpStatusCode.OK, confirmation.StatusCode);
 
         var login = await client.PostAsJsonAsync("/api/v1/auth/login?useCookies=true", new
         {
@@ -135,6 +138,42 @@ public sealed class IdentityApiTests
 
         Assert.Equal(HttpStatusCode.NoContent, logout.StatusCode);
         Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/v1/users/me")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Credential_attempt_limits_are_separate_from_refresh_traffic()
+    {
+        using var factory = new DigiSayApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var client = factory.CreateClient();
+
+        for (var attempt = 0; attempt < 11; attempt++)
+        {
+            using var loginResponse = await client.PostAsJsonAsync("/api/v1/auth/login?useCookies=false", new
+            {
+                email = "unknown@example.test",
+                password = Password,
+            });
+
+            if (attempt < 10)
+            {
+                Assert.NotEqual(HttpStatusCode.TooManyRequests, loginResponse.StatusCode);
+            }
+            else
+            {
+                Assert.Equal(HttpStatusCode.TooManyRequests, loginResponse.StatusCode);
+            }
+        }
+
+        for (var attempt = 0; attempt < 11; attempt++)
+        {
+            using var refreshResponse = await client.PostAsJsonAsync("/api/v1/auth/refresh", new
+            {
+                refreshToken = "invalid-test-token",
+            });
+
+            Assert.NotEqual(HttpStatusCode.TooManyRequests, refreshResponse.StatusCode);
+        }
     }
 
     private sealed record ProfileResponse(Guid Id, string Email, string? DisplayName, string[] Roles);

@@ -36,15 +36,25 @@ builder.Services.AddRateLimiter(options =>
                 AutoReplenishment = true,
             }));
     options.AddPolicy("identity-auth", context =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            context.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+    {
+        var path = context.Request.Path.Value ?? string.Empty;
+        var isCredentialEndpoint = path.EndsWith("/register", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith("/login", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith("/forgotPassword", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith("/resetPassword", StringComparison.OrdinalIgnoreCase)
+            || path.EndsWith("/resendConfirmationEmail", StringComparison.OrdinalIgnoreCase);
+        var category = isCredentialEndpoint ? "credentials" : path;
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            $"{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}:{category}",
             _ => new FixedWindowRateLimiterOptions
             {
-                PermitLimit = 10,
+                PermitLimit = isCredentialEndpoint ? 10 : 60,
                 Window = TimeSpan.FromMinutes(10),
                 QueueLimit = 0,
                 AutoReplenishment = true,
-            }));
+            });
+    });
 });
 builder.Services.AddApiVersioning(options =>
 {
