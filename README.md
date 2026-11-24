@@ -2,7 +2,7 @@
 
 ## Platform status
 
-The existing public website is preserved as the React 19/TanStack Start app in root `public/`. A separate Angular app lives in root `dashboard/`. The ASP.NET Core 9 API and SQL Server schema scripts live in `backend/` and `database/`. The public site records Firebase Analytics page views and sends contact inquiries to the API when configured. Supabase Postgres is an optional API health-checked connection; no Supabase password was supplied, so it is not connected yet. Identity, protected client/admin workflows, containers, and deployment are **not implemented yet**.
+The existing public website is preserved as the React 19/TanStack Start app in root `public/`. A separate Angular app lives in root `dashboard/`. The ASP.NET Core 10 API and SQL Server schema scripts live in `backend/` and `database/`. The public site records Firebase Analytics page views and sends contact inquiries to the API when configured. Supabase Postgres is an optional API health-checked connection; no Supabase password was supplied, so it is not connected yet. Identity, protected client/admin workflows, containers, and deployment are **not implemented yet**.
 
 ## Repository structure
 
@@ -31,7 +31,7 @@ pnpm run test
 pnpm run build
 ```
 
-The backend targets ASP.NET Core 9 and requires the SQL Server connection from local User Secrets for readiness and contact storage. Supabase Postgres uses an optional separate secret. Review [`database/README.md`](database/README.md) and [`backend/README.md`](backend/README.md) before configuring local access. .NET 9 reached end of support on November 10, 2026; plan an upgrade to .NET 10 LTS before production deployment. See the [official .NET support policy](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core).
+The backend targets ASP.NET Core 10 and requires the SQL Server connection from local User Secrets for readiness and contact storage. Supabase Postgres uses an optional separate secret. Review [`database/README.md`](database/README.md) and [`backend/README.md`](backend/README.md) before configuring local access. The repository requires the .NET 10 SDK; the [official support policy](https://dotnet.microsoft.com/en-us/platform/support/policy/dotnet-core) lists .NET 10 LTS support through November 2028.
 
 ## Architecture documentation
 

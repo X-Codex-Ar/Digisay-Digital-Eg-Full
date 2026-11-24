@@ -1,6 +1,6 @@
 # Repository audit
 
-**Audit date:** 2026-11-23
+**Audit date:** 2026-11-24
 **Scope:** checked-in source, configuration, scripts, and the existing test setup. Generated output and `node_modules` were excluded.
 
 ## Existing architecture
@@ -14,7 +14,7 @@ At initial audit the repository was a single-package React website. It has since
 - React Hook Form, Zod, TanStack Query, Motion, and Lucide icons.
 - Vitest with jsdom and Testing Library; ESLint and Prettier.
 - Public and dashboard dependencies are managed independently with pnpm lockfiles. Root scripts dispatch to the three app folders.
-- The ASP.NET Core 9 API and Angular app are present. The public React and Angular dashboard apps each keep their Tailwind tokens inside their own app; the two token files are intentionally identical to preserve the DigiSay visual language without a shared root package. SQL Server schema scripts and local environment templates are in `database/` and `backend/`; Docker Compose, CI, and deployment automation are not configured.
+- The ASP.NET Core 10 API and Angular app are present. Backend projects use Central Package Management and lock files, with API contract/use-case modules outside `Program.cs`. Unit, architecture-boundary, and API integration test projects are included. The public React and Angular dashboard apps each keep their Tailwind tokens inside their own app; the two token files are intentionally identical to preserve the DigiSay visual language without a shared root package. SQL Server schema scripts and local environment templates are in `database/` and `backend/`; Docker Compose, CI, and deployment automation are not configured.
 
 ## Existing business features
 
@@ -27,7 +27,7 @@ The contact form validates with Zod and a honeypot, then posts to the versioned 
 - Client/admin dashboard workflows, identity, tenant/resource authorization, and protected data APIs are not implemented.
 - API rate limiting is in-process; use a distributed limiter before scaling multiple API instances.
 - Supabase is only an optional PostgreSQL connectivity check. No Supabase schema, Storage workflow, Firebase Auth, Firestore, FCM, or Firebase Admin integration exists.
-- No real mail provider, file storage, event/outbox processing, backend test project, E2E suite, container setup, or CI/CD.
+- No real mail provider, file storage, event/outbox processing, SQL Server-backed automated integration environment, E2E suite, container setup, or CI/CD.
 - The dashboard API health check is not an authorization mechanism. Do not expose business data until API authentication and resource authorization are implemented.
 
 ## Required frontend integrations
@@ -37,7 +37,7 @@ The public contact form calls the versioned API with an environment-configured o
 ## Migration strategy
 
 1. Keep the public React app in the repository-root `public/` folder, separate from the root `dashboard/` app. Its static assets are stored in `public/static/`; each app owns its theme at `src/styles/tailwind-theme.css`, with matching token contents maintained in both apps.
-2. Add an isolated `backend/` solution with Domain, Application, Infrastructure, and API projects. SQL Server owns authoritative business transactions.
+2. Maintain the isolated `backend/` solution with Domain, Application, Infrastructure, API, and test projects. SQL Server owns authoritative business transactions.
 3. Establish API conventions, configuration validation, health checks, and SQL persistence. The contact inquiry workflow is the first implementation.
 4. Add lead/service-request workflows and idempotent email/outbox delivery.
 5. Add identity and tenant/resource authorization before exposing client data.
@@ -51,7 +51,7 @@ SQL Server is the system of record for contact inquiries and planned transaction
 
 ## Risks
 
-- The backend now targets the requested ASP.NET Core 9 and builds with the installed SDK. .NET 9 reached end of support on November 10, 2026; production should move to .NET 10 LTS.
+- The backend now targets ASP.NET Core 10 LTS and has centrally managed, locked NuGet dependencies. The .NET 10 SDK is selected by root `global.json`.
 - Authentication, tenant isolation, guest-request claiming, and refresh-token rotation need threat modeling and integration tests before any client data is exposed.
 - Email delivery needs a real provider and idempotent durable dispatch; the current placeholder is misleading.
 - The Supabase pooler password was not supplied, so that connection cannot be verified. SQL credentials must remain in User Secrets or managed secrets, never Git.
@@ -60,4 +60,4 @@ SQL Server is the system of record for contact inquiries and planned transaction
 
 ## Phase status
 
-The public app, dashboard shell, API contact persistence, SQL schema script, and Firebase Analytics page views are implemented. Protected business workflows, authentication, Supabase data access, production infrastructure, backend integration tests, and deployment remain future phases until implemented and verified.
+The public app, dashboard shell, API contact persistence, SQL schema script, Firebase Analytics page views, backend unit/architecture tests, and HTTP integration tests are implemented. Protected business workflows, authentication, Supabase data access, SQL Server-backed integration infrastructure, production infrastructure, and deployment remain future phases until implemented and verified.
