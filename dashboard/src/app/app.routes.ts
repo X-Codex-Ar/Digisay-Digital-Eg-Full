@@ -2,6 +2,7 @@ import { Routes } from '@angular/router';
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 import { ClientLayoutComponent } from './layouts/client-layout/client-layout.component';
 import { adminGuard } from './core/admin.guard';
+import { clientGuard } from './core/client.guard';
 
 const adminAreas = [
   {
@@ -89,14 +90,25 @@ export const routes: Routes = [
   {
     path: 'admin/sign-in',
     loadComponent: () =>
-      import('./features/auth/admin-sign-in.component').then(
-        (module) => module.AdminSignInComponent,
+      import('./features/auth/portal-sign-in.component').then(
+        (module) => module.PortalSignInComponent,
       ),
+    data: { audience: 'Admin' },
+  },
+  {
+    path: 'client/sign-in',
+    loadComponent: () =>
+      import('./features/auth/portal-sign-in.component').then(
+        (module) => module.PortalSignInComponent,
+      ),
+    data: { audience: 'Client' },
   },
   { path: '', pathMatch: 'full', redirectTo: 'client/overview' },
   {
     path: 'client',
     component: ClientLayoutComponent,
+    canActivate: [clientGuard],
+    canActivateChild: [clientGuard],
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'overview' },
       {
@@ -105,7 +117,13 @@ export const routes: Routes = [
           import('./features/overview/overview.component').then((m) => m.OverviewComponent),
         data: { audience: 'Client', areas: clientAreas },
       },
-      feature('Requests', 'Client portal', 'Service requests submitted by your organization.'),
+      {
+        path: 'requests',
+        loadComponent: () =>
+          import('./features/client/client-requests.component').then(
+            (module) => module.ClientRequestsComponent,
+          ),
+      },
       feature('Projects', 'Client portal', 'Project plans, milestones, and progress updates.'),
       feature('Campaigns', 'Client portal', 'Campaign schedules, objectives, and deliverables.'),
       feature(

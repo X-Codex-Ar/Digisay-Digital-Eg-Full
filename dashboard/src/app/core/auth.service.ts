@@ -16,6 +16,8 @@ export interface OrganizationMembership {
   membershipRole: string;
 }
 
+export type PortalAudience = 'Admin' | 'Client';
+
 interface TokenResponse {
   accessToken: string;
   refreshToken: string;
@@ -31,14 +33,17 @@ export class AuthService {
   private accessToken: string | null = null;
   private refreshToken: string | null = null;
   private refreshRequest: Observable<void> | null = null;
+  private sessionVersion = 0;
 
   readonly user = signal<AuthUser | null>(null);
   readonly organizations = signal<OrganizationMembership[]>([]);
   readonly activeOrganizationId = signal<string | null>(null);
   readonly authenticated = signal(false);
   readonly isAdmin = signal(false);
+  readonly isClient = signal(false);
 
-  async signIn(email: string, password: string): Promise<void> {
+  async signIn(email: string, password: string, audience: PortalAudience): Promise<void> {
+    this.clearSession();
     const tokens = await firstValueFrom(
       this.http.post<TokenResponse>(`${apiUrl}/auth/login?useCookies=false`, {
         email,
@@ -62,26 +67,31 @@ export class AuthService {
       this.organizations.set(organizations);
       this.activeOrganizationId.set(organizations[0]?.id ?? null);
       this.isAdmin.set(user.roles.some((role) => ADMIN_ROLES.has(role)));
+      this.isClient.set(user.roles.includes('Client'));
       this.authenticated.set(true);
-      if (!this.isAdmin()) throw new Error('Your account does not have an administrator role.');
+      if (audience === 'Admin' && !this.isAdmin())
+        throw new Error('Your account does not have an administrator role.');
+      if (audience === 'Client' && !this.isClient())
+        throw new Error('Your account does not have a client role.');
       if (organizations.length === 0)
         throw new Error(
           'Your account is not a member of an organization. Ask an administrator to grant access.',
         );
     } catch (error) {
-      this.signOut();
+      this.clearSession();
       throw error;
     }
   }
 
   signOut(): void {
-    this.accessToken = null;
-    this.refreshToken = null;
-    this.user.set(null);
-    this.organizations.set([]);
-    this.activeOrganizationId.set(null);
-    this.authenticated.set(false);
-    this.isAdmin.set(false);
+    if (this.accessToken) {
+      this.http
+        .post<void>(`${apiUrl}/auth/sessions/revoke`, null, {
+          headers: this.authorizationHeaders(),
+        })
+        .subscribe({ error: () => undefined });
+    }
+    this.clearSession();
   }
 
   authorizationHeaders(): HttpHeaders {
@@ -95,19 +105,37 @@ export class AuthService {
   refreshAccessToken(): Observable<void> {
     if (this.refreshRequest) return this.refreshRequest;
     if (!this.refreshToken) throw new Error('No refresh token is available.');
-    this.refreshRequest = this.http
+    const sessionVersion = this.sessionVersion;
+    let refreshRequest: Observable<void>;
+    refreshRequest = this.http
       .post<TokenResponse>(`${apiUrl}/auth/refresh`, { refreshToken: this.refreshToken })
       .pipe(
         tap((tokens) => {
-          this.accessToken = tokens.accessToken;
-          this.refreshToken = tokens.refreshToken;
+          if (this.sessionVersion === sessionVersion) {
+            this.accessToken = tokens.accessToken;
+            this.refreshToken = tokens.refreshToken;
+          }
         }),
         map(() => void 0),
         shareReplay(1),
         finalize(() => {
-          this.refreshRequest = null;
+          if (this.refreshRequest === refreshRequest) this.refreshRequest = null;
         }),
       );
-    return this.refreshRequest;
+    this.refreshRequest = refreshRequest;
+    return refreshRequest;
+  }
+
+  private clearSession(): void {
+    this.sessionVersion += 1;
+    this.refreshRequest = null;
+    this.accessToken = null;
+    this.refreshToken = null;
+    this.user.set(null);
+    this.organizations.set([]);
+    this.activeOrganizationId.set(null);
+    this.authenticated.set(false);
+    this.isAdmin.set(false);
+    this.isClient.set(false);
   }
 }

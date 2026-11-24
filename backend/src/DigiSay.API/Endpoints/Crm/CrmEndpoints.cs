@@ -173,7 +173,7 @@ internal static class CrmEndpoints
                 var slice = await handler.HandleAsync(new ListServiceRequestsQuery((currentPage - 1) * size, size), scope, cancellationToken);
                 return Results.Ok(ToPage(slice, currentPage, size, slice.Items.Select(ToResponse).ToArray()));
             })
-            .RequireAuthorization("AdminAccess")
+            .RequireAuthorization("AdminOrClientAccess")
             .WithName("ListServiceRequests")
             .WithSummary("List service requests belonging to the verified organization.");
 
@@ -186,7 +186,7 @@ internal static class CrmEndpoints
                 var serviceRequest = await handler.HandleAsync(new GetServiceRequestQuery(id), scope, cancellationToken);
                 return serviceRequest is null ? Results.NotFound() : Results.Ok(ToResponse(serviceRequest));
             })
-            .RequireAuthorization("AdminAccess")
+            .RequireAuthorization("AdminOrClientAccess")
             .WithName("GetServiceRequest")
             .WithSummary("Get a service request only when it belongs to the verified organization.");
 

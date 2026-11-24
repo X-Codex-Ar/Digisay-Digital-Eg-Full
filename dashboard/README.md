@@ -10,7 +10,9 @@ From the repository root, install workspace dependencies once with pnpm, then ru
 pnpm run dev:dashboard
 ```
 
-Open `http://localhost:4200/`. `/client` and `/admin` have separate route boundaries and navigation. Sign in at `/admin/sign-in` with an account assigned the `SuperAdmin`, `Admin`, or `Manager` role and active organization membership. Lead and request APIs additionally enforce role, membership, organization, and Owner checks on the server; Angular route guards only improve navigation. Access and refresh tokens stay in memory, and refresh tokens rotate after use.
+Open `http://localhost:4200/`. `/client` and `/admin` have separate route guards, layouts, and navigation. Admins sign in at `/admin/sign-in` with the `SuperAdmin`, `Admin`, or `Manager` role; clients use `/client/sign-in` with the `Client` role. Both audiences also need active organization membership. Access and refresh tokens stay in memory, refresh tokens rotate after use, and sign out calls the backend session-revocation endpoint while clearing local state immediately.
+
+The client journey is: sign in, load `/api/v1/users/me` and `/api/v1/organizations`, select an organization, then view or submit service requests. Calls to `GET /api/v1/crm/service-requests` and `POST /api/v1/crm/service-requests` send the bearer token and `X-Organization-Id`. The API returns paged records and verifies membership on every request; records outside that organization return 404. Client routes expose no admin review or lifecycle actions, and the API requires an admin role for those operations regardless of the route guard.
 
 The overview checks API readiness using `public/runtime-config.js`. Set its `apiBaseUrl` to the API origin for each deployment; do not put credentials or secret keys in this browser-visible file. The default points to `http://localhost:5080` for local development.
 

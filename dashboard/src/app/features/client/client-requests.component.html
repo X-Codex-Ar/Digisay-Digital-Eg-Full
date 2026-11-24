@@ -1,0 +1,269 @@
+<section class="grid gap-6" aria-labelledby="requests-title">
+  <header class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <span class="text-[.7rem] font-bold uppercase tracking-[.14em] text-muted-foreground"
+        >Client portal · {{ organizationName() }}</span
+      >
+      <h1 id="requests-title" class="mb-2 mt-2 text-3xl font-bold tracking-tight text-foreground">
+        Service requests
+      </h1>
+      <p class="m-0 text-sm text-muted-foreground">
+        Submit a request to DigiSay and follow its progress here.
+      </p>
+      @if (organizations().length > 1) {
+        <label
+          class="mt-3 grid max-w-sm gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"
+        >
+          Organization
+          <select
+            class="rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-foreground disabled:opacity-50"
+            [ngModel]="activeOrganizationId()"
+            (ngModelChange)="selectOrganization($event)"
+            [disabled]="loading()"
+          >
+            @for (organization of organizations(); track organization.id) {
+              <option [value]="organization.id">{{ organization.name }}</option>
+            }
+          </select>
+        </label>
+      }
+    </div>
+    <button
+      type="button"
+      class="rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground"
+      (click)="formOpen.set(!formOpen())"
+    >
+      New request
+    </button>
+  </header>
+
+  @if (success()) {
+    <div
+      class="rounded-2xl border border-emerald-600/30 bg-emerald-600/10 p-4 text-sm"
+      role="status"
+    >
+      {{ success() }}
+    </div>
+  }
+  @if (error()) {
+    <div
+      class="flex items-start justify-between gap-4 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm"
+      role="alert"
+    >
+      <span>{{ error() }}</span>
+      @if (error().includes('sign-in expired')) {
+        <a class="shrink-0 font-bold underline" routerLink="/client/sign-in">Sign in</a>
+      } @else {
+        <button type="button" class="shrink-0 font-bold underline" (click)="load()">Retry</button>
+      }
+    </div>
+  }
+  @if (permissionDenied()) {
+    <div class="rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5" role="alert">
+      <h2 class="mt-0 text-base font-bold">Organization access denied</h2>
+      <p class="mb-0 text-sm text-muted-foreground">
+        Your account cannot access requests for this organization. Contact your organization
+        administrator.
+      </p>
+    </div>
+  }
+  @if (loading() && !loaded()) {
+    <div
+      class="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground"
+      role="status"
+    >
+      Loading your requests…
+    </div>
+  }
+
+  @if (formOpen()) {
+    <form
+      class="grid gap-4 rounded-2xl border border-border bg-card p-5 shadow-card"
+      (ngSubmit)="submit()"
+      aria-labelledby="new-request-title"
+    >
+      <div>
+        <h2 id="new-request-title" class="m-0 text-lg font-bold">Submit a service request</h2>
+        <p class="mb-0 mt-1 text-sm text-muted-foreground">
+          This request will be visible to authorized members of {{ organizationName() }}.
+        </p>
+      </div>
+      @if (formError()) {
+        <div
+          class="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm"
+          role="alert"
+        >
+          {{ formError() }}
+        </div>
+      }
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="grid gap-2 text-sm font-semibold"
+          >Request title<input
+            class="rounded-xl border border-border bg-background px-3 py-2.5 font-normal"
+            name="title"
+            [(ngModel)]="form.title"
+            minlength="3"
+            maxlength="150"
+            required
+        /></label>
+        <label class="grid gap-2 text-sm font-semibold"
+          >Service<input
+            class="rounded-xl border border-border bg-background px-3 py-2.5 font-normal"
+            name="service"
+            [(ngModel)]="form.service"
+            minlength="2"
+            maxlength="80"
+            required
+        /></label>
+      </div>
+      <label class="grid gap-2 text-sm font-semibold"
+        >Description<textarea
+          class="min-h-28 rounded-xl border border-border bg-background px-3 py-2.5 font-normal"
+          name="description"
+          [(ngModel)]="form.description"
+          maxlength="2000"
+          required
+        ></textarea>
+      </label>
+      <div class="flex justify-end gap-3">
+        <button
+          class="rounded-xl border border-border px-4 py-2.5 text-sm font-bold"
+          type="button"
+          (click)="formOpen.set(false)"
+          [disabled]="submitting()"
+        >
+          Cancel</button
+        ><button
+          class="rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-primary-foreground disabled:opacity-50"
+          type="submit"
+          [disabled]="submitting()"
+        >
+          {{ submitting() ? 'Submitting…' : 'Submit request' }}
+        </button>
+      </div>
+    </form>
+  }
+
+  @if (loaded() && !permissionDenied()) {
+    <label
+      class="grid max-w-xl gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"
+      >Search requests<input
+        class="rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-foreground"
+        type="search"
+        [(ngModel)]="query"
+        placeholder="Title, service, description, status…"
+    /></label>
+    <div class="overflow-hidden rounded-2xl border border-border bg-card">
+      @if (filteredRequests().length === 0) {
+        <div class="p-8 text-center">
+          <h2 class="mb-2 text-lg font-bold">
+            {{ totalCount() === 0 ? 'No requests yet' : 'No matching requests' }}
+          </h2>
+          <p class="m-0 text-sm text-muted-foreground">
+            {{
+              totalCount() === 0
+                ? 'Submit your first request to begin.'
+                : 'Try a different search term.'
+            }}
+          </p>
+        </div>
+      } @else {
+        <div class="overflow-x-auto">
+          <table class="w-full min-w-[640px] border-collapse text-left text-sm">
+            <thead class="bg-muted/50 text-xs uppercase tracking-wide text-muted-foreground">
+              <tr>
+                <th class="px-4 py-3">Request</th>
+                <th class="px-4 py-3">Service</th>
+                <th class="px-4 py-3">Status</th>
+                <th class="px-4 py-3">Updated</th>
+                <th class="px-4 py-3">Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (request of filteredRequests(); track request.id) {
+                <tr class="border-t border-border">
+                  <td class="px-4 py-4 font-bold">{{ request.title }}</td>
+                  <td class="px-4 py-4 text-muted-foreground">{{ request.service }}</td>
+                  <td class="px-4 py-4">
+                    <span
+                      class="rounded-full bg-accent px-2.5 py-1 text-xs font-bold text-accent-foreground"
+                      >{{ displayStatus(request.status) }}</span
+                    >
+                  </td>
+                  <td class="whitespace-nowrap px-4 py-4 text-xs text-muted-foreground">
+                    {{ request.updatedAtUtc | date: 'mediumDate' }}
+                  </td>
+                  <td class="px-4 py-4">
+                    <button
+                      type="button"
+                      class="font-semibold text-primary underline-offset-4 hover:underline"
+                      (click)="selected.set(request)"
+                    >
+                      View
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+      <footer
+        class="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3 text-xs text-muted-foreground"
+      >
+        <span
+          >{{ filteredRequests().length }} of {{ totalCount() }} requests · Page {{ page() }} of
+          {{ totalPages() }}</span
+        >
+        <div class="flex gap-2">
+          <button
+            type="button"
+            class="rounded-lg border border-border px-3 py-2 disabled:opacity-50"
+            [disabled]="page() <= 1 || loading()"
+            (click)="changePage(page() - 1)"
+          >
+            Previous</button
+          ><button
+            type="button"
+            class="rounded-lg border border-border px-3 py-2 disabled:opacity-50"
+            [disabled]="page() >= totalPages() || loading()"
+            (click)="changePage(page() + 1)"
+          >
+            Next
+          </button>
+        </div>
+      </footer>
+    </div>
+  }
+
+  @if (selected(); as request) {
+    <aside
+      class="rounded-2xl border border-border bg-card p-5"
+      aria-labelledby="request-detail-title"
+    >
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <span class="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+            >Request details</span
+          >
+          <h2 id="request-detail-title" class="mb-2 mt-1 text-xl font-bold">{{ request.title }}</h2>
+        </div>
+        <button
+          type="button"
+          class="rounded-lg border border-border px-3 py-2 text-sm"
+          (click)="selected.set(null)"
+        >
+          Close
+        </button>
+      </div>
+      <p class="text-sm">
+        <strong>Service:</strong> {{ request.service }} · <strong>Status:</strong>
+        {{ displayStatus(request.status) }}
+      </p>
+      <p class="whitespace-pre-line text-sm text-muted-foreground">{{ request.description }}</p>
+      <p class="m-0 text-xs text-muted-foreground">
+        Last updated {{ request.updatedAtUtc | date: 'medium' }}
+      </p>
+    </aside>
+  }
+</section>

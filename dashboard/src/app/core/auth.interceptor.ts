@@ -5,7 +5,7 @@ import { AuthService } from './auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const auth = inject(AuthService);
-  const authEndpoint = /\/auth\/(login|register|refresh)(\?|$)/.test(request.url);
+  const authEndpoint = /\/auth\/(login|register|refresh|sessions\/revoke)(\?|$)/.test(request.url);
   const attachAuth = (req: typeof request) => {
     let headers = req.headers;
     const authHeaders = auth.authorizationHeaders();
