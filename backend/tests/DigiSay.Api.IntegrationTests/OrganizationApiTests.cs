@@ -36,6 +36,7 @@ public sealed class OrganizationApiTests
 
         using var createResponse = await firstClient.PostAsJsonAsync("/api/v1/organizations", new { name = "  DigiSay Client  " });
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
+        Assert.Null(createResponse.Headers.Location);
         using var createdDocument = await JsonDocument.ParseAsync(await createResponse.Content.ReadAsStreamAsync());
         var organizationId = createdDocument.RootElement.GetProperty("id").GetGuid();
         Assert.Equal("DigiSay Client", createdDocument.RootElement.GetProperty("name").GetString());
@@ -88,7 +89,8 @@ public sealed class OrganizationApiTests
             password = Password,
         });
         Assert.Equal(HttpStatusCode.OK, registration.StatusCode);
-        await factory.ConfirmEmailAsync(email);
+        using var confirmation = await factory.ConfirmEmailAsync(client, email);
+        Assert.Equal(HttpStatusCode.OK, confirmation.StatusCode);
 
         var login = await client.PostAsJsonAsync("/api/v1/auth/login?useCookies=false", new
         {
