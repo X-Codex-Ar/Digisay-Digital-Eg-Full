@@ -67,6 +67,21 @@ builder.Services.AddIdentityApiEndpoints<DigiSayUser>(options =>
     })
     .AddRoles<IdentityRole<Guid>>()
     .AddEntityFrameworkStores<DigiSayDbContext>();
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
+        : CookieSecurePolicy.Always;
+});
+builder.Services.AddScoped<SignInManager<DigiSayUser>, RefreshTokenRotationSignInManager>();
+builder.Services.AddOptions<IdentityBootstrapOptions>()
+    .Bind(builder.Configuration.GetSection(IdentityBootstrapOptions.SectionName))
+    .Validate(options => string.IsNullOrEmpty(options.BootstrapAdminSecret) ||
+        System.Text.Encoding.UTF8.GetByteCount(options.BootstrapAdminSecret) >= 32,
+        "Identity:BootstrapAdminSecret must contain at least 32 UTF-8 bytes when configured.")
+    .ValidateOnStart();
 builder.Services.Configure<BearerTokenOptions>(options =>
 {
     options.BearerTokenExpiration = TimeSpan.FromMinutes(15);
@@ -74,10 +89,13 @@ builder.Services.Configure<BearerTokenOptions>(options =>
 });
 builder.Services.AddAuthorization(options =>
 {
+    options.AddPolicy("SuperAdminAccess", policy => policy.RequireRole(DigiSayRoles.SuperAdmin));
     options.AddPolicy("AdminAccess", policy =>
         policy.RequireRole(DigiSayRoles.SuperAdmin, DigiSayRoles.Admin, DigiSayRoles.Manager));
     options.AddPolicy("ClientAccess", policy => policy.RequireRole(DigiSayRoles.Client));
 });
+builder.Services.Configure<SecurityStampValidatorOptions>(options =>
+    options.ValidationInterval = TimeSpan.FromMinutes(5));
 
 var smtpConfigured = !string.IsNullOrWhiteSpace(
     builder.Configuration[$"{SmtpEmailOptions.SectionName}:Host"]);
