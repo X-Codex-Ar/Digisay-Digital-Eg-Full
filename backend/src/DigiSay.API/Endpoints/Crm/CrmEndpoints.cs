@@ -329,11 +329,15 @@ internal static class RequestValidation
         Validator.TryValidateObject(model!, new ValidationContext(model!), results, validateAllProperties: true);
 
         return results
-            .SelectMany(result => result.MemberNames.Select(member => new
+            .SelectMany(result =>
             {
-                Member = member,
-                Message = result.ErrorMessage ?? "Invalid value.",
-            }))
+                var members = result.MemberNames.Any() ? result.MemberNames : [""];
+                return members.Select(member => new
+                {
+                    Member = member,
+                    Message = result.ErrorMessage ?? "Invalid value.",
+                });
+            })
             .GroupBy(item => item.Member)
             .ToDictionary(group => group.Key, group => group.Select(item => item.Message).ToArray());
     }
