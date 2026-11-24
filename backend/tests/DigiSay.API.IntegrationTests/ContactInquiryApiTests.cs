@@ -98,7 +98,85 @@ public sealed class ContactInquiryApiTests
 
         Assert.All(statuses.Take(5), status => Assert.Equal(HttpStatusCode.Created, status));
         Assert.Equal(HttpStatusCode.TooManyRequests, statuses[^1]);
+        using var retryResponse = await client.PostAsJsonAsync("/api/v1/contact-inquiries", ValidRequest());
+        Assert.Equal(TimeSpan.FromSeconds(600), retryResponse.Headers.RetryAfter?.Delta);
         Assert.Equal(5, factory.Writer.Saved.Count);
+    }
+
+    [Fact]
+    public async Task Untrusted_forwarded_headers_do_not_change_the_client_rate_limit_identity()
+    {
+        using var factory = new DigiSayApiFactory();
+        using var client = factory.CreateClient();
+        var statuses = new List<HttpStatusCode>();
+
+        for (var index = 0; index < 6; index++)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/contact-inquiries")
+            {
+                Content = JsonContent.Create(ValidRequest()),
+            };
+            request.Headers.TryAddWithoutValidation("X-Forwarded-For", $"198.51.100.{index + 1}");
+            using var response = await client.SendAsync(request);
+            statuses.Add(response.StatusCode);
+        }
+
+        Assert.All(statuses.Take(5), status => Assert.Equal(HttpStatusCode.Created, status));
+        Assert.Equal(HttpStatusCode.TooManyRequests, statuses[^1]);
+    }
+
+    [Fact]
+    public async Task Trusted_proxy_forwarded_addresses_are_used_for_rate_limit_identity()
+    {
+        using var factory = new DigiSayApiFactory(trustLoopbackProxy: true);
+        using var client = factory.CreateClient();
+
+        for (var index = 0; index < 6; index++)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/contact-inquiries")
+            {
+                Content = JsonContent.Create(ValidRequest()),
+            };
+            request.Headers.TryAddWithoutValidation("X-Forwarded-For", $"198.51.100.{index + 1}");
+            using var response = await client.SendAsync(request);
+            Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        }
+    }
+
+    [Fact]
+    public async Task Proxy_chain_limit_uses_only_the_configured_nearest_forwarded_hop()
+    {
+        using var factory = new DigiSayApiFactory(trustLoopbackProxy: true);
+        using var client = factory.CreateClient();
+        var statuses = new List<HttpStatusCode>();
+
+        for (var index = 0; index < 6; index++)
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, "/api/v1/contact-inquiries")
+            {
+                Content = JsonContent.Create(ValidRequest()),
+            };
+            request.Headers.TryAddWithoutValidation("X-Forwarded-For", $"198.51.100.{index + 1}, 203.0.113.9");
+            using var response = await client.SendAsync(request);
+            statuses.Add(response.StatusCode);
+        }
+
+        Assert.All(statuses.Take(5), status => Assert.Equal(HttpStatusCode.Created, status));
+        Assert.Equal(HttpStatusCode.TooManyRequests, statuses[^1]);
+    }
+
+    [Fact]
+    public async Task Rate_limit_store_failure_fails_closed_with_generic_retry_metadata()
+    {
+        using var factory = new DigiSayApiFactory(rateLimitStoreUnavailable: true);
+        using var client = factory.CreateClient();
+
+        using var response = await client.PostAsJsonAsync("/api/v1/contact-inquiries", ValidRequest());
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Equal(TimeSpan.FromSeconds(5), response.Headers.RetryAfter?.Delta);
+        Assert.DoesNotContain("Test rate-limit backend unavailable", body, StringComparison.Ordinal);
     }
 
     private static object ValidRequest() => new

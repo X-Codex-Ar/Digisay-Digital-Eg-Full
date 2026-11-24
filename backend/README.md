@@ -1,6 +1,6 @@
 # DigiSay API foundation
 
-This folder contains the .NET 10 modular-monolith backend split into Domain, Application, Infrastructure, and API projects. It includes SQL Server persistence, ASP.NET Core Identity, organization membership and tenant-scoped CRM lead and service-request workflows, an optional Supabase Postgres connectivity check, versioned Minimal API routes, OpenAPI in Development, ProblemDetails, CORS, rate limiting, and readiness checks.
+This folder contains the .NET 10 modular-monolith backend split into Domain, Application, Infrastructure, and API projects. It includes SQL Server persistence, ASP.NET Core Identity, organization membership and tenant-scoped CRM lead and service-request workflows, an optional Supabase Postgres connectivity check, versioned Minimal API routes, OpenAPI in Development, ProblemDetails, CORS, distributed rate limiting, trusted forwarded-header processing, and readiness checks.
 
 ## Prerequisites
 
@@ -11,6 +11,10 @@ This folder contains the .NET 10 modular-monolith backend split into Domain, App
 ## Configure and run
 
 Set `ConnectionStrings:SqlServer` with User Secrets for local development or `ConnectionStrings__SqlServer` from a managed secret store in deployment. Never commit a real connection string.
+
+Rate limiting defaults to an in-process store in Development so local work needs no Redis service. Every non-Development environment must set `RateLimiting__RedisConnectionString` to a managed Redis-compatible service and `RateLimiting__KeyHashSecret` to a random secret with at least 32 UTF-8 bytes. Redis counters use atomic fixed windows shared across API instances. Public contact submissions allow 5 requests per client identity per 10 minutes; identity authentication routes allow 10 per client identity per 10 minutes. Authenticated calls key by user ID; anonymous calls key by the validated remote IP. The raw identity is HMAC-SHA256 hashed before it is sent to Redis. If Redis is unavailable, the API rejects protected requests with a generic 503 and `Retry-After: 5` rather than disabling protection. Rate limit responses use 429 and a `Retry-After` value in seconds.
+
+Forwarded headers are ignored unless the sending proxy is explicitly listed under `ForwardedHeaders__KnownProxies__0` or its network under `ForwardedHeaders__KnownNetworks__0` (CIDR notation). Keep `ForwardLimit` equal to the number of trusted proxy hops that append forwarding headers; it defaults to 1 and accepts 1–10. Do not list a whole subnet unless every host in it is a controlled proxy. Without an allowlist, the API uses the direct connection address and client-supplied forwarding headers cannot change rate-limit identity. In the ingress environment, verify both cases: an allowed proxy should supply the expected client address, while an untrusted source's `X-Forwarded-For` must be ignored. Forwarded-header middleware runs before authentication and rate limiting.
 
 In Development, confirmation and recovery links are written to the API log when SMTP is not configured. To send them through Gmail locally, store `Email:Smtp:Host=smtp.gmail.com`, `Port=587`, `UserName`, `Password`, and `FromAddress` in User Secrets. With SMTP configured, those settings are validated at startup and the API sends using TLS. Other environments also require these settings from a managed secret store. Never commit the app password.
 
