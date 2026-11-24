@@ -90,8 +90,21 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_SA_PASSWORD: Str0ng_Test_Passw0rd!26
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "bash -c '</dev/tcp/127.0.0.1/1433'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 12
     env:
       TEST_REDIS_CONNECTION_STRING: localhost:6379
+      TEST_SQLSERVER_CONNECTION_STRING: Server=localhost,1433;Database=master;User Id=sa;Password=Str0ng_Test_Passw0rd!26;Encrypt=False;TrustServerCertificate=True;MultipleActiveResultSets=True
     steps:
       - name: Check out source
         uses: actions/checkout@v7
