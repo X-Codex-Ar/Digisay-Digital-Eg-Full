@@ -49,7 +49,7 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
             .Where(request => request.OrganizationId == organizationId);
         var totalCount = await query.CountAsync(cancellationToken);
         var items = await query
-            .OrderBy(request => request.Id)
+            .OrderByDescending(request => request.CreatedAtUtc)
             .Skip(skip)
             .Take(take)
             .ToListAsync(cancellationToken);
