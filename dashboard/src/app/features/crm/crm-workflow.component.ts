@@ -222,8 +222,9 @@ export class CrmWorkflowComponent implements OnInit {
         this.load();
       },
       error: (error: unknown) => {
+      error: (error: unknown) => {
         this.busy.set(false);
-        this.describeError(error);
+        this.error.set(this.errorMessage(error));
       },
     });
   }
