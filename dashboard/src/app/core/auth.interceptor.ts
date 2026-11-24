@@ -6,7 +6,15 @@ import { AuthService } from './auth.service';
 export const authInterceptor: HttpInterceptorFn = (request, next) => {
   const auth = inject(AuthService);
   const authEndpoint = /\/auth\/(login|register|refresh)(\?|$)/.test(request.url);
-  const secured = authEndpoint ? request : request.clone({ headers: auth.authorizationHeaders() });
+  const attachAuth = (req: typeof request) => {
+    let headers = req.headers;
+    const authHeaders = auth.authorizationHeaders();
+    for (const key of authHeaders.keys()) {
+      headers = headers.set(key, authHeaders.getAll(key)!);
+    }
+    return req.clone({ headers });
+  };
+  const secured = authEndpoint ? request : attachAuth(request);
 
   return next(secured).pipe(
     catchError((error: unknown) => {
@@ -14,8 +22,7 @@ export const authInterceptor: HttpInterceptorFn = (request, next) => {
         return throwError(() => error);
       try {
         return auth.refreshAccessToken().pipe(
-          switchMap(() => next(request.clone({ headers: auth.authorizationHeaders() }))),
-          catchError((refreshError: unknown) => {
+          switchMap(() => next(attachAuth(request))),
             auth.signOut();
             return throwError(() => refreshError);
           }),
