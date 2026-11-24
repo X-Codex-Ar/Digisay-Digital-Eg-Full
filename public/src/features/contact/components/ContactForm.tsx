@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, Controller } from "react-hook-form";
 import {
@@ -39,6 +39,7 @@ export function ContactForm() {
     control,
     getValues,
     watch,
+    setError,
     formState: { errors, isSubmitting },
     reset,
   } = useForm<ContactFormData>({
@@ -58,6 +59,7 @@ export function ContactForm() {
 
   // Lock form inputs while a prepared submission result is active
   const isLocked = isSubmitting || (!!submissionResult && submissionResult.success);
+  const submissionInFlight = useRef(false);
 
   // Invalidate any prepared submission result if a field value is modified
   useEffect(() => {
@@ -71,21 +73,27 @@ export function ContactForm() {
   }, [watch, submissionResult]);
 
   const onSubmit = async (data: ContactFormData) => {
+    if (submissionInFlight.current) return;
+    submissionInFlight.current = true;
     setServerError(null);
     try {
       const result = await submitContactInquiry(data);
-      if (!result.success && result.errors) {
-        setServerError(result.message);
-        return;
+      if (result.errors) {
+        for (const [field, message] of Object.entries(result.errors)) {
+          if (["firstName", "lastName", "email", "phone", "service", "message"].includes(field)) {
+            setError(field as keyof ContactFormData, { type: "server", message });
+          }
+        }
       }
       // Store the exact validated inquiry snapshot to guarantee copy & mailto synchronization
       setSubmittedData(data);
       setSubmissionResult(result);
-    } catch (err) {
-      console.error("Submission failed:", err);
+    } catch {
       setServerError(
-        "An unexpected error occurred while preparing your inquiry. Please try again or email info@digisay.com.",
+        `We could not submit your inquiry. Please retry or email ${brand.email || "info@digisay.com"}.`,
       );
+    } finally {
+      submissionInFlight.current = false;
     }
   };
 
@@ -129,6 +137,7 @@ export function ContactForm() {
       <form
         onSubmit={handleSubmit(onSubmit)}
         noValidate
+        aria-busy={isSubmitting}
         className="space-y-6 rounded-3xl border border-border/80 bg-card p-6 shadow-xl md:p-10"
       >
         <div className="border-b border-border/40 pb-4">
@@ -154,7 +163,26 @@ export function ContactForm() {
           </div>
         )}
 
-        {/* Successful / Prepared Inquiry Feedback Banner */}
+        {submissionResult && !submissionResult.success && (
+          <div
+            role="alert"
+            className="space-y-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+          >
+            <p>{submissionResult.message}</p>
+            {submissionResult.mailtoUrl && (
+              <a
+                href={submissionResult.mailtoUrl}
+                className="inline-flex items-center gap-2 rounded-xl border border-destructive/30 bg-background px-4 py-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted"
+              >
+                <Mail className="size-4" />
+                <span>Open your email app to send this inquiry</span>
+                <ExternalLink className="size-3.5 opacity-80" />
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* Confirmation is shown only after the API confirms persistence. */}
         {submissionResult && submissionResult.success && (
           <div
             role="status"
@@ -171,9 +199,7 @@ export function ContactForm() {
                       : "Inquiry Draft Prepared"}
                 </h4>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                  {submissionResult.delivered || submissionResult.stored
-                    ? submissionResult.message
-                    : "Your inquiry details are validated and ready. Click below to launch your email client with your pre-filled inquiry, or copy the details to send directly to info@digisay.com."}
+                  {submissionResult.message}
                 </p>
               </div>
             </div>
@@ -186,7 +212,7 @@ export function ContactForm() {
                   className="inline-flex items-center gap-2 rounded-xl bg-[#d90a2c] px-4 py-2.5 text-xs font-semibold text-white shadow-md shadow-[#d90a2c]/20 transition-all hover:bg-[#bf0826] hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <Mail className="size-4" />
-                  <span>Open in Mail App</span>
+                  <span>Open your email app to send this inquiry</span>
                   <ExternalLink className="size-3.5 opacity-80" />
                 </a>
               )}
@@ -451,7 +477,7 @@ export function ContactForm() {
             {isSubmitting ? (
               <>
                 <Loader2 className="size-4 animate-spin" />
-                <span>Preparing Inquiry...</span>
+                <span>Sending Inquiry...</span>
               </>
             ) : (
               <>
