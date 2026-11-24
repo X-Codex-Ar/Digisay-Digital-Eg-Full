@@ -1,6 +1,7 @@
-using DigiSay.Domain;
+using DigiSay.Domain.Entities;
 using DigiSay.Infrastructure.Identity;
-using DigiSay.Domain.Organizations;
+using DigiSay.Domain.Entities.Organizations;
+using DigiSay.Domain.Entities.CRM;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,8 @@ public sealed class DigiSayDbContext(DbContextOptions<DigiSayDbContext> options)
     public DbSet<ContactInquiry> ContactInquiries => Set<ContactInquiry>();
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<OrganizationMembership> OrganizationMemberships => Set<OrganizationMembership>();
+    public DbSet<Lead> Leads => Set<Lead>();
+    public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

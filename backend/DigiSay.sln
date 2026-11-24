@@ -9,15 +9,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiSay.Application", "src\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiSay.Infrastructure", "src\DigiSay.Infrastructure\DigiSay.Infrastructure.csproj", "{E05DE6E1-1150-4B1F-81B3-6DD46833017B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiSay.Api", "src\DigiSay.Api\DigiSay.Api.csproj", "{E23D85D4-4806-41FA-8340-100B37E67E90}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiSay.API", "src\DigiSay.API\DigiSay.API.csproj", "{E23D85D4-4806-41FA-8340-100B37E67E90}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiSay.Backend.UnitTests", "tests\DigiSay.Backend.UnitTests\DigiSay.Backend.UnitTests.csproj", "{0FEFF015-0CF2-4DFC-A085-F2B5A5CDB6E3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiSay.Domain.Tests", "tests\DigiSay.Domain.Tests\DigiSay.Domain.Tests.csproj", "{0FEFF015-0CF2-4DFC-A085-F2B5A5CDB6E3}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiSay.Api.IntegrationTests", "tests\DigiSay.Api.IntegrationTests\DigiSay.Api.IntegrationTests.csproj", "{8127B868-D569-4554-AF98-CDEAEA0EA5E5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiSay.API.IntegrationTests", "tests\DigiSay.API.IntegrationTests\DigiSay.API.IntegrationTests.csproj", "{8127B868-D569-4554-AF98-CDEAEA0EA5E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiSay.Application.Tests", "tests\DigiSay.Application.Tests\DigiSay.Application.Tests.csproj", "{D925D61B-859D-4F81-B969-CA5110951A66}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DigiSay.Infrastructure.Tests", "tests\DigiSay.Infrastructure.Tests\DigiSay.Infrastructure.Tests.csproj", "{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -101,6 +105,30 @@ Global
 		{8127B868-D569-4554-AF98-CDEAEA0EA5E5}.Release|x64.Build.0 = Release|Any CPU
 		{8127B868-D569-4554-AF98-CDEAEA0EA5E5}.Release|x86.ActiveCfg = Release|Any CPU
 		{8127B868-D569-4554-AF98-CDEAEA0EA5E5}.Release|x86.Build.0 = Release|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Debug|x64.Build.0 = Debug|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Debug|x86.Build.0 = Debug|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Release|x64.ActiveCfg = Release|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Release|x64.Build.0 = Release|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Release|x86.ActiveCfg = Release|Any CPU
+		{D925D61B-859D-4F81-B969-CA5110951A66}.Release|x86.Build.0 = Release|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Debug|x64.Build.0 = Debug|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Debug|x86.Build.0 = Debug|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Release|x64.ActiveCfg = Release|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Release|x64.Build.0 = Release|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Release|x86.ActiveCfg = Release|Any CPU
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -108,5 +136,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0FEFF015-0CF2-4DFC-A085-F2B5A5CDB6E3} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 		{8127B868-D569-4554-AF98-CDEAEA0EA5E5} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{D925D61B-859D-4F81-B969-CA5110951A66} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{A480E4EF-55E0-4BF4-9EE7-20FAF3E7CD22} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

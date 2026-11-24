@@ -1,5 +1,9 @@
-using DigiSay.Application.ContactInquiries;
+using DigiSay.Application.Features.ContactInquiries;
+using DigiSay.Application.Features.CRM.Leads.Abstractions;
+using DigiSay.Application.Features.CRM.ServiceRequests.Abstractions;
+using DigiSay.Application.Features.Organizations.Abstractions;
 using DigiSay.Infrastructure.Persistence;
+using DigiSay.Infrastructure.Integrations.Supabase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,6 +28,10 @@ public static class DependencyInjection
             options.UseSqlServer(connectionString, sql =>
                 sql.EnableRetryOnFailure(maxRetryCount: 3)));
         services.AddScoped<IContactInquiryWriter, SqlContactInquiryWriter>();
+        services.AddScoped<IOrganizationStore, OrganizationStore>();
+        services.AddScoped<CrmStore>();
+        services.AddScoped<ILeadStore>(provider => provider.GetRequiredService<CrmStore>());
+        services.AddScoped<IServiceRequestStore>(provider => provider.GetRequiredService<CrmStore>());
         var healthChecks = services.AddHealthChecks().AddDbContextCheck<DigiSayDbContext>("sqlserver");
 
         var supabaseConnectionString = configuration.GetConnectionString("SupabasePostgres");
