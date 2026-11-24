@@ -7,7 +7,6 @@ internal sealed class DevelopmentIdentityEmailSender(ILogger<DevelopmentIdentity
     : IEmailSender<DigiSayUser>
 {
     public Task SendConfirmationLinkAsync(DigiSayUser user, string email, string confirmationLink)
-    public Task SendConfirmationLinkAsync(DigiSayUser user, string email, string confirmationLink)
     {
         logger.LogInformation("Development-only account confirmation link for {Email}: {Link}", email, System.Net.WebUtility.HtmlDecode(confirmationLink));
         return Task.CompletedTask;
