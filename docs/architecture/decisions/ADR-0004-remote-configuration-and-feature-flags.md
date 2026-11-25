@@ -48,3 +48,16 @@ No new packages, environment variables, secrets, or production settings are requ
 - [Firebase Remote Config policies and limits](https://firebase.google.com/docs/remote-config/quotas-limits)
 - [Firebase Remote Config in server environments](https://firebase.google.com/docs/remote-config/server)
 - [Microsoft .NET feature management](https://learn.microsoft.com/en-us/azure/azure-app-configuration/use-feature-flags-dotnet-core)
+
+
+## Implementation guardrails for future flags
+
+- Bind backend settings to typed .NET options and validate required values and ranges at startup (for example, with options validation and ValidateOnStart). Fail startup for invalid mandatory configuration rather than silently running with misleading values.
+- Give every flag an explicit safe default. Presentation-only flags should default to the least surprising safe UI behavior; security-sensitive or entitlement-related behavior must fail closed and be enforced by the API.
+- Treat missing, malformed, stale, or unavailable provider values deterministically. Never interpret an unknown value as enabled, and never let a provider outage grant access or bypass a server policy.
+- Keep browser-visible Vite values limited to public presentation configuration. A client flag may hide or show UI, but every protected operation must still be authorized by the backend.
+- Separate configuration binding/validation from feature evaluation behind a small application-facing abstraction only when a real use case exists; do not introduce a generic flag framework prematurely.
+- Add tests for missing values, invalid values, defaults, provider/configuration failure, and attempts to invoke a disabled or unauthorized feature directly through the API.
+- If runtime refresh or emergency disable becomes a requirement, define cache lifetime, refresh failure behavior, propagation bounds, and operational ownership. Do not describe build-time Vite values or cached Remote Config as an immediate kill switch.
+
+These guardrails do not change the current decision: no provider or flag package is needed until a named rollout requirement is approved.
