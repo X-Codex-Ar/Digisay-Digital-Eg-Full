@@ -302,7 +302,7 @@ public sealed class CrmLifecycleApiTests
         using var crossOrganizationDetails = await otherClient.GetAsync($"/api/v1/crm/service-requests/{requestId}");
         Assert.Equal(HttpStatusCode.NotFound, crossOrganizationDetails.StatusCode);
 
-        using var filteredRequests = await client.GetAsync("/api/v1/crm/service-requests?search=product%20launch&status=Completed&page=1&pageSize=10");
+        using var filteredRequests = await client.GetAsync("/api/v1/crm/service-requests?search=Campaign%20planning&status=Submitted&page=1&pageSize=10");
         Assert.Equal(HttpStatusCode.OK, filteredRequests.StatusCode);
         var filteredRequestPage = await filteredRequests.Content.ReadFromJsonAsync<PagedResponse<ServiceRequestResponse>>();
         Assert.NotNull(filteredRequestPage);

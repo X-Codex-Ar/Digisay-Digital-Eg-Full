@@ -3,6 +3,7 @@ using DigiSay.Application.Features.CRM.Leads.Abstractions;
 using DigiSay.Application.Features.CRM.ServiceRequests.Abstractions;
 using DigiSay.Domain.Entities.CRM;
 using DigiSay.Domain.Enums;
+using DigiSay.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 
 namespace DigiSay.Infrastructure.Persistence;
@@ -40,8 +41,17 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
         if (!string.IsNullOrWhiteSpace(search))
         {
             var term = search.Trim();
-            query = query.Where(lead => lead.Name.Contains(term) || lead.Email.Value.Contains(term) ||
-                (lead.Phone != null && lead.Phone.Contains(term)) || (lead.Source != null && lead.Source.Contains(term)));
+            var emailTerm = TryCreateEmailSearchTerm(term);
+            if (emailTerm is { } email)
+            {
+                query = query.Where(lead => lead.Name.Contains(term) || lead.Email == email ||
+                    (lead.Phone != null && lead.Phone.Contains(term)) || (lead.Source != null && lead.Source.Contains(term)));
+            }
+            else
+            {
+                query = query.Where(lead => lead.Name.Contains(term) ||
+                    (lead.Phone != null && lead.Phone.Contains(term)) || (lead.Source != null && lead.Source.Contains(term)));
+            }
         }
         var totalCount = await query.CountAsync(cancellationToken);
         var items = await query
@@ -118,4 +128,16 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
     }
 
     public Task SaveChangesAsync(CancellationToken cancellationToken) => dbContext.SaveChangesAsync(cancellationToken);
+
+    private static EmailAddress? TryCreateEmailSearchTerm(string term)
+    {
+        try
+        {
+            return EmailAddress.Create(term);
+        }
+        catch (DigiSay.Domain.Exceptions.DomainValidationException)
+        {
+            return null;
+        }
+    }
 }
