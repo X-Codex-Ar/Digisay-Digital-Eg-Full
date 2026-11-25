@@ -20,7 +20,16 @@ Compose uses a local-only development password by default. If this machine is sh
 | API readiness | http://localhost:5080/health/ready |
 | SQL Server | localhost,1433 |
 
-Migrations are not applied automatically. After reviewing the checked-in migrations, apply them to the local Compose SQL Server by starting the stack with `DIGISAY_APPLY_MIGRATIONS=true` (PowerShell: `$env:DIGISAY_APPLY_MIGRATIONS='true'; docker compose up --build`). The API only does this in the Development environment. Leave it unset to skip migrations on later starts. The API persists Data Protection keys in a named local volume. Redis is local to the Compose network.
+Migrations are not applied automatically. After reviewing the checked-in migrations, apply them to the local Compose SQL Server with this explicit PowerShell sequence:
+
+```powershell
+$env:DIGISAY_APPLY_MIGRATIONS = 'true'
+docker compose up -d api
+Remove-Item Env:DIGISAY_APPLY_MIGRATIONS
+docker compose up -d api
+```
+
+The first start applies pending migrations only in the Development environment. The second command recreates the API with the variable unset, so ordinary later starts remain migration-free. To start the full stack normally without migrations, use `docker compose up --build` and do not set the variable. The API persists Data Protection keys in a named local volume. Redis is local to the Compose network.
 
 The public assistant remains disabled. Without Supabase Storage credentials, the API uses its explicit unavailable-storage Development adapter. Development email is logged by the API rather than sent through SMTP.
 
