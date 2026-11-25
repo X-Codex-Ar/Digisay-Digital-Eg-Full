@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportAppError } from "../lib/error-reporting";
+import { AnalyticsConsentManager } from "@/components/common/AnalyticsConsentManager";
 import { ScrollProgressBar } from "@/components/common/ScrollProgressBar";
 import { BrandIntroLoader } from "@/components/common/BrandIntroLoader";
 
@@ -157,6 +158,7 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <ScrollProgressBar />
       <BrandIntroLoader />
+      <AnalyticsConsentManager />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
     </QueryClientProvider>
