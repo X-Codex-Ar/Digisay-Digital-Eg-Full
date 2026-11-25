@@ -1,3 +1,4 @@
+using DigiSay.Application.Common;
 using DigiSay.Application.Common.Pagination;
 using DigiSay.Application.Features.CRM.Leads.Abstractions;
 using DigiSay.Application.Features.CRM.ServiceRequests.Abstractions;
@@ -127,7 +128,17 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
         return new PageSlice<ServiceRequest>(items, totalCount);
     }
 
-    public Task SaveChangesAsync(CancellationToken cancellationToken) => dbContext.SaveChangesAsync(cancellationToken);
+    public async Task SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await dbContext.SaveChangesAsync(cancellationToken);
+        }
+        catch (DbUpdateConcurrencyException exception)
+        {
+            throw new ConcurrencyConflictException("The record was changed by another request.", exception);
+        }
+    }
 
     private static EmailAddress? TryCreateEmailSearchTerm(string term)
     {
