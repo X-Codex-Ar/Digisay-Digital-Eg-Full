@@ -17,6 +17,7 @@ public sealed class LeadFollowUp : IOrganizationOwned
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public DateTimeOffset? CompletedAtUtc { get; private set; }
     public Guid? CompletedByUserId { get; private set; }
+    public byte[] RowVersion { get; private set; } = [];
 
     public static LeadFollowUp Create(Guid organizationId, Guid leadId, string title, string? details, DateTimeOffset dueAtUtc, Guid actorUserId)
     {
@@ -28,13 +29,13 @@ public sealed class LeadFollowUp : IOrganizationOwned
             throw new DomainValidationException(nameof(Title), "Follow-up title must contain 1 to 160 characters.");
         if (normalizedDetails?.Length > 2000)
             throw new DomainValidationException(nameof(Details), "Follow-up details cannot exceed 2000 characters.");
-        if (dueAtUtc == default || dueAtUtc.Offset != TimeSpan.Zero)
-            throw new DomainValidationException(nameof(DueAtUtc), "Due date must be a UTC timestamp.");
+        if (dueAtUtc == default)
+            throw new DomainValidationException(nameof(DueAtUtc), "Due date is required.");
 
         return new LeadFollowUp
         {
             Id = Guid.NewGuid(), OrganizationId = organizationId, LeadId = leadId,
-            Title = normalizedTitle, Details = normalizedDetails, DueAtUtc = dueAtUtc,
+            Title = normalizedTitle, Details = normalizedDetails, DueAtUtc = dueAtUtc.ToUniversalTime(),
             CreatedByUserId = actorUserId, CreatedAtUtc = DateTimeOffset.UtcNow,
         };
     }
