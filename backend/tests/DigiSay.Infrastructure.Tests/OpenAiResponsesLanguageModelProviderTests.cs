@@ -79,6 +79,66 @@ public sealed class OpenAiResponsesLanguageModelProviderTests
         Assert.DoesNotContain("sensitive", exception.Message, StringComparison.OrdinalIgnoreCase);
     }
 
+    [Theory]
+    [InlineData(HttpStatusCode.TooManyRequests)]
+    [InlineData(HttpStatusCode.PaymentRequired)]
+    [InlineData(HttpStatusCode.Unauthorized)]
+    public async Task Quota_rate_limit_and_auth_failures_become_sanitized_unavailable_errors(HttpStatusCode status)
+    {
+        var provider = CreateProvider(new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(status)
+        {
+            Content = new StringContent("insufficient_quota account details"),
+        })));
+
+        var exception = await Assert.ThrowsAsync<PublicAssistantUnavailableException>(() =>
+            provider.CompleteAsync("system", "question", CancellationToken.None));
+
+        Assert.DoesNotContain("quota", exception.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("account", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Provider_timeout_without_caller_cancellation_becomes_unavailable()
+    {
+        var provider = CreateProvider(new RecordingHandler((_, _) => throw new TaskCanceledException("timed out")));
+
+        var exception = await Assert.ThrowsAsync<PublicAssistantUnavailableException>(() =>
+            provider.CompleteAsync("system", "question", CancellationToken.None));
+
+        Assert.Contains("timed out", exception.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Caller_cancellation_is_not_reported_as_a_provider_timeout()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        var provider = CreateProvider(new RecordingHandler((_, token) =>
+        {
+            token.ThrowIfCancellationRequested();
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        }));
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+            provider.CompleteAsync("system", "question", cts.Token));
+    }
+
+    [Theory]
+    [InlineData("not json")]
+    [InlineData("{\"output\":[]}")]
+    [InlineData("{\"output\":[{\"type\":\"message\",\"content\":[{\"type\":\"refusal\",\"text\":\"no\"}]}]}")]
+    [InlineData("{\"output\":[{\"type\":\"message\",\"content\":[{\"type\":\"output_text\",\"text\":\"   \"}]}]}")]
+    public async Task Malformed_or_empty_provider_responses_become_unavailable(string body)
+    {
+        var provider = CreateProvider(new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent(body, Encoding.UTF8, "application/json"),
+        })));
+
+        await Assert.ThrowsAsync<PublicAssistantUnavailableException>(() =>
+            provider.CompleteAsync("system", "question", CancellationToken.None));
+    }
+
     private static OpenAiResponsesLanguageModelProvider CreateProvider(HttpMessageHandler handler) =>
         new(new HttpClient(handler), Options.Create(new OpenAiProviderOptions
         {
