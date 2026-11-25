@@ -29,6 +29,8 @@ internal static class ReportEndpoints
         DigiSayDbContext dbContext,
         CancellationToken cancellationToken)
     {
+        var now = DateTimeOffset.UtcNow;
+        var periodStart = now.AddDays(-30);
         var requestQuery = dbContext.ServiceRequests.AsNoTracking()
             .Where(item => item.OrganizationId == organization.OrganizationId);
         var requestTotal = await requestQuery.CountAsync(cancellationToken);
@@ -37,7 +39,7 @@ internal static class ReportEndpoints
             .Select(group => new { Status = group.Key, Count = group.Count() })
             .ToListAsync(cancellationToken);
         var requestsLast30Days = await requestQuery.CountAsync(
-            item => item.CreatedAtUtc >= DateTimeOffset.UtcNow.AddDays(-30), cancellationToken);
+            item => item.CreatedAtUtc >= periodStart, cancellationToken);
 
         int? leadTotal = null;
         int? leadsLast30Days = null;
@@ -48,7 +50,7 @@ internal static class ReportEndpoints
                 .Where(item => item.OrganizationId == organization.OrganizationId);
             leadTotal = await leadQuery.CountAsync(cancellationToken);
             leadsLast30Days = await leadQuery.CountAsync(
-                item => item.CreatedAtUtc >= DateTimeOffset.UtcNow.AddDays(-30), cancellationToken);
+                item => item.CreatedAtUtc >= periodStart, cancellationToken);
             var groupedLeads = await leadQuery
                 .GroupBy(item => item.Status)
                 .Select(group => new { Status = group.Key, Count = group.Count() })
@@ -61,8 +63,8 @@ internal static class ReportEndpoints
 
         var response = new WorkspaceReport(
             organization.OrganizationId,
-            DateTimeOffset.UtcNow.AddDays(-30),
-            DateTimeOffset.UtcNow,
+            periodStart,
+            now,
             leadTotal,
             leadsLast30Days,
             leadsByStatus,
