@@ -136,9 +136,15 @@ SQL Server is the authoritative source of truth. Schema updates are versioned wi
 # Install matching EF Core CLI tool
 dotnet tool install --global dotnet-ef --version 10.0.15
 
-# Apply pending migrations to your configured database
+# The design-time factory reads ConnectionStrings__SqlServer from the process environment,
+# not ASP.NET User Secrets. Set it before running the migration command.
+$env:ConnectionStrings__SqlServer = "Server=127.0.0.1,1433;Database=DigiSay;User Id=sa;Password=<YourStrongPassword>;Encrypt=False;TrustServerCertificate=True"
+
+# Apply pending migrations to that SQL Server instance
 dotnet ef database update --project backend/src/DigiSay.Infrastructure --startup-project backend/src/DigiSay.API
 ```
+
+For local API startup, configure the required Supabase Storage project URL and server-only secret key as described in the [backend storage prerequisites](backend/README.md#private-supabase-storage). The bucket must be private; never put the Supabase secret in a frontend configuration. The root quick start also uses User Secrets for API runtime configuration.
 
 For local secret configuration, use ASP.NET User Secrets:
 
