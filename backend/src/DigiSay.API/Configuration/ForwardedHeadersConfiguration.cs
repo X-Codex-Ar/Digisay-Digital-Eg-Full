@@ -5,7 +5,15 @@ namespace DigiSay.API.Configuration;
 
 internal static class ForwardedHeadersConfiguration
 {
-    public static void Configure(ForwardedHeadersOptions options, IConfiguration configuration)
+    public static IServiceCollection AddDigiSayForwardedHeaders(
+        this IServiceCollection services,
+        IConfiguration configuration)
+    {
+        services.Configure<ForwardedHeadersOptions>(options => Configure(options, configuration));
+        return services;
+    }
+
+    private static void Configure(ForwardedHeadersOptions options, IConfiguration configuration)
     {
         options.ForwardedHeaders = ForwardedHeaders.None;
         options.ForwardLimit = configuration.GetValue<int?>("ForwardedHeaders:ForwardLimit") ?? 1;
