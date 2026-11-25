@@ -11,7 +11,7 @@
     "dev:all": "concurrently -k -n \"api,dashboard,public\" -c \"blue,magenta,cyan\" \"pnpm run dev:api\" \"pnpm run dev:dashboard\" \"pnpm run dev:public\"",
     "dev:public": "pnpm --dir public dev",
     "dev:dashboard": "pnpm --dir dashboard start",
-    "dev:api": "dotnet run --project backend/src/DigiSay.Api --environment ASPNETCORE_ENVIRONMENT=Development -- --urls http://localhost:5080",
+    "dev:api": "dotnet run --project backend/src/DigiSay.Api --environment Development -- --urls http://localhost:5080",
     "build": "pnpm run build:all",
     "build:all": "pnpm run build:public && pnpm run build:dashboard && pnpm run build:api",
     "build:public": "pnpm --dir public build",

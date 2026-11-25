@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { AuthService } from '../../core/auth.service';
-import '../../core/runtime-config';
+import { apiUrl } from '../../core/api-url';
 
 export type CrmKind = 'leads' | 'requests';
 
@@ -26,6 +26,12 @@ export interface ServiceRequestRecord {
   updatedAtUtc: string;
 }
 
+export interface ServiceRequestTriage {
+  found: boolean;
+  suggestion: { category: string; urgency: 'Low' | 'Normal' | 'High'; rationale: string } | null;
+  requiresHumanReview: boolean;
+}
+
 export type CrmRecord = LeadRecord | ServiceRequestRecord;
 export type CrmInput =
   | { name: string; email: string; phone: string; source: string }
@@ -39,22 +45,21 @@ export interface CrmPage<T> {
   totalPages: number;
 }
 
-const apiUrl = `${window.digisayRuntimeConfig?.apiBaseUrl?.replace(/\/$/, '') ?? 'http://localhost:5080'}/api/v1/crm`;
-
 @Injectable({ providedIn: 'root' })
 export class CrmApiService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
 
   list(kind: CrmKind, page = 1) {
-    return this.http.get<CrmPage<CrmRecord>>(`${apiUrl}/${kind}?page=${page}&pageSize=100`, {
+    const resource = kind === 'leads' ? 'leads' : 'service-requests';
+    return this.http.get<CrmPage<CrmRecord>>(apiUrl(`crm/${resource}?page=${page}&pageSize=100`), {
       headers: this.auth.authorizationHeaders(),
     });
   }
 
   listRequests(page = 1) {
     return this.http.get<CrmPage<ServiceRequestRecord>>(
-      `${apiUrl}/service-requests?page=${page}&pageSize=100`,
+      apiUrl(`crm/service-requests?page=${page}&pageSize=100`),
       {
         headers: this.auth.authorizationHeaders(),
       },
@@ -62,31 +67,39 @@ export class CrmApiService {
   }
 
   createRequest(value: { title: string; service: string; description: string }) {
-    return this.http.post<ServiceRequestRecord>(`${apiUrl}/service-requests`, value, {
+    return this.http.post<ServiceRequestRecord>(apiUrl('crm/service-requests'), value, {
       headers: this.auth.authorizationHeaders(),
     });
   }
 
   create(kind: CrmKind, value: CrmInput) {
     return this.http.post<CrmRecord>(
-      `${apiUrl}/${kind === 'leads' ? 'leads' : 'service-requests'}`,
+      apiUrl(`crm/${kind === 'leads' ? 'leads' : 'service-requests'}`),
       value,
       { headers: this.auth.authorizationHeaders() },
     );
   }
 
   update(kind: CrmKind, id: string, value: CrmInput) {
-    const endpoint = kind === 'leads' ? 'leads' : 'service-requests';
-    return this.http.put<CrmRecord>(`${apiUrl}/${endpoint}/${id}`, value, {
+    const resource = kind === 'leads' ? 'leads' : 'service-requests';
+    return this.http.put<CrmRecord>(apiUrl(`crm/${resource}/${id}`), value, {
       headers: this.auth.authorizationHeaders(),
     });
   }
 
   transition(kind: CrmKind, id: string, status: string) {
-    const endpoint = kind === 'leads' ? 'leads' : 'service-requests';
+    const resource = kind === 'leads' ? 'leads' : 'service-requests';
     return this.http.post<CrmRecord>(
-      `${apiUrl}/${endpoint}/${id}/transitions`,
+      apiUrl(`crm/${resource}/${id}/transitions`),
       { status },
+      { headers: this.auth.authorizationHeaders() },
+    );
+  }
+
+  suggestRequestTriage(id: string) {
+    return this.http.post<ServiceRequestTriage>(
+      apiUrl(`crm/service-requests/${id}/ai-triage`),
+      {},
       { headers: this.auth.authorizationHeaders() },
     );
   }

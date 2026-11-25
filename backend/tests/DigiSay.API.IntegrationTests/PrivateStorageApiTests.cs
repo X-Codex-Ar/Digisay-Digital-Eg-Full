@@ -29,6 +29,12 @@ public sealed class PrivateStorageApiTests
         Assert.Equal("application/pdf", uploaded.RootElement.GetProperty("contentType").GetString());
         Assert.Equal(new[] { organizationId }, factory.Storage.OrganizationIds);
 
+        using var listResponse = await client.GetAsync("/api/v1/storage/objects");
+        Assert.Equal(HttpStatusCode.OK, listResponse.StatusCode);
+        var listedObjects = await listResponse.Content.ReadFromJsonAsync<StorageObjectResponse[]>();
+        Assert.NotNull(listedObjects);
+        Assert.Contains(listedObjects, item => item.Id == objectId);
+
         using var linkResponse = await client.PostAsync($"/api/v1/storage/objects/{objectId}/download-link", null);
         Assert.Equal(HttpStatusCode.OK, linkResponse.StatusCode);
         using var link = await JsonDocument.ParseAsync(await linkResponse.Content.ReadAsStreamAsync());
@@ -65,8 +71,11 @@ public sealed class PrivateStorageApiTests
 
         using var crossTenantLink = await outsider.PostAsync($"/api/v1/storage/objects/{objectId}/download-link", null);
         using var crossTenantDelete = await outsider.DeleteAsync($"/api/v1/storage/objects/{objectId}");
+        using var crossTenantList = await outsider.GetAsync("/api/v1/storage/objects");
         Assert.Equal(HttpStatusCode.NotFound, crossTenantLink.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, crossTenantDelete.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, crossTenantList.StatusCode);
+        Assert.Empty(await crossTenantList.Content.ReadFromJsonAsync<StorageObjectResponse[]>() ?? []);
         using var crossTenantMetadata = await outsider.GetAsync($"/api/v1/storage/objects/{objectId}");
         Assert.Equal(HttpStatusCode.NotFound, crossTenantMetadata.StatusCode);
         Assert.Single(factory.Storage.OrganizationIds);

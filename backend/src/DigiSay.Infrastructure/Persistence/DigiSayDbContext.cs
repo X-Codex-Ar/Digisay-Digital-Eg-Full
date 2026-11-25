@@ -3,6 +3,7 @@ using DigiSay.Domain.Entities;
 using DigiSay.Infrastructure.Identity;
 using DigiSay.Domain.Entities.Organizations;
 using DigiSay.Domain.Entities.CRM;
+using DigiSay.Application.Common.Organizations;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -10,20 +11,31 @@ using Microsoft.EntityFrameworkCore;
 namespace DigiSay.Infrastructure.Persistence;
 
 /// <summary>SQL Server boundary for authoritative business data.</summary>
-public sealed class DigiSayDbContext(DbContextOptions<DigiSayDbContext> options)
+public sealed class DigiSayDbContext(
+    DbContextOptions<DigiSayDbContext> options,
+    IOrganizationContext organizationContext)
     : IdentityDbContext<DigiSayUser, IdentityRole<Guid>, Guid>(options)
 {
+    /// <summary>Tenant key supplied only after active membership is verified for this request.</summary>
+    public Guid CurrentOrganizationId => organizationContext.OrganizationId;
+
     public DbSet<ContactInquiry> ContactInquiries => Set<ContactInquiry>();
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<OrganizationMembership> OrganizationMemberships => Set<OrganizationMembership>();
     public DbSet<StorageObjectRecord> StorageObjects => Set<StorageObjectRecord>();
     public DbSet<Lead> Leads => Set<Lead>();
     public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(DigiSayDbContext).Assembly);
+
+        modelBuilder.Entity<Lead>()
+            .HasQueryFilter(lead => lead.OrganizationId == CurrentOrganizationId);
+        modelBuilder.Entity<ServiceRequest>()
+            .HasQueryFilter(request => request.OrganizationId == CurrentOrganizationId);
 
         modelBuilder.Entity<DigiSayUser>(user =>
         {

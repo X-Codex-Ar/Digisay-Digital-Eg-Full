@@ -101,7 +101,7 @@ docker compose up -d
 | **API Health** | [http://localhost:5080/health/ready](http://localhost:5080/health/ready) | SQL Server & dependency readiness check |
 | **SQL Server** | `127.0.0.1:1433` | Microsoft SQL Server 2022 instance |
 
-*(Note: In accordance with repository standards, EF Core database migrations are opt-in to prevent accidental schema alteration.)*
+*(Note: EF Core migrations are opt-in; `docker compose up` never applies them automatically. After reviewing a migration, use the explicit PowerShell sequence in [Docker development docs](docs/development/DOCKER.md#start-the-full-stack) to apply it to the local Compose database.)*
 
 ---
 

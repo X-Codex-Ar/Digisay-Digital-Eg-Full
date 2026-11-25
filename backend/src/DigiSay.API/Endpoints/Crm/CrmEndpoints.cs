@@ -13,6 +13,11 @@ using DigiSay.Application.Features.CRM.ServiceRequests.Commands.UpdateServiceReq
 using DigiSay.Application.Features.CRM.ServiceRequests.Commands.TransitionServiceRequest;
 using DigiSay.Application.Features.CRM.ServiceRequests.Queries.GetServiceRequest;
 using DigiSay.Application.Features.CRM.ServiceRequests.Queries.ListServiceRequests;
+using DigiSay.Application.Features.AI.ServiceRequestTriage;
+using DigiSay.Application.Features.AI.PublicAssistant;
+using DigiSay.Infrastructure.AI;
+using Microsoft.Extensions.Options;
+using DigiSay.API.RateLimiting;
 using DigiSay.Application.Common.Pagination;
 using DigiSay.Domain.Entities.CRM;
 using DigiSay.Domain.Enums;
@@ -139,6 +144,66 @@ internal static class CrmEndpoints
 
     private static void MapServiceRequestEndpoints(RouteGroupBuilder requests)
     {
+        requests.MapPost("/{id:guid}/ai-triage", async (
+                Guid id,
+                IOrganizationContext scope,
+                SuggestServiceRequestTriageHandler handler,
+                IOptions<OpenAiProviderOptions> providerOptions,
+                CancellationToken cancellationToken) =>
+            {
+                if (!providerOptions.Value.Enabled)
+                {
+                    return (IResult)Results.Problem(
+                        statusCode: StatusCodes.Status503ServiceUnavailable,
+                        title: "AI triage is not configured.");
+                }
+
+                if (id == Guid.Empty)
+                {
+                    return (IResult)Results.NotFound();
+                }
+
+                try
+                {
+                    var result = await handler.HandleAsync(id, scope, cancellationToken);
+                    if (!result.Found)
+                    {
+                        return (IResult)Results.NotFound();
+                    }
+
+                    return (IResult)Results.Ok(new
+                    {
+                        result.Found,
+                        Suggestion = result.Suggestion is null
+                            ? null
+                            : new
+                            {
+                                result.Suggestion.Category,
+                                Urgency = result.Suggestion.Urgency.ToString(),
+                                result.Suggestion.Rationale,
+                            },
+                        result.RequiresHumanReview,
+                    });
+                }
+                catch (PublicAssistantUnavailableException)
+                {
+                    return (IResult)Results.Problem(
+                        statusCode: StatusCodes.Status503ServiceUnavailable,
+                        title: "AI triage is temporarily unavailable.");
+                }
+                catch (ServiceRequestTriageOutputException)
+                {
+                    return (IResult)Results.Problem(
+                        statusCode: StatusCodes.Status502BadGateway,
+                        title: "AI returned an invalid triage suggestion.");
+                }
+            })
+            .RequireAuthorization("AdminAccess")
+            .WithMetadata(new RateLimitPolicy("ai-triage", 5, TimeSpan.FromMinutes(1)))
+            .AddEndpointFilter<DistributedRateLimitFilter>()
+            .WithName("SuggestServiceRequestTriage")
+            .WithSummary("Generate a human-reviewed category and urgency suggestion for an organization request.");
+
         requests.MapPost("", async (
                 ServiceRequestInput request,
                 IOrganizationContext scope,

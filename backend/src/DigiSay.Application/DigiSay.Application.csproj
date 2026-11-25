@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>DigiSay.Application</RootNamespace>
+    <PackageId>DigiSay.Application</PackageId>
+    <Description>DigiSay application use cases and service contracts.</Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\DigiSay.Domain\DigiSay.Domain.csproj" />

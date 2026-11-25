@@ -21,8 +21,9 @@ storage/
 
 ### Storage Boundaries
 
-1. **SQL Server (Source of Truth for Metadata):**
-   - Media file references, file sizes, MIME types, owner foreign keys, and audit history are stored in SQL Server.
+1. **SQL Server (Source of Truth for Business Records):**
+   - Tenant membership and authorization are verified against SQL Server before private object operations.
+   - A dedicated SQL metadata/audit entity for stored objects is not implemented yet; the current API lists provider metadata from Storage.
    - Binary blob data is never stored in SQL Server.
 
 2. **Supabase Storage (CDN & Binary Delivery):**
@@ -41,8 +42,9 @@ storage/
 | **`public-media`** | Public | 100 MB | JPEG, PNG, WebP, AVIF, SVG, MP4, WebM | Showreels, website illustrations, public marketing imagery |
 | **`client-assets`** | Private (RLS) | 500 MB | All MIME types | Authenticated client deliverables, monthly reports, contracts |
 | **`creator-submissions`** | Private (RLS) | 1 GB | MP4, MOV, MKV, PNG, JPEG | Influencer network raw video submissions and draft reviews |
+| **`digisay-private`** | Private (API only) | 10 MiB | PDF, JPEG, PNG | Tenant-scoped private files managed by the ASP.NET API |
 
-To provision these buckets in Supabase, execute [`supabase/001_storage_buckets.sql`](supabase/001_storage_buckets.sql) in the Supabase SQL Editor.
+To provision or reconcile these buckets and policies, execute [`supabase/001_storage_buckets.sql`](supabase/001_storage_buckets.sql) in the Supabase SQL Editor. It provisions the backend bucket as private, with a 10 MiB limit and PDF/JPEG/PNG types.
 
 ---
 
@@ -76,21 +78,13 @@ export class OverviewComponent {
 ```
 
 ### 3. ASP.NET Core Backend (`backend/`)
-Inject `IStorageService` into application handlers for generating signed URLs or validating file uploads:
-
-```csharp
-public interface IStorageService
-{
-    Task<string> GetPublicUrlAsync(string bucket, string path, CancellationToken ct = default);
-    Task<string> GetSignedUrlAsync(string bucket, string path, TimeSpan expiresIn, CancellationToken ct = default);
-}
-```
+The API uses `IPrivateObjectStorage` from `backend/src/DigiSay.Application/Features/Content/Abstractions/IPrivateObjectStorage.cs`. API endpoints require verified active membership; uploads and deletes require an organization owner. The server derives paths as `organizations/{organization-guid-N}/{object-guid-N}` and never accepts a client-provided path, filename, bucket, or MIME type. Upload handlers check PDF/JPEG/PNG signatures and cap files at 10 MiB. Signed URL lifetimes are bounded to one second through one hour; the API currently issues five-minute links.
 
 ---
 
 ## Environment Configuration
 
-Configure the Supabase Storage CDN URL in the respective application environment:
+Configure public media URLs in the respective application runtime. Configure private API credentials only on the server:
 
 - **Public Frontend (`public/.env`):**
   ```bash
@@ -103,11 +97,6 @@ Configure the Supabase Storage CDN URL in the respective application environment
     storageBaseUrl: 'https://<your-supabase-project>.supabase.co/storage/v1/object/public'
   };
   ```
-- **Backend (`backend/src/DigiSay.Api/appsettings.json`):**
-  ```json
-  "Storage": {
-    "Provider": "Supabase",
-    "SupabaseUrl": "https://<your-supabase-project>.supabase.co",
-    "PublicBucket": "public-media"
-  }
-  ```
+- **Backend:** Use User Secrets locally and managed environment variables in deployments: `Storage__Supabase__ProjectUrl`, `Storage__Supabase__SecretKey`, and `Storage__Supabase__PrivateBucket`. Never place the server secret in appsettings files or frontend configuration. See [`docs/deployment/CONFIGURATION.md`](../docs/deployment/CONFIGURATION.md).
+
+The API calls Supabase with a server-only secret key, which bypasses Storage RLS. The database policy records the adapter's object-path shape for service-role use, but API membership checks and server-derived paths are the actual tenant boundary. Browser clients must use the API and must never receive the Supabase server key.

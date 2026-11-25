@@ -4,12 +4,15 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { OrganizationSelectorComponent } from '../../shared/organization-selector/organization-selector.component';
+import { DropdownComponent, DropdownOption } from '../../shared/dropdown/dropdown.component';
 import {
   CrmApiService,
   CrmKind,
   CrmRecord,
   LeadRecord,
   ServiceRequestRecord,
+  ServiceRequestTriage,
 } from './crm-api.service';
 
 const LEAD_NEXT: Record<string, string[]> = {
@@ -46,7 +49,7 @@ const REQUEST_STATUSES = [
 
 @Component({
   selector: 'ds-crm-workflow',
-  imports: [FormsModule, DatePipe, RouterLink],
+  imports: [FormsModule, DatePipe, RouterLink, OrganizationSelectorComponent, DropdownComponent],
   templateUrl: './crm-workflow.component.html',
 })
 export class CrmWorkflowComponent implements OnInit {
@@ -60,6 +63,9 @@ export class CrmWorkflowComponent implements OnInit {
   readonly permissionDenied = signal(false);
   readonly notice = signal('');
   readonly selected = signal<CrmRecord | null>(null);
+  readonly triage = signal<ServiceRequestTriage['suggestion']>(null);
+  readonly triageBusy = signal(false);
+  readonly triageError = signal('');
   readonly formOpen = signal(false);
   readonly editing = signal(false);
   readonly formError = signal('');
@@ -89,6 +95,10 @@ export class CrmWorkflowComponent implements OnInit {
       'No organization selected',
   );
   readonly statuses = computed(() => (this.isLeads() ? LEAD_STATUSES : REQUEST_STATUSES));
+  readonly statusOptions = computed<DropdownOption[]>(() => [
+    { value: '', label: 'All statuses' },
+    ...this.statuses().map((status) => ({ value: status, label: this.displayStatus(status) })),
+  ]);
   readonly filteredRecords = computed(() => {
     const term = this.query().trim().toLowerCase();
     return this.records().filter((record) => {
@@ -219,6 +229,26 @@ export class CrmWorkflowComponent implements OnInit {
 
   inspect(record: CrmRecord): void {
     this.selected.set(record);
+    this.triage.set(null);
+    this.triageError.set('');
+  }
+
+  suggestTriage(): void {
+    const record = this.selected();
+    if (this.isLeads() || !record || !this.auth.isAdmin() || this.triageBusy()) return;
+    this.triageBusy.set(true);
+    this.triageError.set('');
+    this.triage.set(null);
+    this.api.suggestRequestTriage(record.id).subscribe({
+      next: (result) => {
+        this.triage.set(result.suggestion);
+        this.triageBusy.set(false);
+      },
+      error: (error: unknown) => {
+        this.triageError.set(this.triageErrorMessage(error));
+        this.triageBusy.set(false);
+      },
+    });
   }
 
   transition(record: CrmRecord, status: string): void {
@@ -240,6 +270,12 @@ export class CrmWorkflowComponent implements OnInit {
 
   nextStatuses(record: CrmRecord): string[] {
     return (this.isLeads() ? LEAD_NEXT : REQUEST_NEXT)[record.status] ?? [];
+  }
+  nextStatusOptions(record: CrmRecord): DropdownOption[] {
+    return this.nextStatuses(record).map((status) => ({
+      value: status,
+      label: this.displayStatus(status),
+    }));
   }
   displayStatus(value: string): string {
     return value.replace(/([a-z])([A-Z])/g, '$1 $2');
@@ -289,5 +325,15 @@ export class CrmWorkflowComponent implements OnInit {
       error.error?.title ??
       'The API could not save this record. Retry in a moment.'
     );
+  }
+
+  private triageErrorMessage(error: unknown): string {
+    if (!(error instanceof HttpErrorResponse)) return 'AI triage could not complete. Please try again.';
+    if (error.status === 0) return 'Could not reach the API. Check your connection and retry.';
+    if (error.status === 401) return 'Your sign-in expired. Sign in again to continue.';
+    if (error.status === 403) return 'Your account is not allowed to request AI triage.';
+    if (error.status === 404) return 'This service request is no longer available in this organization.';
+    if (error.status === 503) return 'AI triage is not configured or is temporarily unavailable.';
+    return 'AI returned an invalid suggestion. The request was not changed; try again later.';
   }
 }

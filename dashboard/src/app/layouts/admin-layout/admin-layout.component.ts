@@ -15,6 +15,7 @@ const ADMIN_NAVIGATION = [
   { label: 'Content', path: '/admin/content', icon: 'CT' },
   { label: 'Teams & people', path: '/admin/team', icon: 'TM' },
   { label: 'Reports', path: '/admin/reports', icon: 'RP' },
+  { label: 'AI assistant', path: '/admin/ai-assistant', icon: 'AI' },
   { label: 'Audit log', path: '/admin/audit-logs', icon: 'AU' },
   { label: 'Notifications', path: '/admin/notifications', icon: 'NT' },
   { label: 'Settings', path: '/admin/settings', icon: 'ST' },

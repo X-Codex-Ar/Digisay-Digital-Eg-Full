@@ -187,6 +187,9 @@ public sealed class ContentStorageUseCaseTests
         public DateTimeOffset SignStartedAtUtc { get; private set; }
         public StorageProviderException? DeleteFailure { get; set; }
 
+        public Task<IReadOnlyList<StorageObject>> ListAsync(Guid organizationId, CancellationToken cancellationToken) =>
+            Task.FromResult<IReadOnlyList<StorageObject>>([]);
+
         public async Task UploadAsync(Guid organizationId, Guid objectId, Stream content, string verifiedContentType, CancellationToken cancellationToken)
         {
             UploadedOrganizationId = organizationId;

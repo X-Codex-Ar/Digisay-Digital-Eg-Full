@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using DigiSay.API.Authentication;
 using DigiSay.Infrastructure.Persistence;
+using DigiSay.Domain.Enums;
 using DigiSay.Infrastructure.Identity;
 using DigiSay.API.RateLimiting;
 using Microsoft.AspNetCore.Identity;
@@ -78,6 +79,13 @@ internal static class IdentityEndpoints
             .WithName("RevokeUserSessions")
             .WithSummary("Revoke refresh and cookie sessions for an account.");
 
+        var adminOrganizations = versionedApi.MapGroup("/admin/organizations")
+            .WithTags("Organization administration")
+            .RequireAuthorization("AdminAccess");
+        adminOrganizations.MapGet("", ListOrganizationsAsync)
+            .WithName("ListAdminOrganizations")
+            .WithSummary("List organization accounts and active membership counts for DigiSay administrators.");
+
         versionedApi.MapGet("/users/me", async (
                 HttpContext httpContext,
                 UserManager<DigiSayUser> userManager) =>
@@ -132,20 +140,26 @@ internal static class IdentityEndpoints
             return Results.Problem(statusCode: StatusCodes.Status503ServiceUnavailable, title: "Identity roles are not initialized.");
         }
 
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
-        if (await dbContext.UserRoles.AnyAsync(item => item.RoleId == role.Id, cancellationToken))
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            return Results.Conflict(new { error = "SuperAdmin bootstrap has already been completed." });
-        }
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable,
+                cancellationToken);
+            if (await dbContext.UserRoles.AnyAsync(item => item.RoleId == role.Id, cancellationToken))
+            {
+                return Results.Conflict(new { error = "SuperAdmin bootstrap has already been completed." });
+            }
 
-        var assignment = await userManager.AddToRoleAsync(user, DigiSayRoles.SuperAdmin);
-        if (!assignment.Succeeded)
-        {
-            return IdentityFailure(assignment);
-        }
+            var assignment = await userManager.AddToRoleAsync(user, DigiSayRoles.SuperAdmin);
+            if (!assignment.Succeeded)
+            {
+                return IdentityFailure(assignment);
+            }
 
-        await transaction.CommitAsync(cancellationToken);
-        return Results.NoContent();
+            await transaction.CommitAsync(cancellationToken);
+            return Results.NoContent();
+        });
     }
 
     private static async Task<IResult> ReplaceUserRolesAsync(
@@ -187,39 +201,49 @@ internal static class IdentityEndpoints
         var currentRoles = await userManager.GetRolesAsync(user);
         var removingSuperAdmin = currentRoles.Contains(DigiSayRoles.SuperAdmin, StringComparer.Ordinal) &&
             !requestedRoles.Contains(DigiSayRoles.SuperAdmin, StringComparer.Ordinal);
-        await using var transaction = await dbContext.Database.BeginTransactionAsync(IsolationLevel.Serializable, cancellationToken);
-        if (removingSuperAdmin)
+        var strategy = dbContext.Database.CreateExecutionStrategy();
+        return await strategy.ExecuteAsync(async () =>
         {
-            var superAdminRole = await dbContext.Roles.SingleAsync(role => role.NormalizedName == DigiSayRoles.SuperAdmin.ToUpperInvariant(), cancellationToken);
-            var superAdminCount = await dbContext.UserRoles.CountAsync(item => item.RoleId == superAdminRole.Id, cancellationToken);
-            if (superAdminCount <= 1)
+            await using var transaction = await dbContext.Database.BeginTransactionAsync(
+                IsolationLevel.Serializable,
+                cancellationToken);
+            if (removingSuperAdmin)
             {
-                return Results.Conflict(new { error = "The last SuperAdmin cannot be removed." });
+                var superAdminRole = await dbContext.Roles.SingleAsync(
+                    role => role.NormalizedName == DigiSayRoles.SuperAdmin.ToUpperInvariant(),
+                    cancellationToken);
+                var superAdminCount = await dbContext.UserRoles.CountAsync(
+                    item => item.RoleId == superAdminRole.Id,
+                    cancellationToken);
+                if (superAdminCount <= 1)
+                {
+                    return Results.Conflict(new { error = "The last SuperAdmin cannot be removed." });
+                }
             }
-        }
 
-        var removeResult = await userManager.RemoveFromRolesAsync(
-            user, currentRoles.Except(requestedRoles, StringComparer.Ordinal));
-        if (!removeResult.Succeeded)
-        {
-            return IdentityFailure(removeResult);
-        }
+            var removeResult = await userManager.RemoveFromRolesAsync(
+                user, currentRoles.Except(requestedRoles, StringComparer.Ordinal));
+            if (!removeResult.Succeeded)
+            {
+                return IdentityFailure(removeResult);
+            }
 
-        var addResult = await userManager.AddToRolesAsync(
-            user, requestedRoles.Except(currentRoles, StringComparer.Ordinal));
-        if (!addResult.Succeeded)
-        {
-            return IdentityFailure(addResult);
-        }
+            var addResult = await userManager.AddToRolesAsync(
+                user, requestedRoles.Except(currentRoles, StringComparer.Ordinal));
+            if (!addResult.Succeeded)
+            {
+                return IdentityFailure(addResult);
+            }
 
-        var stampResult = await userManager.UpdateSecurityStampAsync(user);
-        if (!stampResult.Succeeded)
-        {
-            return IdentityFailure(stampResult);
-        }
+            var stampResult = await userManager.UpdateSecurityStampAsync(user);
+            if (!stampResult.Succeeded)
+            {
+                return IdentityFailure(stampResult);
+            }
 
-        await transaction.CommitAsync(cancellationToken);
-        return Results.Ok(new UserRolesResponse(user.Id, requestedRoles));
+            await transaction.CommitAsync(cancellationToken);
+            return Results.Ok(new UserRolesResponse(user.Id, requestedRoles));
+        });
     }
 
     private static async Task<IResult> ListUsersAsync(
@@ -270,6 +294,52 @@ internal static class IdentityEndpoints
                 rolesByUser[user.Id].Order(StringComparer.Ordinal).ToArray())).ToArray()));
     }
 
+    private static async Task<IResult> ListOrganizationsAsync(
+        string? search,
+        int? page,
+        int? pageSize,
+        DigiSayDbContext dbContext,
+        CancellationToken cancellationToken)
+    {
+        if (page is < 1 or > 10_000 || pageSize is < 1 or > 100 || search?.Length > 120)
+        {
+            return Results.ValidationProblem(new Dictionary<string, string[]>
+            {
+                ["pagination"] = ["Page must be 1–10,000, pageSize 1–100, and search at most 120 characters."],
+            });
+        }
+
+        var pageNumber = page ?? 1;
+        var size = pageSize ?? 25;
+        var organizationsQuery = dbContext.Organizations.AsNoTracking();
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var normalizedSearch = search.Trim();
+            organizationsQuery = organizationsQuery.Where(item => item.Name.Contains(normalizedSearch));
+        }
+
+        var totalCount = await organizationsQuery.CountAsync(cancellationToken);
+        var organizations = await organizationsQuery
+            .OrderBy(item => item.Name)
+            .ThenBy(item => item.Id)
+            .Skip((pageNumber - 1) * size)
+            .Take(size)
+            .Select(item => new AdminOrganizationResponse(
+                item.Id,
+                item.Name,
+                item.CreatedAtUtc,
+                dbContext.OrganizationMemberships.Count(membership =>
+                    membership.OrganizationId == item.Id && membership.Status == OrganizationMembershipStatus.Active)))
+            .ToListAsync(cancellationToken);
+
+        return Results.Ok(new AdminOrganizationPage(
+            pageNumber,
+            size,
+            totalCount,
+            (int)Math.Ceiling(totalCount / (double)size),
+            organizations));
+    }
+
     private static async Task<IResult> RevokeUserSessionsAsync(
         Guid userId,
         UserManager<DigiSayUser> userManager)
@@ -306,3 +376,5 @@ internal sealed record UserRolesResponse(Guid UserId, IReadOnlyList<string> Role
 internal sealed record AdminUserRow(Guid Id, string Email, string? DisplayName, bool EmailConfirmed);
 internal sealed record AdminUserResponse(Guid Id, string Email, string? DisplayName, bool EmailConfirmed, IReadOnlyList<string> Roles);
 internal sealed record AdminUserPage(int Page, int PageSize, IReadOnlyList<AdminUserResponse> Users);
+internal sealed record AdminOrganizationResponse(Guid Id, string Name, DateTimeOffset CreatedAtUtc, int ActiveMemberCount);
+internal sealed record AdminOrganizationPage(int Page, int PageSize, int TotalCount, int TotalPages, IReadOnlyList<AdminOrganizationResponse> Items);

@@ -4,11 +4,12 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { OrganizationSelectorComponent } from '../../shared/organization-selector/organization-selector.component';
 import { CrmApiService, ServiceRequestRecord } from '../crm/crm-api.service';
 
 @Component({
   selector: 'ds-client-requests',
-  imports: [FormsModule, DatePipe, RouterLink],
+  imports: [FormsModule, DatePipe, RouterLink, OrganizationSelectorComponent],
   templateUrl: './client-requests.component.html',
 })
 export class ClientRequestsComponent implements OnInit {
