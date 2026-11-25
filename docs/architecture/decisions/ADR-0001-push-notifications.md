@@ -49,3 +49,17 @@ Do **not** add Firebase Admin credentials, an FCM package, endpoint registration
 ## Future configuration
 
 No variables are needed for this decision PR. A later FCM implementation will need a Firebase project ID, public VAPID key in the relevant web client's runtime configuration, and server-side Application Default Credentials or a service-account credential held in User Secrets or the deployment secret manager. No credential belongs in source control, a frontend bundle, Docker image, or Compose file.
+
+## Implementation guardrails (required before enabling delivery)
+
+The following are release gates, not optional implementation details:
+
+- Persist each notification and its outbox message in the same SQL Server transaction as the business change that emits it. A worker must publish only committed outbox records.
+- Derive the recipient from the authenticated server-side identity and current tenant membership. Never trust a client-supplied user, role, or organization identifier; re-check membership when authorizing inbox reads and device registration.
+- Model multiple installations per user explicitly. Bind each FID to its authenticated owner, define transfer/re-registration behavior, and revoke the current installation on sign-out if that product behavior is approved. A user must not be able to register an FID for another account.
+- Make delivery idempotent with a database uniqueness constraint on the approved business event, recipient, and channel identity. Do not rely on FCM's delivery behavior for exactly-once processing.
+- Classify transient and permanent failures. Use bounded exponential backoff with jitter, honor provider retry guidance such as Retry-After, invalidate unregistered FIDs, and move exhausted messages to a dead-letter state with observable operator recovery/replay.
+- Support multiple devices per recipient and record per-installation attempts/outcomes without duplicating the durable inbox item.
+- Keep push payloads minimal (opaque notification ID and non-sensitive routing hint); fetch the authorized details from the API. Define retention and deletion for inbox records, attempts, and device registrations before launch.
+
+No FCM SDK, endpoint, credential, or worker is introduced by this ADR. Implementation remains blocked until the event/recipient matrix, consent behavior, sign-out revocation policy, retention, and Firebase project ownership are approved.
