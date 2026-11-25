@@ -172,6 +172,14 @@ public sealed class CrmLifecycleApiTests
         var followUp = await addFollowUp.Content.ReadFromJsonAsync<LeadFollowUpResponse>();
         Assert.NotNull(followUp);
 
+        using var addOpenFollowUp = await owner.PostAsJsonAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups", new
+        {
+            title = "Confirm assets", details = "Check the source files.", dueAtUtc = DateTimeOffset.UtcNow.AddDays(1),
+        });
+        Assert.Equal(HttpStatusCode.Created, addOpenFollowUp.StatusCode);
+        var openFollowUp = await addOpenFollowUp.Content.ReadFromJsonAsync<LeadFollowUpResponse>();
+        Assert.NotNull(openFollowUp);
+
         using var complete = await owner.PostAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups/{followUp.Id}/complete", null);
         Assert.Equal(HttpStatusCode.OK, complete.StatusCode);
         using var completeAgain = await owner.PostAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups/{followUp.Id}/complete", null);
@@ -183,6 +191,37 @@ public sealed class CrmLifecycleApiTests
         Assert.Equal(HttpStatusCode.OK, ownNotes.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, foreignNotes.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, foreignComplete.StatusCode);
+
+        using var firstFollowUpPageResponse = await owner.GetAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups?page=1&pageSize=1");
+        Assert.Equal(HttpStatusCode.OK, firstFollowUpPageResponse.StatusCode);
+        var firstFollowUpPage = await firstFollowUpPageResponse.Content.ReadFromJsonAsync<PagedResponse<LeadFollowUpResponse>>();
+        Assert.NotNull(firstFollowUpPage);
+        Assert.Equal(2, firstFollowUpPage.TotalCount);
+        Assert.Single(firstFollowUpPage.Items);
+        Assert.Equal(openFollowUp.Id, firstFollowUpPage.Items[0].Id);
+
+        using var secondFollowUpPageResponse = await owner.GetAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups?page=2&pageSize=1");
+        Assert.Equal(HttpStatusCode.OK, secondFollowUpPageResponse.StatusCode);
+        var secondFollowUpPage = await secondFollowUpPageResponse.Content.ReadFromJsonAsync<PagedResponse<LeadFollowUpResponse>>();
+        Assert.NotNull(secondFollowUpPage);
+        Assert.Equal(2, secondFollowUpPage.TotalCount);
+        var completedFollowUp = Assert.Single(secondFollowUpPage.Items);
+        Assert.Equal(followUp.Id, completedFollowUp.Id);
+        Assert.NotNull(completedFollowUp.CompletedAtUtc);
+        Assert.Equal(createdLead.CreatedByUserId, completedFollowUp.CompletedByUserId);
+
+        using var unknownLeadFollowUps = await owner.GetAsync($"/api/v1/crm/leads/{Guid.NewGuid()}/follow-ups?page=1&pageSize=1");
+        Assert.Equal(HttpStatusCode.NotFound, unknownLeadFollowUps.StatusCode);
+
+        using var createForeignLead = await other.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Foreign lead", email = "foreign-lead@example.test", source = "Referral",
+        });
+        Assert.Equal(HttpStatusCode.Created, createForeignLead.StatusCode);
+        var foreignLead = await createForeignLead.Content.ReadFromJsonAsync<LeadResponse>();
+        Assert.NotNull(foreignLead);
+        using var foreignLeadFollowUps = await owner.GetAsync($"/api/v1/crm/leads/{foreignLead.Id}/follow-ups?page=1&pageSize=1");
+        Assert.Equal(HttpStatusCode.NotFound, foreignLeadFollowUps.StatusCode);
 
         var notes = await ownNotes.Content.ReadFromJsonAsync<PagedResponse<LeadNoteResponse>>();
         Assert.NotNull(notes);
