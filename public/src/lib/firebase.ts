@@ -21,6 +21,7 @@ async function getClientAnalytics(): Promise<Analytics | null> {
     try {
       const analyticsSdk = await import("firebase/analytics");
       if (!(await analyticsSdk.isSupported())) return null;
+      if (getAnalyticsConsent() !== "granted") return null;
 
       analyticsSdk.setConsent({
         analytics_storage: "granted",
@@ -43,7 +44,10 @@ export async function trackPageView(path: string): Promise<void> {
   const analytics = await getClientAnalytics();
   if (!analytics) return;
 
+  if (getAnalyticsConsent() !== "granted") return;
+
   const { logEvent } = await import("firebase/analytics");
+  if (getAnalyticsConsent() !== "granted") return;
   logEvent(analytics, "page_view", { page_path: path, page_title: document.title });
 }
 
