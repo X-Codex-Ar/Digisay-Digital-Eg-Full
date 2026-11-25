@@ -1,10 +1,20 @@
 name: Publish NuGet packages
 
 on:
-  push:
-    branches: [main]
-    tags: ["v*.*.*"]
+  workflow_call:
+    inputs:
+      version:
+        description: Stable semantic version without the v prefix
+        required: true
+        type: string
   workflow_dispatch:
+    inputs:
+      version:
+        description: Stable semantic version without the v prefix
+        required: true
+        type: string
+  push:
+    tags: ["v*.*.*"]
 
 permissions:
   contents: read
@@ -38,13 +48,16 @@ jobs:
       - name: Determine package version
         id: version
         shell: bash
+        env:
+          INPUT_VERSION: ${{ inputs.version || github.event.inputs.version }}
         run: |
-          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+          package_version="$INPUT_VERSION"
+          if [[ -z "$package_version" && "$GITHUB_REF" == refs/tags/v* ]]; then
             package_version="${GITHUB_REF_NAME#v}"
-          elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
-            package_version="1.0.0-main.${GITHUB_RUN_NUMBER}"
-          else
-            package_version="1.0.0-dev.${GITHUB_RUN_NUMBER}"
+          fi
+          if [[ ! "$package_version" =~ ^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "Expected a stable SemVer version such as 1.2.3; received '$package_version'." >&2
+            exit 1
           fi
           echo "value=$package_version" >> "$GITHUB_OUTPUT"
 
