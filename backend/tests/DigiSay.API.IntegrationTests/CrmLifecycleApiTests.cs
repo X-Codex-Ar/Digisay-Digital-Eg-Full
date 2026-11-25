@@ -144,6 +144,12 @@ public sealed class CrmLifecycleApiTests
         Assert.Equal(0, escapedWildcardPage.TotalCount);
         Assert.Empty(escapedWildcardPage.Items);
 
+        using var escapedBracket = await owner.GetAsync($"/api/v1/crm/leads?search={Uri.EscapeDataString("[a]")}&page=1&pageSize=10");
+        Assert.Equal(HttpStatusCode.OK, escapedBracket.StatusCode);
+        var escapedBracketPage = await escapedBracket.Content.ReadFromJsonAsync<PagedResponse<LeadResponse>>();
+        Assert.NotNull(escapedBracketPage);
+        Assert.Empty(escapedBracketPage.Items);
+
         using var crossOrganizationSearch = await other.GetAsync("/api/v1/crm/leads?search=ada&page=1&pageSize=10");
         Assert.Equal(HttpStatusCode.OK, crossOrganizationSearch.StatusCode);
         var otherPage = await crossOrganizationSearch.Content.ReadFromJsonAsync<PagedResponse<LeadResponse>>();

@@ -142,5 +142,6 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
     private static string EscapeLikePattern(string value) => value
         .Replace("\\", "\\\\", StringComparison.Ordinal)
         .Replace("%", "\\%", StringComparison.Ordinal)
-        .Replace("_", "\\_", StringComparison.Ordinal);
+        .Replace("_", "\\_", StringComparison.Ordinal)
+        .Replace("[", "[[]", StringComparison.Ordinal);
 }
