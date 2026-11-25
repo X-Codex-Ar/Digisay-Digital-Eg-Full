@@ -54,28 +54,17 @@ export async function trackPageView(path: string): Promise<void> {
 export async function applyAnalyticsConsent(
   consent: Exclude<AnalyticsConsent, null>,
 ): Promise<void> {
-  if (consent === "denied") {
-    if (!analyticsPromise) return;
-
-    try {
-      const analyticsSdk = await import("firebase/analytics");
-      analyticsSdk.setConsent({
-        analytics_storage: "denied",
-        ad_storage: "denied",
-      });
-    } catch {
-      // Consent remains denied in local storage even if the SDK is unavailable.
-    }
-    return;
-  }
-
   const analyticsSdk = await import("firebase/analytics");
+
+  // A newer visitor choice may have been made while the SDK chunk was loading.
+  if (getAnalyticsConsent() !== consent) return;
+
   analyticsSdk.setConsent({
-    analytics_storage: "granted",
+    analytics_storage: consent === "granted" ? "granted" : "denied",
     ad_storage: "denied",
   });
 
-  if (typeof window !== "undefined") {
+  if (consent === "granted" && typeof window !== "undefined") {
     await trackPageView(window.location.pathname);
   }
 }
