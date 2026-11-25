@@ -74,7 +74,7 @@ Each version retains only the typed suggestion fields needed for review, its ten
 - `backend/src/DigiSay.API/`: provider proxy and authenticated/rate-limited endpoints. Public FAQ endpoints must only retrieve public approved content; tenant identity for protected endpoints must come from verified API context, never a client-supplied organization identifier.
 - `public/`: public FAQ chat interface only; it receives the answer/citation contract from the API and never holds provider credentials.
 - `dashboard/`: general FAQ assistant and read-only triage suggestion UI. Suggestions are not persisted or accepted/rejected yet. Keep provider SDKs and secrets out of browser bundles.
-- SQL Server: persist source records and any accepted suggestion/audit state. Use an outbox and background worker if inference becomes asynchronous; neither exists today.
+- SQL Server: persist source records separately from the versioned suggestion lifecycle and transition audit described above. Use an outbox and background worker if inference becomes asynchronous; neither exists today.
 - Knowledge content: start with versioned, curated FAQs. Add vector/search infrastructure only when corpus size and evaluation show it is needed; every indexed document needs owner, visibility, version, and deletion behavior.
 
 Avoid a standalone AI microservice, multi-agent orchestration, or a multi-provider abstraction until a concrete scale or provider requirement justifies them.
