@@ -6,6 +6,9 @@ namespace DigiSay.Infrastructure.AI;
 /// <summary>Draft public FAQ corpus derived from the public site; product owner review is required before enablement.</summary>
 public sealed class PublicFaqSearchTool : IPublicFaqSearchTool
 {
+    /// <summary>Identifies the reviewed corpus content. Change it whenever any source text changes.</summary>
+    public const string CorpusVersion = "public-faq-draft-1";
+
     private static readonly PublicFaqSource[] Sources =
     [
         new("services", "DigiSay services", "/services",
