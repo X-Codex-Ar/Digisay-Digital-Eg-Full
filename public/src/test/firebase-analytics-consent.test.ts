@@ -73,14 +73,18 @@ describe("Firebase Analytics consent gate", () => {
 
   it("does not initialize analytics if consent is withdrawn while the SDK is loading", async () => {
     let resolveSupport!: (supported: boolean) => void;
-    vi.mocked(isSupported).mockImplementationOnce(
-      () => new Promise<boolean>((resolve) => (resolveSupport = resolve)),
-    );
+    let notifySupportStarted!: () => void;
+    const supportStarted = new Promise<void>((resolve) => (notifySupportStarted = resolve));
+    vi.mocked(isSupported).mockImplementationOnce(() => {
+      notifySupportStarted();
+      return new Promise<boolean>((resolve) => (resolveSupport = resolve));
+    });
 
     saveAnalyticsConsent("granted");
     const { trackPageView } = await import("@/lib/firebase");
     const pendingTracking = trackPageView("/");
 
+    await supportStarted;
     saveAnalyticsConsent("denied");
     resolveSupport(true);
     await pendingTracking;
