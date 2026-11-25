@@ -9,11 +9,13 @@ import {
 export function AnalyticsConsentManager() {
   const [consent, setConsent] = useState<AnalyticsConsent>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
 
   useEffect(() => {
     const storedConsent = getAnalyticsConsent();
     setConsent(storedConsent);
     setIsOpen(storedConsent === null);
+    setHasLoaded(true);
   }, []);
 
   const chooseConsent = (nextConsent: Exclude<AnalyticsConsent, null>) => {
@@ -27,6 +29,8 @@ export function AnalyticsConsentManager() {
         // Analytics is optional; a provider failure must never block the website.
       });
   };
+
+  if (!hasLoaded) return null;
 
   if (!isOpen) {
     return (
