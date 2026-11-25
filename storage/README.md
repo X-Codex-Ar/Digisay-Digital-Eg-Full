@@ -55,7 +55,7 @@ Import the storage resolver in React components:
 import { resolveMediaUrl, resolveVideoUrl } from "@/lib/storage";
 
 // Resolves to Supabase CDN if configured, or falls back to local static asset
-const logoUrl = resolveMediaUrl("brand/Digisay-logo-transparent-1.png");
+const logoUrl = resolveMediaUrl("brand/Digisay-logo-transparent-1-e1709464890607.png");
 
 // Video showreel resolution with automatic fallback
 const videoUrl = resolveVideoUrl("videos/showreel.mp4", "https://digisay.com/wp-content/uploads/2024/03/GFF-No-Logo-1.mp4");
