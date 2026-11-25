@@ -91,8 +91,8 @@ internal static class CrmEndpoints
                 Guid id, int? page, int? pageSize, IOrganizationContext scope, GetLeadHandler getLead,
                 ListLeadNotesHandler handler, CancellationToken cancellationToken) =>
             {
-                if (await getLead.HandleAsync(new GetLeadQuery(id), scope, cancellationToken) is null) return Results.NotFound();
                 if (!TryPagination(page, pageSize, out var currentPage, out var size, out var errors)) return Results.ValidationProblem(errors);
+                if (await getLead.HandleAsync(new GetLeadQuery(id), scope, cancellationToken) is null) return Results.NotFound();
                 var slice = await handler.HandleAsync(id, (currentPage - 1) * size, size, scope.OrganizationId, cancellationToken);
                 return Results.Ok(ToPage(slice, currentPage, size, slice.Items.Select(ToResponse).ToArray()));
             })
@@ -114,8 +114,8 @@ internal static class CrmEndpoints
                 Guid id, int? page, int? pageSize, IOrganizationContext scope, GetLeadHandler getLead,
                 ListLeadFollowUpsHandler handler, CancellationToken cancellationToken) =>
             {
-                if (await getLead.HandleAsync(new GetLeadQuery(id), scope, cancellationToken) is null) return Results.NotFound();
                 if (!TryPagination(page, pageSize, out var currentPage, out var size, out var errors)) return Results.ValidationProblem(errors);
+                if (await getLead.HandleAsync(new GetLeadQuery(id), scope, cancellationToken) is null) return Results.NotFound();
                 var slice = await handler.HandleAsync(id, (currentPage - 1) * size, size, scope.OrganizationId, cancellationToken);
                 return Results.Ok(ToPage(slice, currentPage, size, slice.Items.Select(ToResponse).ToArray()));
             })
@@ -148,8 +148,8 @@ internal static class CrmEndpoints
                 Guid id, int? page, int? pageSize, IOrganizationContext scope, GetLeadHandler getLead,
                 ListLeadStatusHistoryHandler handler, CancellationToken cancellationToken) =>
             {
-                if (await getLead.HandleAsync(new GetLeadQuery(id), scope, cancellationToken) is null) return Results.NotFound();
                 if (!TryPagination(page, pageSize, out var currentPage, out var size, out var errors)) return Results.ValidationProblem(errors);
+                if (await getLead.HandleAsync(new GetLeadQuery(id), scope, cancellationToken) is null) return Results.NotFound();
                 var slice = await handler.HandleAsync(id, (currentPage - 1) * size, size, scope.OrganizationId, cancellationToken);
                 return Results.Ok(ToPage(slice, currentPage, size, slice.Items.Select(ToResponse).ToArray()));
             })
