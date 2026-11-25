@@ -16,6 +16,9 @@ using DigiSay.Application.Features.Organizations.Queries.GetCurrentOrganization;
 using DigiSay.Application.Features.Content.Commands.UploadObject;
 using DigiSay.Application.Features.Content.Commands.DeleteObject;
 using DigiSay.Application.Features.Content.Queries.CreateDownloadLink;
+using DigiSay.Application.Features.Content.Queries.ListObjects;
+using DigiSay.Application.Features.AI.PublicAssistant;
+using DigiSay.Application.Features.AI.ServiceRequestTriage;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DigiSay.Application;
@@ -32,6 +35,7 @@ public static class DependencyInjection
         services.AddScoped<GetCurrentOrganizationHandler>();
         services.AddScoped<UploadObjectHandler>();
         services.AddScoped<CreateDownloadLinkHandler>();
+        services.AddScoped<ListObjectsHandler>();
         services.AddScoped<DeleteObjectHandler>();
         services.AddScoped<CreateLeadHandler>();
         services.AddScoped<GetLeadHandler>();
@@ -43,6 +47,8 @@ public static class DependencyInjection
         services.AddScoped<ListServiceRequestsHandler>();
         services.AddScoped<UpdateServiceRequestHandler>();
         services.AddScoped<TransitionServiceRequestHandler>();
+        services.AddScoped<PublicFaqAssistantHandler>();
+        services.AddScoped<SuggestServiceRequestTriageHandler>();
         return services;
     }
 }

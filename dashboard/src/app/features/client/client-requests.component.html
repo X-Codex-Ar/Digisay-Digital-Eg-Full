@@ -10,23 +10,14 @@
       <p class="m-0 text-sm text-muted-foreground">
         Submit a request to DigiSay and follow its progress here.
       </p>
-      @if (organizations().length > 1) {
-        <label
-          class="mt-3 grid max-w-sm gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"
-        >
-          Organization
-          <select
-            class="rounded-xl border border-border bg-card px-3 py-2.5 text-sm font-normal normal-case tracking-normal text-foreground disabled:opacity-50"
-            [ngModel]="activeOrganizationId()"
-            (ngModelChange)="selectOrganization($event)"
-            [disabled]="loading()"
-          >
-            @for (organization of organizations(); track organization.id) {
-              <option [value]="organization.id">{{ organization.name }}</option>
-            }
-          </select>
-        </label>
-      }
+      <ds-organization-selector
+        class="mt-3 block max-w-sm"
+        [organizations]="organizations()"
+        [selectedId]="activeOrganizationId()"
+        [disabled]="loading()"
+        labelClass="grid gap-2 text-xs font-bold uppercase tracking-wide text-muted-foreground"
+        (selectionChange)="selectOrganization($event)"
+      />
     </div>
     <button
       type="button"

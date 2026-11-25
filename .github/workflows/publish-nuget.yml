@@ -1,0 +1,85 @@
+name: Publish NuGet packages
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Pack and publish .NET libraries
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+          cache: true
+          cache-dependency-path: |
+            global.json
+            backend/src/*/packages.lock.json
+
+      - name: Restore locked dependencies
+        run: dotnet restore backend/DigiSay.sln --locked-mode
+
+      - name: Build libraries
+        run: dotnet build backend/DigiSay.sln --configuration Release --no-restore -m:1
+
+      - name: Determine package version
+        id: version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            package_version="${GITHUB_REF_NAME#v}"
+          elif [[ "$GITHUB_REF" == refs/heads/main ]]; then
+            package_version="1.0.0-main.${GITHUB_RUN_NUMBER}"
+          else
+            package_version="1.0.0-dev.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "value=$package_version" >> "$GITHUB_OUTPUT"
+
+      - name: Pack DigiSay libraries
+        shell: bash
+        run: |
+          output="$RUNNER_TEMP/nuget-packages"
+          mkdir -p "$output"
+          for project in \
+            backend/src/DigiSay.Domain/DigiSay.Domain.csproj \
+            backend/src/DigiSay.Application/DigiSay.Application.csproj \
+            backend/src/DigiSay.Infrastructure/DigiSay.Infrastructure.csproj; do
+            dotnet pack "$project" \
+              --configuration Release \
+              --no-build \
+              --no-restore \
+              -m:1 \
+              --output "$output" \
+              -p:PackageVersion="${{ steps.version.outputs.value }}"
+          done
+
+      - name: Publish to GitHub Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ACTOR: ${{ github.actor }}
+          GITHUB_OWNER: ${{ github.repository_owner }}
+        run: |
+          dotnet nuget add source "https://nuget.pkg.github.com/${GITHUB_OWNER,,}/index.json" \
+            --name github \
+            --username "$GITHUB_ACTOR" \
+            --password "$GITHUB_TOKEN" \
+            --store-password-in-clear-text
+          for package in "$RUNNER_TEMP"/nuget-packages/*.nupkg; do
+            dotnet nuget push "$package" \
+              --source github \
+              --api-key "$GITHUB_TOKEN" \
+              --skip-duplicate
+          done

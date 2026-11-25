@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportAppError } from "../lib/error-reporting";
 import { ScrollProgressBar } from "@/components/common/ScrollProgressBar";
 import { BrandIntroLoader } from "@/components/common/BrandIntroLoader";
+import { PublicAiAssistant } from "@/components/common/PublicAiAssistant";
 
 function NotFoundComponent() {
   return (
@@ -159,6 +160,7 @@ function RootComponent() {
       <BrandIntroLoader />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <PublicAiAssistant />
     </QueryClientProvider>
   );
 }

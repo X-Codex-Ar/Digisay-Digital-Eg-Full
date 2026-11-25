@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using DigiSay.Application.Common.Organizations;
 
 namespace DigiSay.Infrastructure.Persistence;
 
@@ -13,6 +14,7 @@ public sealed class DigiSayDbContextFactory : IDesignTimeDbContextFactory<DigiSa
             .UseSqlServer(connectionString)
             .Options;
 
-        return new DigiSayDbContext(options);
+        // Design-time operations have no verified tenant; tenant-owned queries therefore return no rows.
+        return new DigiSayDbContext(options, new OrganizationContext());
     }
 }

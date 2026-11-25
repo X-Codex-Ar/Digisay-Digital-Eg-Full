@@ -2,6 +2,8 @@ namespace DigiSay.Application.Features.Content.Abstractions;
 
 public interface IPrivateObjectStorage
 {
+    Task<IReadOnlyList<StorageObject>> ListAsync(Guid organizationId, CancellationToken cancellationToken);
+
     Task UploadAsync(
         Guid organizationId,
         Guid objectId,

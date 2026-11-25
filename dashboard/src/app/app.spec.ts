@@ -90,6 +90,8 @@ describe('Dashboard route boundaries', () => {
     await harness.navigateByUrl('/admin/overview');
     expect(harness.routeNativeElement?.textContent).toContain('Administration');
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain('Your work');
+    expect(crmApi.list).toHaveBeenCalledWith('leads', 1);
+    expect(crmApi.listRequests).toHaveBeenCalledWith(1);
   });
 
   it('renders the separate client portal and overview route', async () => {
@@ -97,6 +99,7 @@ describe('Dashboard route boundaries', () => {
     await harness.navigateByUrl('/client/overview');
     expect(harness.routeNativeElement?.textContent).toContain('Client portal');
     expect(harness.routeNativeElement?.textContent).toContain('WORKSPACE AREAS');
+    expect(crmApi.listRequests).toHaveBeenCalledWith(1);
   });
 
   it('signs clients in through the client audience and signs them out to client sign-in', async () => {
@@ -196,10 +199,15 @@ describe('Dashboard route boundaries', () => {
   it('submits only an allowed lead lifecycle transition', async () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/admin/leads');
-    const selects = harness.routeNativeElement?.querySelectorAll('select');
-    const action = selects?.[1] as HTMLSelectElement;
-    action.value = 'Contacted';
-    action.dispatchEvent(new Event('change'));
+    const action = harness.routeNativeElement?.querySelector(
+      'button[role="combobox"][aria-label="Change status for Ada Lovelace"]',
+    ) as HTMLButtonElement;
+    action.click();
+    await harness.fixture.whenStable();
+    const contacted = [...(harness.routeNativeElement?.querySelectorAll('[role="option"]') ?? [])].find(
+      (option) => option.textContent?.trim() === 'Contacted',
+    ) as HTMLElement | undefined;
+    contacted?.click();
     await harness.fixture.whenStable();
     expect(crmApi.transition).toHaveBeenCalledWith('leads', 'lead-1', 'Contacted');
   });
@@ -218,9 +226,15 @@ describe('Dashboard route boundaries', () => {
     crmApi.transition.mockReturnValue(throwError(() => new HttpErrorResponse({ status: 403 })));
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/admin/leads');
-    const action = harness.routeNativeElement?.querySelectorAll('select')[1] as HTMLSelectElement;
-    action.value = 'Contacted';
-    action.dispatchEvent(new Event('change'));
+    const action = harness.routeNativeElement?.querySelector(
+      'button[role="combobox"][aria-label="Change status for Ada Lovelace"]',
+    ) as HTMLButtonElement;
+    action.click();
+    await harness.fixture.whenStable();
+    const contacted = [...(harness.routeNativeElement?.querySelectorAll('[role="option"]') ?? [])].find(
+      (option) => option.textContent?.trim() === 'Contacted',
+    ) as HTMLElement | undefined;
+    contacted?.click();
     await harness.fixture.whenStable();
     expect(harness.routeNativeElement?.textContent).toContain('not allowed to perform this action');
     expect(harness.routeNativeElement?.textContent).not.toContain('Access denied');
