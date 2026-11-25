@@ -18,6 +18,7 @@ internal sealed class LeadFollowUpConfiguration : IEntityTypeConfiguration<LeadF
         builder.Property(item => item.DueAtUtc).HasPrecision(3).IsRequired();
         builder.Property(item => item.CreatedAtUtc).HasPrecision(3).IsRequired();
         builder.Property(item => item.CompletedAtUtc).HasPrecision(3);
+        builder.Property(item => item.RowVersion).IsRowVersion();
         builder.HasOne<Lead>().WithMany().HasForeignKey(item => new { item.OrganizationId, item.LeadId }).OnDelete(DeleteBehavior.Cascade);
         builder.HasOne<Organization>().WithMany().HasForeignKey(item => item.OrganizationId).OnDelete(DeleteBehavior.NoAction);
         builder.HasOne<DigiSayUser>().WithMany().HasForeignKey(item => item.CreatedByUserId).OnDelete(DeleteBehavior.Restrict);
