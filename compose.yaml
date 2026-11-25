@@ -41,7 +41,7 @@ services:
       ASPNETCORE_URLS: http://+:5080
       ConnectionStrings__SqlServer: "Server=sqlserver,1433;Database=DigiSay;User Id=sa;Password=${SQL_SERVER_SA_PASSWORD:-DigiSay_LocalOnly_2026!ChangeMe};Encrypt=True;TrustServerCertificate=True"
       RateLimiting__RedisConnectionString: redis:6379
-      Database__ApplyMigrationsOnStartup: "true"
+      Database__ApplyMigrationsOnStartup: "${DIGISAY_APPLY_MIGRATIONS:-false}"
       DataProtection__KeysPath: /app/.keys
       AI__PublicAssistant__Enabled: "false"
     depends_on:
