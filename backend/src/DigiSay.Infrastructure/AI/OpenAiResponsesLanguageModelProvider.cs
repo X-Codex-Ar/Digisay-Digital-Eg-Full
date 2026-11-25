@@ -23,12 +23,13 @@ public sealed class OpenAiResponsesLanguageModelProvider(
         string userPrompt,
         CancellationToken cancellationToken)
     {
-        var endpoint = GetValidatedEndpoint();
         if (!_options.Enabled || string.IsNullOrWhiteSpace(_options.ApiKey) ||
             string.IsNullOrWhiteSpace(_options.Model))
         {
             throw new PublicAssistantUnavailableException("The language model provider is not enabled.");
         }
+
+        var endpoint = GetValidatedEndpoint();
 
         using var request = new HttpRequestMessage(HttpMethod.Post, endpoint)
         {
