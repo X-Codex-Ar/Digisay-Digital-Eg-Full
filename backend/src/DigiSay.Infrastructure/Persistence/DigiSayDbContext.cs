@@ -1,3 +1,4 @@
+using DigiSay.Domain.Entities.Content;
 using DigiSay.Domain.Entities;
 using DigiSay.Infrastructure.Identity;
 using DigiSay.Domain.Entities.Organizations;
@@ -15,6 +16,7 @@ public sealed class DigiSayDbContext(DbContextOptions<DigiSayDbContext> options)
     public DbSet<ContactInquiry> ContactInquiries => Set<ContactInquiry>();
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<OrganizationMembership> OrganizationMemberships => Set<OrganizationMembership>();
+    public DbSet<StorageObjectRecord> StorageObjects => Set<StorageObjectRecord>();
     public DbSet<Lead> Leads => Set<Lead>();
     public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
 
@@ -59,4 +61,4 @@ public sealed class DigiSayDbContext(DbContextOptions<DigiSayDbContext> options)
 
         modelBuilder.Entity<IdentityRole<Guid>>().HasData(roles);
     }
-}
+    }
