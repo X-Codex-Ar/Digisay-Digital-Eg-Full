@@ -1,18 +1,27 @@
-# Domain modules
+# Domain Modules & Capability Status
 
-Planned modular-monolith capabilities and current status:
+The DigiSay platform is structured around clearly separated domain boundaries governed by Clean Architecture:
 
-| Module | Intended ownership | Status |
-| --- | --- | --- |
-| Identity and access | Users, roles, email verification, password recovery, SPA bearer authentication | Initial Identity foundation implemented; role administration and session revocation remain open |
-| Organizations | Organization records, memberships, active tenant context | Membership-verified context implemented; invitations and tenant-owned resource workflows remain open |
-| Client management | Client organizations, contacts, membership | Not implemented; do not expose client records until tenant checks are applied to every query |
-| Service catalog | Service metadata; public copy remains in React today | Not implemented in API |
-| Leads and requests | Guest and client inquiries, assignment, history | Not implemented; current form prepares email drafts |
-| Projects and tasks | Delivery, assignments, milestones, client visibility | Not implemented |
-| Campaigns and content | Campaign workflow and deliverable metadata | Not implemented |
-| Notifications | In-app state and delivery preferences | Not implemented |
-| Support | Tickets, conversations, attachments | Not implemented |
-| Audit and reporting | Append-only audit history and aggregates | Not implemented |
+| Domain Module | Responsibility & Scope | Database Aggregates | Implementation Status |
+| :--- | :--- | :--- | :--- |
+| **Identity & Access** | User accounts, roles, confirmation, password recovery, session revocation | `AspNetUsers`, `AspNetRoles`, `AspNetUserClaims` |  **Active** (Bearer auth, RBAC, SecurityStamp revocation) |
+| **Organizations & Tenancy** | Multi-tenant organization records, memberships, permissions | `Organizations`, `OrganizationMemberships` |  **Active** (`IOrganizationContext`, verified header lookup) |
+| **Contact & Inquiries** | Public visitor inquiries, honeypot validation, rate limiting | `ContactInquiries` |  **Active** (Validated, spam-protected, rate-limited) |
+| **CRM Leads** | Lead capture, status lifecycle, history tracking, follow-ups | `Leads`, `LeadFollowUps`, `LeadStatusHistories` |  **Active** (RowVersion 409 concurrency, search escaping) |
+| **Service Requests** | Client request submissions, scope review, triage | `ServiceRequests`, `ServiceRequestTransitions` |  **Active** (Tenant-isolated, client & admin workflows) |
+| **Private Media Storage** | Asset metadata, signed download links, bucket RLS | `StorageObjectRecords` |  **Active** (Magic byte validation, 5-min signed URLs) |
+| **Rate Limiting** | Distributed abuse prevention and brute-force mitigation | Redis atomic counters |  **Active** (Redis Lua fixed-window, HMAC-SHA256 salted keys) |
+| **Observability & Consent** | Default-deny web analytics, page view tracking | Client `localStorage` preference |  **Active** (PR #36: explicit allow/reject, revoke settings) |
+| **AI Roadmap & Triage** | Staff-assisted suggestion workflows and FAQ assistant | Evaluated with synthetic tests |  **Staged in PR #28** (Roadmap, bounded FAQ, safe doubles) |
+| **Campaigns & Deliverables**| Project delivery, milestone approval, client visibility | Future phase | ⏳ Planned for Phase 2 |
 
-Modules will share the SQL Server transaction boundary where business invariants require it. Cross-module reads should use explicit application queries; module ownership and authorization rules must be documented before endpoints are exposed.
+---
+
+## ✦ Transactional & Consistency Invariants
+
+1. **SQL Server Transaction Boundary:**
+   - State mutations (such as transitioning a lead and recording audit history) execute inside a single transactional boundary.
+   - Concurrency conflicts throw `DbUpdateConcurrencyException`, translated to `ConcurrencyConflictException` and surfaced as HTTP 409 Conflict.
+2. **Provider Separation:**
+   - SQL Server holds metadata as source of truth.
+   - External binary storage (Supabase) is managed via best-effort compensatory patterns (delete provider object if metadata fails, or preserve metadata until provider deletion succeeds).
