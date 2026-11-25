@@ -33,9 +33,9 @@ jobs:
           - name: api
             dockerfile: docker/api.Dockerfile
           - name: public
-            dockerfile: docker/public.Dockerfile
+            dockerfile: docker/public.production.Dockerfile
           - name: dashboard
-            dockerfile: docker/dashboard.Dockerfile
+            dockerfile: docker/dashboard.production.Dockerfile
     steps:
       - name: Check out source
         uses: actions/checkout@v7
