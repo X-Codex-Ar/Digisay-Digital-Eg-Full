@@ -1,4 +1,4 @@
-# <p align="center"><img src="storage/static/brand/Digisay-logo-transparent-1.png" alt="DigiSay Logo" width="220" /><br>DigiSay Group — Digital Media Solutions Platform</p>
+# <p align="center"><img src="storage/static/brand/Digisay-logo-transparent-1-e1709464890607.png" alt="DigiSay Logo" width="220" /><br>DigiSay Group — Digital Media Solutions Platform</p>
 
 <p align="center">
   <a href="https://github.com/X-Codex-Ar/Digisay-Digital-Eg-Full/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/X-Codex-Ar/Digisay-Digital-Eg-Full/ci.yml?branch=main&label=CI%20Quality%20Gates&logo=github&style=flat-square&color=2ea44f" alt="CI Quality Gates" /></a>
