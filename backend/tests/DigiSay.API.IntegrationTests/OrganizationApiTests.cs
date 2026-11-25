@@ -36,9 +36,10 @@ public sealed class OrganizationApiTests
 
         using var createResponse = await firstClient.PostAsJsonAsync("/api/v1/organizations", new { name = "  DigiSay Client  " });
         Assert.Equal(HttpStatusCode.Created, createResponse.StatusCode);
-        Assert.Null(createResponse.Headers.Location);
         using var createdDocument = await JsonDocument.ParseAsync(await createResponse.Content.ReadAsStreamAsync());
         var organizationId = createdDocument.RootElement.GetProperty("id").GetGuid();
+        Assert.NotNull(createResponse.Headers.Location);
+        Assert.Equal($"/api/v1/organizations/{organizationId}", createResponse.Headers.Location!.OriginalString);
         Assert.Equal("DigiSay Client", createdDocument.RootElement.GetProperty("name").GetString());
         Assert.Equal("Owner", createdDocument.RootElement.GetProperty("membershipRole").GetString());
 
@@ -47,6 +48,16 @@ public sealed class OrganizationApiTests
 
         Assert.Contains(ownerOrganizations!, organization => organization.Id == organizationId);
         Assert.Empty(otherOrganizations!);
+
+        var followed = await firstClient.GetFromJsonAsync<OrganizationResponse>(createResponse.Headers.Location);
+        Assert.Equal(organizationId, followed!.Id);
+        Assert.Equal("DigiSay Client", followed.Name);
+        Assert.Equal("Owner", followed.MembershipRole);
+
+        using var outsiderResponse = await secondClient.GetAsync(createResponse.Headers.Location);
+        using var missingResponse = await firstClient.GetAsync($"/api/v1/organizations/{Guid.NewGuid()}");
+        Assert.Equal(HttpStatusCode.NotFound, outsiderResponse.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, missingResponse.StatusCode);
     }
 
     [Fact]

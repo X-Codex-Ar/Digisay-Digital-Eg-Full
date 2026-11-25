@@ -65,6 +65,22 @@ public sealed class SupabaseStorageAdapterTests
     }
 
     [Fact]
+    public async Task Invalid_signed_url_json_is_reported_as_a_provider_failure()
+    {
+        var handler = new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent("not json", System.Text.Encoding.UTF8, "application/json") }));
+        var client = new HttpClient(handler) { BaseAddress = new Uri("https://project.supabase.test/storage/v1/") };
+        var adapter = new SupabaseStorageAdapter(client, Options.Create(new SupabaseStorageOptions
+        {
+            ProjectUrl = "https://project.supabase.test",
+            SecretKey = "server-only-secret",
+            PrivateBucket = "digisay-private",
+        }));
+
+        await Assert.ThrowsAsync<StorageProviderException>(() => adapter.CreateSignedDownloadUrlAsync(
+            Guid.NewGuid(), Guid.NewGuid(), TimeSpan.FromMinutes(5), CancellationToken.None));
+    }
+
+    [Fact]
     public async Task Provider_errors_are_sanitized_and_expiry_is_bounded()
     {
         var failingHandler = new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError)

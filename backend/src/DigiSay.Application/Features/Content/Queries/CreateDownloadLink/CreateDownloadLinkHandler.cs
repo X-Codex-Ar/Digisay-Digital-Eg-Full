@@ -2,7 +2,7 @@ using DigiSay.Application.Features.Content.Abstractions;
 
 namespace DigiSay.Application.Features.Content.Queries.CreateDownloadLink;
 
-public sealed class CreateDownloadLinkHandler(IPrivateObjectStorage storage)
+public sealed class CreateDownloadLinkHandler(IPrivateObjectStorage storage, IStorageObjectStore objects)
 {
     public static readonly TimeSpan LinkLifetime = TimeSpan.FromMinutes(5);
 
@@ -12,6 +12,9 @@ public sealed class CreateDownloadLinkHandler(IPrivateObjectStorage storage)
         {
             throw new StorageValidationException("A valid organization and object identifier are required.");
         }
+
+        _ = await objects.FindAsync(query.OrganizationId, query.ObjectId, cancellationToken)
+            ?? throw new StorageObjectNotFoundException();
 
         var expiresAtUtc = DateTimeOffset.UtcNow.Add(LinkLifetime);
         var url = await storage.CreateSignedDownloadUrlAsync(

@@ -7,6 +7,7 @@ using DigiSay.Application.Features.Content.Commands.DeleteObject;
 using DigiSay.Application.Features.Content.Commands.UploadObject;
 using DigiSay.Application.Features.Content.Queries.CreateDownloadLink;
 using DigiSay.Application.Features.Content.Queries.ListObjects;
+using DigiSay.Application.Features.Content.Queries.GetObject;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DigiSay.API.Endpoints.Storage;
@@ -53,7 +54,7 @@ internal static class StorageEndpoints
                 {
                     await using var stream = file.OpenReadStream();
                     var stored = await handler.HandleAsync(
-                        new UploadObjectCommand(organization.OrganizationId, stream, file.Length), cancellationToken);
+                        new UploadObjectCommand(organization.OrganizationId, organization.UserId, stream, file.Length), cancellationToken);
                     return Results.Created($"/api/v1/storage/objects/{stored.Id}", stored);
                 }
                 catch (StorageValidationException exception)
@@ -87,6 +88,29 @@ internal static class StorageEndpoints
             .WithName("ListPrivateObjects")
             .WithSummary("List private objects for the verified organization.");
 
+        storage.MapGet("/{objectId:guid}", async (
+                Guid objectId,
+                IOrganizationContext organization,
+                GetObjectHandler handler,
+                CancellationToken cancellationToken) =>
+            {
+                try
+                {
+                    return Results.Ok(await handler.HandleAsync(
+                        new GetObjectQuery(organization.OrganizationId, objectId), cancellationToken));
+                }
+                catch (StorageValidationException exception)
+                {
+                    return Results.ValidationProblem(new Dictionary<string, string[]> { ["objectId"] = [exception.Message] });
+                }
+                catch (StorageObjectNotFoundException)
+                {
+                    return Results.NotFound();
+                }
+            })
+            .WithName("GetPrivateObjectMetadata")
+            .WithSummary("Read metadata for an object in the current organization; unknown and cross-tenant ids return 404.");
+
         storage.MapPost("/{objectId:guid}/download-link", async (
                 Guid objectId,
                 IOrganizationContext organization,
@@ -102,6 +126,10 @@ internal static class StorageEndpoints
                 catch (StorageValidationException exception)
                 {
                     return Results.ValidationProblem(new Dictionary<string, string[]> { ["objectId"] = [exception.Message] });
+                }
+                catch (StorageObjectNotFoundException)
+                {
+                    return Results.NotFound();
                 }
                 catch (StorageProviderException exception) when (IsMissingObject(exception))
                 {
@@ -130,6 +158,10 @@ internal static class StorageEndpoints
                 catch (StorageValidationException exception)
                 {
                     return Results.ValidationProblem(new Dictionary<string, string[]> { ["objectId"] = [exception.Message] });
+                }
+                catch (StorageObjectNotFoundException)
+                {
+                    return Results.NotFound();
                 }
                 catch (StorageProviderException exception) when (IsMissingObject(exception))
                 {

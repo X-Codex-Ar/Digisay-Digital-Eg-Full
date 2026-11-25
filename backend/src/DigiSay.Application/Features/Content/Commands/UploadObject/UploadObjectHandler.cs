@@ -1,8 +1,9 @@
 using DigiSay.Application.Features.Content.Abstractions;
+using DigiSay.Domain.Entities.Content;
 
 namespace DigiSay.Application.Features.Content.Commands.UploadObject;
 
-public sealed class UploadObjectHandler(IPrivateObjectStorage storage)
+public sealed class UploadObjectHandler(IPrivateObjectStorage storage, IStorageObjectStore objects)
 {
     public const int MaximumFileSizeBytes = 10 * 1024 * 1024;
     private const int SignatureLength = 8;
@@ -47,7 +48,32 @@ public sealed class UploadObjectHandler(IPrivateObjectStorage storage)
         content.Position = 0;
         await storage.UploadAsync(command.OrganizationId, objectId, content, contentType, cancellationToken);
 
-        return new StorageObject(objectId, contentType, content.Length, DateTimeOffset.UtcNow);
+        var createdAtUtc = DateTimeOffset.UtcNow;
+        try
+        {
+            await objects.AddAsync(
+                StorageObjectRecord.Create(objectId, command.OrganizationId, command.UserId, contentType, content.Length, createdAtUtc),
+                CancellationToken.None);
+        }
+        catch
+        {
+            await TryRemoveProviderObjectAsync(command.OrganizationId, objectId);
+            throw;
+        }
+
+        return new StorageObject(objectId, contentType, content.Length, createdAtUtc);
+    }
+
+    private async Task TryRemoveProviderObjectAsync(Guid organizationId, Guid objectId)
+    {
+        try
+        {
+            await storage.DeleteAsync(organizationId, objectId, CancellationToken.None);
+        }
+        catch (StorageProviderException)
+        {
+            // Cleanup is best effort. The original persistence failure is the error the caller must see.
+        }
     }
 
     private static string? DetectContentType(ReadOnlySpan<byte> header)

@@ -19,6 +19,7 @@ using DigiSay.Application.Features.Content.Queries.CreateDownloadLink;
 using DigiSay.Application.Features.Content.Queries.ListObjects;
 using DigiSay.Application.Features.AI.PublicAssistant;
 using DigiSay.Application.Features.AI.ServiceRequestTriage;
+using DigiSay.Application.Features.Content.Queries.GetObject;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DigiSay.Application;
@@ -37,6 +38,7 @@ public static class DependencyInjection
         services.AddScoped<CreateDownloadLinkHandler>();
         services.AddScoped<ListObjectsHandler>();
         services.AddScoped<DeleteObjectHandler>();
+        services.AddScoped<GetObjectHandler>();
         services.AddScoped<CreateLeadHandler>();
         services.AddScoped<GetLeadHandler>();
         services.AddScoped<ListLeadsHandler>();
