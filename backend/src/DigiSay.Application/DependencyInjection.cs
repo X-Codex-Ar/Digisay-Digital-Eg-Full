@@ -16,6 +16,7 @@ using DigiSay.Application.Features.Organizations.Queries.GetCurrentOrganization;
 using DigiSay.Application.Features.Content.Commands.UploadObject;
 using DigiSay.Application.Features.Content.Commands.DeleteObject;
 using DigiSay.Application.Features.Content.Queries.CreateDownloadLink;
+using DigiSay.Application.Features.Content.Queries.GetObject;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DigiSay.Application;
@@ -33,6 +34,7 @@ public static class DependencyInjection
         services.AddScoped<UploadObjectHandler>();
         services.AddScoped<CreateDownloadLinkHandler>();
         services.AddScoped<DeleteObjectHandler>();
+        services.AddScoped<GetObjectHandler>();
         services.AddScoped<CreateLeadHandler>();
         services.AddScoped<GetLeadHandler>();
         services.AddScoped<ListLeadsHandler>();
