@@ -16,6 +16,9 @@ public sealed class DigiSayDbContext(DbContextOptions<DigiSayDbContext> options)
     public DbSet<Organization> Organizations => Set<Organization>();
     public DbSet<OrganizationMembership> OrganizationMemberships => Set<OrganizationMembership>();
     public DbSet<Lead> Leads => Set<Lead>();
+    public DbSet<LeadNote> LeadNotes => Set<LeadNote>();
+    public DbSet<LeadFollowUp> LeadFollowUps => Set<LeadFollowUp>();
+    public DbSet<LeadStatusHistory> LeadStatusHistory => Set<LeadStatusHistory>();
     public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -6,8 +6,14 @@ using DigiSay.Application.Common.Organizations;
 using DigiSay.Application.Features.CRM.Leads.Commands.CreateLead;
 using DigiSay.Application.Features.CRM.Leads.Commands.UpdateLead;
 using DigiSay.Application.Features.CRM.Leads.Commands.TransitionLead;
+using DigiSay.Application.Features.CRM.Leads.Commands.AddLeadNote;
+using DigiSay.Application.Features.CRM.Leads.Commands.CreateLeadFollowUp;
+using DigiSay.Application.Features.CRM.Leads.Commands.CompleteLeadFollowUp;
 using DigiSay.Application.Features.CRM.Leads.Queries.GetLead;
 using DigiSay.Application.Features.CRM.Leads.Queries.ListLeads;
+using DigiSay.Application.Features.CRM.Leads.Queries.ListLeadNotes;
+using DigiSay.Application.Features.CRM.Leads.Queries.ListLeadFollowUps;
+using DigiSay.Application.Features.CRM.Leads.Queries.ListLeadStatusHistory;
 using DigiSay.Application.Features.CRM.ServiceRequests.Commands.CreateServiceRequest;
 using DigiSay.Application.Features.CRM.ServiceRequests.Commands.UpdateServiceRequest;
 using DigiSay.Application.Features.CRM.ServiceRequests.Commands.TransitionServiceRequest;
@@ -60,20 +66,93 @@ internal static class CrmEndpoints
         leads.MapGet("", async (
                 int? page,
                 int? pageSize,
+                string? search,
+                string? status,
                 IOrganizationContext scope,
                 ListLeadsHandler handler,
                 CancellationToken cancellationToken) =>
             {
-                if (!TryPagination(page, pageSize, out var currentPage, out var size, out var errors))
+                var validPagination = TryPagination(page, pageSize, out var currentPage, out var size, out var errors);
+                var validStatus = TryLeadStatus(status, out var leadStatus, errors);
+                var validSearch = ValidSearch(search, errors);
+                if (!validPagination || !validStatus || !validSearch)
                 {
                     return Results.ValidationProblem(errors);
                 }
 
-                var slice = await handler.HandleAsync(new ListLeadsQuery((currentPage - 1) * size, size), scope, cancellationToken);
+                var slice = await handler.HandleAsync(new ListLeadsQuery((currentPage - 1) * size, size, search?.Trim(), leadStatus), scope, cancellationToken);
                 return Results.Ok(ToPage(slice, currentPage, size, slice.Items.Select(ToResponse).ToArray()));
             })
             .WithName("ListLeads")
             .WithSummary("List leads belonging to the verified organization.");
+
+        leads.MapGet("/{id:guid}/notes", async (
+                Guid id, int? page, int? pageSize, IOrganizationContext scope, GetLeadHandler getLead,
+                ListLeadNotesHandler handler, CancellationToken cancellationToken) =>
+            {
+                if (await getLead.HandleAsync(new GetLeadQuery(id), scope, cancellationToken) is null) return Results.NotFound();
+                if (!TryPagination(page, pageSize, out var currentPage, out var size, out var errors)) return Results.ValidationProblem(errors);
+                var slice = await handler.HandleAsync(id, (currentPage - 1) * size, size, scope.OrganizationId, cancellationToken);
+                return Results.Ok(ToPage(slice, currentPage, size, slice.Items.Select(ToResponse).ToArray()));
+            })
+            .WithName("ListLeadNotes").WithSummary("List notes for a lead in the verified organization.");
+
+        leads.MapPost("/{id:guid}/notes", async (
+                Guid id, LeadNoteRequest request, IOrganizationContext scope, AddLeadNoteHandler handler,
+                CancellationToken cancellationToken) =>
+            {
+                var errors = request.Validate();
+                if (errors.Count > 0) return Results.ValidationProblem(errors);
+                var note = await handler.HandleAsync(id, new AddLeadNoteCommand(request.Content!), scope, cancellationToken);
+                return note is null ? Results.NotFound() : Results.Created($"/api/v1/crm/leads/{id}/notes", ToResponse(note));
+            })
+            .AddEndpointFilter<OrganizationOwnerEndpointFilter>()
+            .WithName("AddLeadNote").WithSummary("Append a note to a lead in the verified organization.");
+
+        leads.MapGet("/{id:guid}/follow-ups", async (
+                Guid id, int? page, int? pageSize, IOrganizationContext scope, GetLeadHandler getLead,
+                ListLeadFollowUpsHandler handler, CancellationToken cancellationToken) =>
+            {
+                if (await getLead.HandleAsync(new GetLeadQuery(id), scope, cancellationToken) is null) return Results.NotFound();
+                if (!TryPagination(page, pageSize, out var currentPage, out var size, out var errors)) return Results.ValidationProblem(errors);
+                var slice = await handler.HandleAsync(id, (currentPage - 1) * size, size, scope.OrganizationId, cancellationToken);
+                return Results.Ok(ToPage(slice, currentPage, size, slice.Items.Select(ToResponse).ToArray()));
+            })
+            .WithName("ListLeadFollowUps").WithSummary("List follow-ups for a lead in the verified organization.");
+
+        leads.MapPost("/{id:guid}/follow-ups", async (
+                Guid id, LeadFollowUpRequest request, IOrganizationContext scope, CreateLeadFollowUpHandler handler,
+                CancellationToken cancellationToken) =>
+            {
+                var errors = request.Validate();
+                if (errors.Count > 0) return Results.ValidationProblem(errors);
+                var followUp = await handler.HandleAsync(id, new CreateLeadFollowUpCommand(request.Title!, request.Details, request.DueAtUtc!.Value), scope, cancellationToken);
+                return followUp is null ? Results.NotFound() : Results.Created($"/api/v1/crm/leads/{id}/follow-ups", ToResponse(followUp));
+            })
+            .AddEndpointFilter<OrganizationOwnerEndpointFilter>()
+            .WithName("CreateLeadFollowUp").WithSummary("Schedule a lead follow-up in the verified organization.");
+
+        leads.MapPost("/{id:guid}/follow-ups/{followUpId:guid}/complete", async (
+                Guid id, Guid followUpId, IOrganizationContext scope, CompleteLeadFollowUpHandler handler,
+                CancellationToken cancellationToken) =>
+            {
+                var result = await handler.HandleAsync(id, followUpId, scope, cancellationToken);
+                if (!result.Found) return Results.NotFound();
+                return result.Completed ? Results.Ok(ToResponse(result.FollowUp!)) : Results.Conflict();
+            })
+            .AddEndpointFilter<OrganizationOwnerEndpointFilter>()
+            .WithName("CompleteLeadFollowUp").WithSummary("Complete an open lead follow-up.");
+
+        leads.MapGet("/{id:guid}/history", async (
+                Guid id, int? page, int? pageSize, IOrganizationContext scope, GetLeadHandler getLead,
+                ListLeadStatusHistoryHandler handler, CancellationToken cancellationToken) =>
+            {
+                if (await getLead.HandleAsync(new GetLeadQuery(id), scope, cancellationToken) is null) return Results.NotFound();
+                if (!TryPagination(page, pageSize, out var currentPage, out var size, out var errors)) return Results.ValidationProblem(errors);
+                var slice = await handler.HandleAsync(id, (currentPage - 1) * size, size, scope.OrganizationId, cancellationToken);
+                return Results.Ok(ToPage(slice, currentPage, size, slice.Items.Select(ToResponse).ToArray()));
+            })
+            .WithName("GetLeadStatusHistory").WithSummary("List status changes for a lead in the verified organization.");
 
         leads.MapGet("/{id:guid}", async (
                 Guid id,
@@ -161,16 +240,21 @@ internal static class CrmEndpoints
         requests.MapGet("", async (
                 int? page,
                 int? pageSize,
+                string? search,
+                string? status,
                 IOrganizationContext scope,
                 ListServiceRequestsHandler handler,
                 CancellationToken cancellationToken) =>
             {
-                if (!TryPagination(page, pageSize, out var currentPage, out var size, out var errors))
+                var validPagination = TryPagination(page, pageSize, out var currentPage, out var size, out var errors);
+                var validStatus = TryServiceRequestStatus(status, out var requestStatus, errors);
+                var validSearch = ValidSearch(search, errors);
+                if (!validPagination || !validStatus || !validSearch)
                 {
                     return Results.ValidationProblem(errors);
                 }
 
-                var slice = await handler.HandleAsync(new ListServiceRequestsQuery((currentPage - 1) * size, size), scope, cancellationToken);
+                var slice = await handler.HandleAsync(new ListServiceRequestsQuery((currentPage - 1) * size, size, search?.Trim(), requestStatus), scope, cancellationToken);
                 return Results.Ok(ToPage(slice, currentPage, size, slice.Items.Select(ToResponse).ToArray()));
             })
             .RequireAuthorization("AdminOrClientAccess")
@@ -261,6 +345,39 @@ internal static class CrmEndpoints
         return errors.Count == 0;
     }
 
+    private static bool TryLeadStatus(string? value, out LeadStatus? status, Dictionary<string, string[]> errors)
+    {
+        status = null;
+        if (string.IsNullOrWhiteSpace(value)) return true;
+        if (Enum.TryParse(value, true, out LeadStatus parsed) && Enum.IsDefined(parsed))
+        {
+            status = parsed;
+            return true;
+        }
+        errors[nameof(status)] = ["Status is not recognized."];
+        return false;
+    }
+
+    private static bool TryServiceRequestStatus(string? value, out ServiceRequestStatus? status, Dictionary<string, string[]> errors)
+    {
+        status = null;
+        if (string.IsNullOrWhiteSpace(value)) return true;
+        if (Enum.TryParse(value, true, out ServiceRequestStatus parsed) && Enum.IsDefined(parsed))
+        {
+            status = parsed;
+            return true;
+        }
+        errors[nameof(status)] = ["Status is not recognized."];
+        return false;
+    }
+
+    private static bool ValidSearch(string? search, Dictionary<string, string[]> errors)
+    {
+        if (search is null || search.Trim().Length <= 100) return true;
+        errors["search"] = ["Search cannot exceed 100 characters."];
+        return false;
+    }
+
     private static PagedResponse<TItem> ToPage<TEntity, TItem>(PageSlice<TEntity> slice, int page, int pageSize, IReadOnlyList<TItem> items) =>
         new(items, page, pageSize, slice.TotalCount, (int)Math.Ceiling(slice.TotalCount / (double)pageSize));
 
@@ -271,11 +388,18 @@ internal static class CrmEndpoints
     private static ServiceRequestResponse ToResponse(ServiceRequest request) => new(
         request.Id, request.Title, request.Description, request.Service, request.Status.ToString(),
         request.CreatedByUserId, request.UpdatedByUserId, request.CreatedAtUtc, request.UpdatedAtUtc);
+
+    private static LeadNoteResponse ToResponse(LeadNote note) => new(note.Id, note.LeadId, note.Content, note.CreatedByUserId, note.CreatedAtUtc);
+    private static LeadFollowUpResponse ToResponse(LeadFollowUp item) => new(item.Id, item.LeadId, item.Title, item.Details, item.DueAtUtc, item.CreatedByUserId, item.CreatedAtUtc, item.CompletedAtUtc, item.CompletedByUserId);
+    private static LeadStatusHistoryResponse ToResponse(LeadStatusHistory item) => new(item.Id, item.LeadId, item.FromStatus?.ToString(), item.ToStatus.ToString(), item.ChangedByUserId, item.ChangedAtUtc);
 }
 
 internal sealed record PagedResponse<T>(IReadOnlyList<T> Items, int Page, int PageSize, int TotalCount, int TotalPages);
 internal sealed record LeadResponse(Guid Id, string Name, string Email, string? Phone, string? Source, string Status, Guid CreatedByUserId, Guid UpdatedByUserId, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc);
 internal sealed record ServiceRequestResponse(Guid Id, string Title, string Description, string Service, string Status, Guid CreatedByUserId, Guid UpdatedByUserId, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc);
+internal sealed record LeadNoteResponse(Guid Id, Guid LeadId, string Content, Guid CreatedByUserId, DateTimeOffset CreatedAtUtc);
+internal sealed record LeadFollowUpResponse(Guid Id, Guid LeadId, string Title, string? Details, DateTimeOffset DueAtUtc, Guid CreatedByUserId, DateTimeOffset CreatedAtUtc, DateTimeOffset? CompletedAtUtc, Guid? CompletedByUserId);
+internal sealed record LeadStatusHistoryResponse(Guid Id, Guid LeadId, string? FromStatus, string ToStatus, Guid ChangedByUserId, DateTimeOffset ChangedAtUtc);
 
 internal sealed record LeadRequest
 {
@@ -302,6 +426,24 @@ internal sealed record LeadTransitionRequest
     public string? Status { get; init; }
 
     public bool TryGetStatus(out LeadStatus status) => Enum.TryParse(Status, ignoreCase: true, out status) && Enum.IsDefined(status);
+}
+
+internal sealed record LeadNoteRequest
+{
+    [Required, StringLength(4000, MinimumLength = 1)]
+    public string? Content { get; init; }
+    public Dictionary<string, string[]> Validate() => RequestValidation.ValidateModel(this);
+}
+
+internal sealed record LeadFollowUpRequest
+{
+    [Required, StringLength(160, MinimumLength = 1)]
+    public string? Title { get; init; }
+    [StringLength(2000)]
+    public string? Details { get; init; }
+    [Required]
+    public DateTimeOffset? DueAtUtc { get; init; }
+    public Dictionary<string, string[]> Validate() => RequestValidation.ValidateModel(this);
 }
 
 internal sealed record ServiceRequestInput

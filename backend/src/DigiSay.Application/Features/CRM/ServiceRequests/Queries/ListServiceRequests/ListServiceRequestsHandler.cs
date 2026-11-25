@@ -8,5 +8,5 @@ namespace DigiSay.Application.Features.CRM.ServiceRequests.Queries.ListServiceRe
 public sealed class ListServiceRequestsHandler(IServiceRequestStore store)
 {
     public Task<PageSlice<ServiceRequest>> HandleAsync(ListServiceRequestsQuery query, IOrganizationContext scope, CancellationToken cancellationToken) =>
-        store.ListServiceRequestsAsync(scope.OrganizationId, query.Skip, query.Take, cancellationToken);
+        store.ListServiceRequestsAsync(scope.OrganizationId, query.Skip, query.Take, query.Search, query.Status, cancellationToken);
 }

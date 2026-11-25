@@ -27,6 +27,9 @@ public sealed class LeadUseCaseTests
         Assert.Equal(organizationId, lead.OrganizationId);
         Assert.Equal(userId, lead.CreatedByUserId);
         Assert.Same(lead, store.AddedLead);
+        var initialHistory = Assert.Single(store.StatusHistory);
+        Assert.Null(initialHistory.FromStatus);
+        Assert.Equal(LeadStatus.New, initialHistory.ToStatus);
     }
 
     [Fact]
@@ -47,6 +50,9 @@ public sealed class LeadUseCaseTests
         var valid = await handler.HandleAsync(lead.Id, new TransitionLeadCommand(LeadStatus.Contacted), scope, CancellationToken.None);
         Assert.True(valid.Transitioned);
         Assert.Equal(1, store.SaveCount);
+        var history = Assert.Single(store.StatusHistory);
+        Assert.Equal(LeadStatus.New, history.FromStatus);
+        Assert.Equal(LeadStatus.Contacted, history.ToStatus);
     }
 
     private sealed class TestOrganizationContext(Guid organizationId, Guid userId) : IOrganizationContext
@@ -60,11 +66,19 @@ public sealed class LeadUseCaseTests
     {
         public Lead? AddedLead { get; private set; }
         public int SaveCount { get; private set; }
+        public List<LeadStatusHistory> StatusHistory { get; } = [];
+        public void AddStatusHistory(LeadStatusHistory history) => StatusHistory.Add(history);
         public Task AddAsync(Lead value, CancellationToken cancellationToken) { AddedLead = value; return Task.CompletedTask; }
         public Task<Lead?> FindLeadAsync(Guid organizationId, Guid id, CancellationToken cancellationToken) =>
             Task.FromResult(lead is { } item && item.OrganizationId == organizationId && item.Id == id ? item : null);
-        public Task<PageSlice<Lead>> ListLeadsAsync(Guid organizationId, int skip, int take, CancellationToken cancellationToken) =>
+        public Task<PageSlice<Lead>> ListLeadsAsync(Guid organizationId, int skip, int take, string? search, LeadStatus? status, CancellationToken cancellationToken) =>
             Task.FromResult(new PageSlice<Lead>([], 0));
+        public Task AddNoteAsync(LeadNote note, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task<PageSlice<LeadNote>> ListNotesAsync(Guid organizationId, Guid leadId, int skip, int take, CancellationToken cancellationToken) => Task.FromResult(new PageSlice<LeadNote>([], 0));
+        public Task AddFollowUpAsync(LeadFollowUp followUp, CancellationToken cancellationToken) => Task.CompletedTask;
+        public Task<LeadFollowUp?> FindFollowUpAsync(Guid organizationId, Guid leadId, Guid followUpId, CancellationToken cancellationToken) => Task.FromResult<LeadFollowUp?>(null);
+        public Task<PageSlice<LeadFollowUp>> ListFollowUpsAsync(Guid organizationId, Guid leadId, int skip, int take, CancellationToken cancellationToken) => Task.FromResult(new PageSlice<LeadFollowUp>([], 0));
+        public Task<PageSlice<LeadStatusHistory>> ListStatusHistoryAsync(Guid organizationId, Guid leadId, int skip, int take, CancellationToken cancellationToken) => Task.FromResult(new PageSlice<LeadStatusHistory>([], 0));
         public Task SaveChangesAsync(CancellationToken cancellationToken) { SaveCount++; return Task.CompletedTask; }
     }
 }
