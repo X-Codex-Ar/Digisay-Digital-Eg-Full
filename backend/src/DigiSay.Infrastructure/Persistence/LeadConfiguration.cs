@@ -24,6 +24,7 @@ internal sealed class LeadConfiguration : IEntityTypeConfiguration<Lead>
         builder.Property(lead => lead.Status).HasConversion<string>().HasMaxLength(20).IsRequired();
         builder.Property(lead => lead.CreatedAtUtc).HasPrecision(3).IsRequired();
         builder.Property(lead => lead.UpdatedAtUtc).HasPrecision(3).IsRequired();
+        builder.Property(lead => lead.RowVersion).IsRowVersion();
         builder.HasOne<Organization>()
             .WithMany()
             .HasForeignKey(lead => lead.OrganizationId)
