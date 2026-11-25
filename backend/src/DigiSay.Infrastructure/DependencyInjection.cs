@@ -35,6 +35,7 @@ public static class DependencyInjection
                 sql.EnableRetryOnFailure(maxRetryCount: 3)));
         services.AddScoped<IContactInquiryWriter, SqlContactInquiryWriter>();
         services.AddScoped<IOrganizationStore, OrganizationStore>();
+        services.AddScoped<IStorageObjectStore, StorageObjectStore>();
         services.AddScoped<CrmStore>();
         services.AddScoped<ILeadStore>(provider => provider.GetRequiredService<CrmStore>());
         services.AddScoped<IServiceRequestStore>(provider => provider.GetRequiredService<CrmStore>());

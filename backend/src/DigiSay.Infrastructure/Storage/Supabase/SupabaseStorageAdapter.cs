@@ -26,7 +26,7 @@ internal sealed class SupabaseStorageAdapter(HttpClient httpClient, IOptions<Sup
         var streamContent = new StreamContent(content);
         streamContent.Headers.ContentType = new MediaTypeHeaderValue(verifiedContentType);
         request.Content = streamContent;
-        await SendAsync(request, cancellationToken);
+        using var response = await SendAsync(request, cancellationToken);
     }
 
     public async Task<Uri> CreateSignedDownloadUrlAsync(
@@ -45,7 +45,22 @@ internal sealed class SupabaseStorageAdapter(HttpClient httpClient, IOptions<Sup
         using var request = CreateRequest(HttpMethod.Post, route);
         request.Content = JsonContent.Create(new { expiresIn = seconds }, options: JsonOptions);
         using var response = await SendAsync(request, cancellationToken);
-        var payload = await response.Content.ReadFromJsonAsync<SignedUrlResponse>(JsonOptions, cancellationToken);
+        using var parseTimeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        parseTimeout.CancelAfter(httpClient.Timeout);
+        SignedUrlResponse? payload;
+        try
+        {
+            payload = await response.Content.ReadFromJsonAsync<SignedUrlResponse>(JsonOptions, parseTimeout.Token);
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new StorageProviderException("The private storage provider is unavailable.");
+        }
+        catch (JsonException exception)
+        {
+            throw new StorageProviderException("The storage provider returned an invalid signed URL response.", innerException: exception);
+        }
+
         if (payload is null || string.IsNullOrWhiteSpace(payload.SignedUrl))
         {
             throw new StorageProviderException("The storage provider returned an invalid signed URL response.");
@@ -63,7 +78,7 @@ internal sealed class SupabaseStorageAdapter(HttpClient httpClient, IOptions<Sup
     {
         using var request = CreateRequest(HttpMethod.Delete, "object/" + Escape(_options.PrivateBucket));
         request.Content = JsonContent.Create(new { prefixes = new[] { GetObjectPath(organizationId, objectId) } }, options: JsonOptions);
-        await SendAsync(request, cancellationToken);
+        using var response = await SendAsync(request, cancellationToken);
     }
 
     private HttpRequestMessage CreateRequest(HttpMethod method, string route)
