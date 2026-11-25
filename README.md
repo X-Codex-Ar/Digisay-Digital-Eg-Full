@@ -77,7 +77,6 @@ graph TD
 ├── ai-agents/              # AI specifications, evaluation fixtures, and roadmap architecture
 ├── devops/                 # Containerization, deployment templates, and cloud architecture
 ├── docs/                   # Exhaustive architecture, API, security, and integration docs
-├── compose.yaml            # Docker Compose orchestration for full local platform stack
 └── .github/workflows/      # CI Quality Gates (.NET, React, Angular) and automation
 ```
 
@@ -85,46 +84,26 @@ graph TD
 
 ## ✦ Quick Start
 
-### 1. Run Everything via Docker Compose
-
-The fastest way to spin up the entire ecosystem (SQL Server, Redis, Backend API, Dashboard, Public Site):
-
-```powershell
-docker compose up -d
-```
-
-| Service | Local URL | Description |
-| :--- | :--- | :--- |
-| **Public Website** | [http://localhost:8080](http://localhost:8080) | React 19 public showcase |
-| **Dashboard** | [http://localhost:4200](http://localhost:4200) | Angular client and admin portal |
-| **Backend API** | [http://localhost:5080](http://localhost:5080) | ASP.NET Core API |
-| **API Health** | [http://localhost:5080/health/ready](http://localhost:5080/health/ready) | SQL Server & dependency readiness check |
-| **SQL Server** | `127.0.0.1:1433` | Microsoft SQL Server 2022 instance |
-
-*(Note: In accordance with repository standards, EF Core database migrations are opt-in to prevent accidental schema alteration.)*
-
----
-
-### 2. Local Monorepo Development
-
-Install dependencies across all workspaces:
+Install dependencies across the monorepo:
 
 ```powershell
 pnpm run install:all
 ```
 
-Run independent development servers:
+Run the application services independently:
 
 ```powershell
-# Run Public React (SSR with Vite)
+# Public React website
 pnpm run dev:public
 
-# Run Angular Dashboard
+# Angular dashboard
 pnpm run dev:dashboard
 
-# Run ASP.NET Core Backend
+# ASP.NET Core backend
 pnpm run dev:api
 ```
+
+For backend connection strings, Supabase storage prerequisites, and migration setup, follow the [backend configuration guide](backend/README.md).
 
 ---
 
