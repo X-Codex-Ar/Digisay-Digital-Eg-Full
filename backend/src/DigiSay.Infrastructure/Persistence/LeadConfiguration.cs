@@ -9,13 +9,18 @@ namespace DigiSay.Infrastructure.Persistence;
 
 internal sealed class LeadConfiguration : IEntityTypeConfiguration<Lead>
 {
+    internal const string TableName = "Leads";
+    internal const string SchemaName = "crm";
+    internal const string EmailColumnName = "Email";
+
     public void Configure(EntityTypeBuilder<Lead> builder)
     {
-        builder.ToTable("Leads", "crm");
+        builder.ToTable(TableName, SchemaName);
         builder.HasKey(lead => new { lead.OrganizationId, lead.Id });
         builder.Property(lead => lead.Id).ValueGeneratedNever();
         builder.Property(lead => lead.Name).HasMaxLength(150).IsRequired();
         builder.Property(lead => lead.Email)
+            .HasColumnName(EmailColumnName)
             .HasConversion(email => email.Value, value => EmailAddress.Create(value))
             .HasMaxLength(254)
             .IsRequired();

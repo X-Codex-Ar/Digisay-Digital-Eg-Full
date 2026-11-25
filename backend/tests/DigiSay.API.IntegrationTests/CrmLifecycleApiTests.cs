@@ -94,6 +94,58 @@ public sealed class CrmLifecycleApiTests
     }
 
     [Fact]
+    public async Task Lead_search_matches_partial_email_case_insensitively_and_stays_within_organization()
+    {
+        using var factory = new DigiSayApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var owner = await CreateOrganizationClientAsync(factory, "email-search-owner@example.test", "Email Search Org");
+        using var other = await CreateOrganizationClientAsync(factory, "email-search-other@example.test", "Other Email Org");
+
+        using var createLead = await owner.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Grace Hopper", email = "ada.byron@example.test", source = "Referral",
+        });
+        Assert.Equal(HttpStatusCode.Created, createLead.StatusCode);
+        var lead = await createLead.Content.ReadFromJsonAsync<LeadResponse>();
+        Assert.NotNull(lead);
+
+        using var createWildcardTrap = await owner.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Numbered contact", email = "100sample@other.test", source = "Referral",
+        });
+        Assert.Equal(HttpStatusCode.Created, createWildcardTrap.StatusCode);
+
+        using var createOtherLead = await other.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Other person", email = "other@other.test", source = "Referral",
+        });
+        Assert.Equal(HttpStatusCode.Created, createOtherLead.StatusCode);
+
+        foreach (var term in new[] { "ada", "@example.test", "ada.byr", "ADA.BYRON@EXAMPLE.TEST" })
+        {
+            using var response = await owner.GetAsync($"/api/v1/crm/leads?search={Uri.EscapeDataString(term)}&page=1&pageSize=10");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var page = await response.Content.ReadFromJsonAsync<PagedResponse<LeadResponse>>();
+            Assert.NotNull(page);
+            Assert.Equal(1, page.TotalCount);
+            Assert.Equal(lead.Id, Assert.Single(page.Items).Id);
+        }
+
+        using var escapedWildcard = await owner.GetAsync($"/api/v1/crm/leads?search={Uri.EscapeDataString("100%_")}&page=1&pageSize=10");
+        Assert.Equal(HttpStatusCode.OK, escapedWildcard.StatusCode);
+        var escapedWildcardPage = await escapedWildcard.Content.ReadFromJsonAsync<PagedResponse<LeadResponse>>();
+        Assert.NotNull(escapedWildcardPage);
+        Assert.Equal(0, escapedWildcardPage.TotalCount);
+        Assert.Empty(escapedWildcardPage.Items);
+
+        using var crossOrganizationSearch = await other.GetAsync("/api/v1/crm/leads?search=ada&page=1&pageSize=10");
+        Assert.Equal(HttpStatusCode.OK, crossOrganizationSearch.StatusCode);
+        var otherPage = await crossOrganizationSearch.Content.ReadFromJsonAsync<PagedResponse<LeadResponse>>();
+        Assert.NotNull(otherPage);
+        Assert.DoesNotContain(otherPage.Items, item => item.Id == lead.Id);
+    }
+
+    [Fact]
     public async Task Lead_notes_and_followups_are_tenant_scoped_and_followups_complete_once()
     {
         using var factory = new DigiSayApiFactory();
