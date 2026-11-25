@@ -2,6 +2,7 @@ using System.ComponentModel.DataAnnotations;
 using Asp.Versioning;
 using Asp.Versioning.Builder;
 using DigiSay.API.Endpoints.Organizations;
+using DigiSay.Application.Common;
 using DigiSay.Application.Common.Organizations;
 using DigiSay.Application.Features.CRM.Leads.Commands.CreateLead;
 using DigiSay.Application.Features.CRM.Leads.Commands.UpdateLead;
@@ -506,6 +507,12 @@ internal sealed class DomainValidationEndpointFilter : IEndpointFilter
             {
                 [exception.PropertyName] = [exception.Message],
             });
+        }
+        catch (ConcurrencyConflictException)
+        {
+            return Results.Problem(
+                statusCode: StatusCodes.Status409Conflict,
+                title: "The record was changed by another request. Reload it and try again.");
         }
     }
 }
