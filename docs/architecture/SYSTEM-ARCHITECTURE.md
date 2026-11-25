@@ -1,31 +1,66 @@
-# System architecture
+# System Architecture
 
-## Current state
+<p align="center">
+  <img src="https://img.shields.io/badge/Architecture-Clean%20Architecture-512BD4?style=flat-square" alt="Clean Architecture" />
+  <img src="https://img.shields.io/badge/Database-SQL%20Server%202022-CC292B?style=flat-square" alt="SQL Server" />
+  <img src="https://img.shields.io/badge/Multi--Tenant-Isolated-2ea44f?style=flat-square" alt="Multi-Tenant" />
+</p>
 
-The repository has three independent root apps: a server-rendered React 19 public website, an Angular client/admin dashboard, and an ASP.NET Core 10 API. See [REPOSITORY-AUDIT.md](REPOSITORY-AUDIT.md) for current phase status.
+---
 
-## Target shape
+## ✦ System Topology & Data Flow
 
-The public React app is in root `public/` (Vite assets in `public/static/`), Angular is in root `dashboard/`, and the independently deployable ASP.NET Core 10 modular monolith is in `backend/` with Domain, Application, Infrastructure, and API boundaries. The API stores public contact inquiries, Identity, organizations, memberships, and tenant-owned CRM leads and service requests in SQL Server. Protected CRM endpoints require verified active membership, and tenant-owned CRM EF queries also apply global filters from the request-scoped organization context.
+DigiSay is architected as an independently deployable frontend monorepo paired with a robust ASP.NET Core 10 modular-monolith backend:
 
-SQL Server is the authoritative store for transactional entities. Supabase Postgres is an optional health-check capability; Supabase Storage holds private binary objects behind the API. Firebase Analytics records public-site page views; Firebase Auth, Firestore, FCM, and Admin are not enabled. CRM writes persist versioned outbox events atomically. The dispatcher currently uses a logging publisher; no external projection consumer is configured.
+```mermaid
+flowchart TD
+    subgraph Clients["Frontend Applications"]
+        ReactApp["Public Website\n(React 19 + TanStack Start)\nSSR / Port 8080"]
+        AngularApp["Client & Admin Dashboard\n(Angular 22.3)\nSPA / Port 4200"]
+    end
 
-## Request flow (target)
+    subgraph Gateway["Ingress & Transport"]
+        ReverseProxy["Reverse Proxy / Cloudflare\nForwarded Headers Filter"]
+    end
 
-```text
-Public React / Angular dashboard
-        | HTTPS, typed versioned API
-        v
-ASP.NET Core API -> Application use cases -> Domain rules
-                           |                   |
-                           v                   v
-                  Infrastructure adapters -> SQL Server (system of record)
-                           |                   + transactional outbox (CRM events)
-                           +--> Supabase Storage (private binary objects)
+    subgraph API["ASP.NET Core 10 Modular Monolith"]
+        Middleware["API Pipeline\n• Rate Limiting (Redis HMAC)\n• Security Headers & CORS\n• Auth & Session Revocation\n• Tenant Context (IOrganizationContext)"]
+        Endpoints["Minimal API Endpoints\n• /api/v1/auth\n• /api/v1/organizations\n• /api/v1/crm\n• /api/v1/storage\n• /api/v1/contact-inquiries"]
+        AppLayer["Application Layer\nCommands, Queries, Invariants, DTOs"]
+        InfraLayer["Infrastructure Layer\nEF Core 10, Supabase Adapter, Redis"]
+    end
+
+    subgraph Data["Persistence & Providers"]
+        SqlServer[("Microsoft SQL Server 2022\nPrimary System of Record\n• Identity & Roles\n• Organizations & Members\n• CRM Leads & Follow-ups\n• Storage Object Metadata")]
+        RedisStore[("Redis 7 (Fixed-Window)\nAtomic Rate Limiting")]
+        SupabaseStore["Supabase Private Storage\n5-Minute Signed URLs"]
+    end
+
+    Clients --> ReverseProxy
+    ReverseProxy --> Middleware
+    Middleware --> Endpoints
+    Endpoints --> AppLayer
+    AppLayer --> InfraLayer
+    InfraLayer --> SqlServer
+    InfraLayer --> RedisStore
+    InfraLayer --> SupabaseStore
 ```
 
-Do not expose infrastructure entities to either frontend. Enforce tenant and resource authorization in the API.
+---
 
-## Operational boundary
+## ✦ Security & Multi-Tenant Boundaries
 
-The API validates required SQL Server configuration at startup. `/health/ready` checks SQL Server and optionally Supabase Postgres; `/api/v1/health` is a versioned process liveness route. Public contact posts are validated, honeypot-screened, rate-limited, and persisted. Identity uses short-lived opaque bearer tokens and SMTP for account confirmation/recovery. Tenant ownership is verified from active SQL Server membership; the `X-Organization-Id` header selects a tenant and never proves access. Storage uses a server-side secret and tenant-derived object paths. Shared Data Protection keys, production observability, Docker, CI, and Azure configuration remain deployment follow-up work.
+1. **Authentication & Session Security:**
+   - Identity authority resides exclusively in ASP.NET Core Identity on SQL Server.
+   - 15-minute bearer tokens in memory, 7-day rotating refresh tokens.
+   - Instant session revocation via `SecurityStamp` rotation; refresh reuse is detected and blocked.
+2. **Tenant Context Enforcement:**
+   - Every tenant-scoped request requires an `X-Organization-Id` header.
+   - `IOrganizationContext` validates that the authenticated caller has an active membership in the requested organization.
+   - Cross-tenant queries return HTTP 404 to avoid leaking tenant existence.
+3. **Distributed Rate Limiting:**
+   - Powered by Redis Lua scripts implementing fixed-window sliding counters.
+   - Client IPs/UserIds are hashed using HMAC-SHA256 with a private salt before reaching Redis.
+4. **Binary Asset Protection:**
+   - Uploads require organization owner roles, validated file signatures (magic bytes for PDF, PNG, JPEG), and a 10MB limit.
+   - Downloads use short-lived (5-minute) signed URLs generated server-side.
