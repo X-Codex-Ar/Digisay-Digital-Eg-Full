@@ -52,6 +52,19 @@ public sealed class OpenAiResponsesLanguageModelProviderTests
     }
 
     [Fact]
+    public async Task Disabled_provider_reports_not_enabled_before_validating_endpoint()
+    {
+        var options = Options.Create(new OpenAiProviderOptions { Enabled = false, Endpoint = string.Empty });
+        var provider = new OpenAiResponsesLanguageModelProvider(new HttpClient(new RecordingHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)))), options);
+
+        var exception = await Assert.ThrowsAsync<PublicAssistantUnavailableException>(() =>
+            provider.CompleteAsync("system", "question", CancellationToken.None));
+
+        Assert.Equal("The language model provider is not enabled.", exception.Message);
+    }
+
+    [Fact]
     public async Task Does_not_expose_provider_error_details()
     {
         var handler = new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError)
@@ -84,4 +97,3 @@ public sealed class OpenAiResponsesLanguageModelProviderTests
             send(request, cancellationToken);
     }
 }
-
