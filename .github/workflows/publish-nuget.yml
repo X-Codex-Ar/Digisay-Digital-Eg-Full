@@ -42,9 +42,6 @@ jobs:
       - name: Restore locked dependencies
         run: dotnet restore backend/DigiSay.sln --locked-mode
 
-      - name: Build libraries
-        run: dotnet build backend/DigiSay.sln --configuration Release --no-restore -m:1
-
       - name: Determine package version
         id: version
         shell: bash
@@ -60,6 +57,9 @@ jobs:
             exit 1
           fi
           echo "value=$package_version" >> "$GITHUB_OUTPUT"
+
+      - name: Build libraries
+        run: dotnet build backend/DigiSay.sln --configuration Release --no-restore -m:1 -p:PackageVersion="${{ steps.version.outputs.value }}"
 
       - name: Pack DigiSay libraries
         shell: bash
