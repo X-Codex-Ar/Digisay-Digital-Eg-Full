@@ -2,6 +2,8 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Globalization;
+using System.Text.Json.Serialization;
 using DigiSay.Application.Features.Content.Abstractions;
 using DigiSay.Application.Features.Content;
 using Microsoft.Extensions.Options;
@@ -13,6 +15,36 @@ internal sealed class SupabaseStorageAdapter(HttpClient httpClient, IOptions<Sup
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly SupabaseStorageOptions _options = options.Value;
+
+    public async Task<IReadOnlyList<StorageObject>> ListAsync(Guid organizationId, CancellationToken cancellationToken)
+    {
+        if (organizationId == Guid.Empty)
+        {
+            throw new StorageProviderException("A verified organization is required.", (int)HttpStatusCode.BadRequest);
+        }
+
+        using var request = CreateRequest(HttpMethod.Post, "object/list/" + Escape(_options.PrivateBucket));
+        request.Content = JsonContent.Create(new
+        {
+            prefix = $"organizations/{organizationId:N}/",
+            limit = 1000,
+            offset = 0,
+            sortBy = new { column = "created_at", order = "desc" },
+        }, options: JsonOptions);
+
+        using var response = await SendAsync(request, cancellationToken);
+        var objects = await response.Content.ReadFromJsonAsync<IReadOnlyList<StorageListEntry>>(JsonOptions, cancellationToken)
+            ?? throw new StorageProviderException("The private storage provider returned an invalid object listing.");
+
+        return objects
+            .Where(item => Guid.TryParseExact(item.Name, "N", out _))
+            .Select(item => new StorageObject(
+                Guid.ParseExact(item.Name!, "N"),
+                ReadString(item.Metadata, "mimetype") ?? "application/octet-stream",
+                ReadInt64(item.Metadata, "size"),
+                item.CreatedAtUtc ?? DateTimeOffset.MinValue))
+            .ToArray();
+    }
 
     public async Task UploadAsync(
         Guid organizationId,
@@ -136,4 +168,25 @@ internal sealed class SupabaseStorageAdapter(HttpClient httpClient, IOptions<Sup
     private static string Escape(string segment) => Uri.EscapeDataString(segment);
 
     private sealed record SignedUrlResponse(string? SignedUrl);
+
+    private sealed record StorageListEntry(
+        string? Name,
+        [property: JsonPropertyName("created_at")] DateTimeOffset? CreatedAtUtc,
+        JsonElement? Metadata);
+
+    private static string? ReadString(JsonElement? metadata, string propertyName) =>
+        metadata is { ValueKind: JsonValueKind.Object } value &&
+        value.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String
+            ? property.GetString()
+            : null;
+
+    private static long ReadInt64(JsonElement? metadata, string propertyName)
+    {
+        if (metadata is not { ValueKind: JsonValueKind.Object } value ||
+            !value.TryGetProperty(propertyName, out var property)) return 0;
+        if (property.ValueKind == JsonValueKind.Number && property.TryGetInt64(out var number)) return number;
+        return property.ValueKind == JsonValueKind.String && long.TryParse(property.GetString(), NumberStyles.None, CultureInfo.InvariantCulture, out number)
+            ? number
+            : 0;
+    }
 }

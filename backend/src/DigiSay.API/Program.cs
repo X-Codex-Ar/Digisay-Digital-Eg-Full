@@ -6,6 +6,7 @@ using DigiSay.API.Endpoints;
 using DigiSay.API.Endpoints.Crm;
 using DigiSay.API.Endpoints.Organizations;
 using DigiSay.API.Endpoints.Storage;
+using DigiSay.API.Endpoints.Reports;
 using DigiSay.Application;
 using DigiSay.Infrastructure;
 using DigiSay.Infrastructure.Identity;
@@ -16,8 +17,18 @@ using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var dataProtectionKeysPath = builder.Configuration["DataProtection:KeysPath"];
+if (!string.IsNullOrWhiteSpace(dataProtectionKeysPath))
+{
+    Directory.CreateDirectory(dataProtectionKeysPath);
+    builder.Services.AddDataProtection()
+        .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+}
 
 builder.Services.AddProblemDetails();
 builder.Services.AddOpenApi();
@@ -51,7 +62,7 @@ builder.Services.AddApiVersioning(options =>
     options.ApiVersionReader = new UrlSegmentApiVersionReader();
 });
 builder.Services.AddApplication();
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddInfrastructure(builder.Configuration, builder.Environment.IsDevelopment());
 builder.Services.AddIdentityApiEndpoints<DigiSayUser>(options =>
     {
         options.User.RequireUniqueEmail = true;
@@ -119,6 +130,15 @@ else
 }
 
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment() &&
+    app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
+{
+    await using var scope = app.Services.CreateAsyncScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
+    await dbContext.Database.MigrateAsync();
+}
+
 app.UseExceptionHandler();
 app.UseForwardedHeaders();
 app.UseCors("frontends");
@@ -139,6 +159,7 @@ app.MapApiEndpoints(apiVersionSet);
 app.MapOrganizationEndpoints(apiVersionSet);
 app.MapCrmEndpoints(apiVersionSet);
 app.MapStorageEndpoints(apiVersionSet);
+app.MapReportEndpoints(apiVersionSet);
 app.MapHealthChecks("/health/ready", new HealthCheckOptions()).AllowAnonymous();
 app.Run();
 

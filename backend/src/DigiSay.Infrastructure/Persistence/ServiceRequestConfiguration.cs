@@ -31,6 +31,8 @@ internal sealed class ServiceRequestConfiguration : IEntityTypeConfiguration<Ser
             .WithMany()
             .HasForeignKey(request => request.UpdatedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
-        builder.HasIndex(request => new { request.OrganizationId, request.Status, request.CreatedAtUtc });
+        builder.HasIndex(request => new { request.OrganizationId, request.CreatedAtUtc, request.Id })
+            .IsDescending(false, true, false)
+            .HasDatabaseName("IX_ServiceRequests_OrganizationId_CreatedAtUtc_Id");
     }
 }

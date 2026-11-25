@@ -88,7 +88,9 @@ export class PortalSignInComponent {
             ? 'Email or password is incorrect, or the account is not confirmed.'
             : error.status === 403
               ? `Your account does not have permission to use the ${this.audience().toLowerCase()} portal.`
-              : 'The API could not complete sign in. Check the connection and try again.'
+              : error.status === 429
+                ? 'Too many sign-in attempts. Wait a few minutes, then try again.'
+                : 'The API could not complete sign in. Check the connection and try again.'
           : error instanceof Error
             ? error.message
             : 'Sign in failed. Please try again.',

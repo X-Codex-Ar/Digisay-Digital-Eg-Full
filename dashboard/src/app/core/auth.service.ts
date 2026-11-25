@@ -1,7 +1,7 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Observable, finalize, firstValueFrom, map, shareReplay, tap } from 'rxjs';
-import './runtime-config';
+import { apiUrl } from './api-url';
 
 export interface AuthUser {
   id: string;
@@ -24,7 +24,6 @@ interface TokenResponse {
   expiresIn: number;
 }
 
-const apiUrl = `${window.digisayRuntimeConfig?.apiBaseUrl?.replace(/\/$/, '') ?? 'http://localhost:5080'}/api/v1`;
 const ADMIN_ROLES = new Set(['SuperAdmin', 'Admin', 'Manager']);
 
 @Injectable({ providedIn: 'root' })
@@ -45,7 +44,7 @@ export class AuthService {
   async signIn(email: string, password: string, audience: PortalAudience): Promise<void> {
     this.clearSession();
     const tokens = await firstValueFrom(
-      this.http.post<TokenResponse>(`${apiUrl}/auth/login?useCookies=false`, {
+      this.http.post<TokenResponse>(`${apiUrl('auth/login')}?useCookies=false`, {
         email,
         password,
         twoFactorCode: null,
@@ -58,9 +57,9 @@ export class AuthService {
     try {
       const headers = this.authorizationHeaders();
       const [user, organizations] = await Promise.all([
-        firstValueFrom(this.http.get<AuthUser>(`${apiUrl}/users/me`, { headers })),
+        firstValueFrom(this.http.get<AuthUser>(apiUrl('users/me'), { headers })),
         firstValueFrom(
-          this.http.get<OrganizationMembership[]>(`${apiUrl}/organizations`, { headers }),
+          this.http.get<OrganizationMembership[]>(apiUrl('organizations'), { headers }),
         ),
       ]);
       this.user.set(user);
@@ -83,10 +82,27 @@ export class AuthService {
     }
   }
 
+  createOrganization(name: string) {
+    return this.http
+      .post<OrganizationMembership>(
+        apiUrl('organizations'),
+        { name },
+        {
+          headers: this.authorizationHeaders(),
+        },
+      )
+      .pipe(
+        tap((organization) => {
+          this.organizations.update((items) => [...items, organization]);
+          this.activeOrganizationId.set(organization.id);
+        }),
+      );
+  }
+
   signOut(): void {
     if (this.accessToken) {
       this.http
-        .post<void>(`${apiUrl}/auth/sessions/revoke`, null, {
+        .post<void>(apiUrl('auth/sessions/revoke'), null, {
           headers: this.authorizationHeaders(),
         })
         .subscribe({ error: () => undefined });
@@ -108,7 +124,7 @@ export class AuthService {
     const sessionVersion = this.sessionVersion;
     let refreshRequest: Observable<void>;
     refreshRequest = this.http
-      .post<TokenResponse>(`${apiUrl}/auth/refresh`, { refreshToken: this.refreshToken })
+      .post<TokenResponse>(apiUrl('auth/refresh'), { refreshToken: this.refreshToken })
       .pipe(
         tap((tokens) => {
           if (this.sessionVersion === sessionVersion) {

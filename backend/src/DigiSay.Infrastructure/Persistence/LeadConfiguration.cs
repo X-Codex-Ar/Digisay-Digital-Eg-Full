@@ -36,7 +36,8 @@ internal sealed class LeadConfiguration : IEntityTypeConfiguration<Lead>
             .WithMany()
             .HasForeignKey(lead => lead.UpdatedByUserId)
             .OnDelete(DeleteBehavior.Restrict);
-        builder.HasIndex(lead => new { lead.OrganizationId, lead.Status, lead.CreatedAtUtc });
-        builder.HasIndex(lead => new { lead.OrganizationId, lead.Email });
+        builder.HasIndex(lead => new { lead.OrganizationId, lead.CreatedAtUtc, lead.Id })
+            .IsDescending(false, true, false)
+            .HasDatabaseName("IX_Leads_OrganizationId_CreatedAtUtc_Id");
     }
 }

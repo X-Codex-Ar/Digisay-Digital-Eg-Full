@@ -1,10 +1,13 @@
 using System.Collections.Concurrent;
 using System.Net;
+using DigiSay.Application.Features.AI.PublicAssistant;
+using DigiSay.Application.Common.Organizations;
 using DigiSay.Application.Features.ContactInquiries;
 using DigiSay.Application.Features.Content;
 using DigiSay.Application.Features.Content.Abstractions;
 using DigiSay.Application.Common.RateLimiting;
 using DigiSay.Domain.Entities;
+using DigiSay.Domain.Enums;
 using DigiSay.Infrastructure.Identity;
 using DigiSay.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Http;
@@ -44,19 +47,24 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
     }
 
     public RecordingIdentityEmailSender EmailSender { get; } = new();
+    public RecordingPublicFaqSearchTool PublicFaqSearch { get; } = new();
+    public RecordingLanguageModelProvider LanguageModel { get; } = new();
     public DigiSayApiFactory(
         bool rateLimitStoreUnavailable = false,
         bool trustLoopbackProxy = false,
-        string? identityBootstrapSecret = null)
+        string? identityBootstrapSecret = null,
+        bool publicAssistantEnabled = false)
     {
         RateLimitStoreUnavailable = rateLimitStoreUnavailable;
         TrustLoopbackProxy = trustLoopbackProxy;
         IdentityBootstrapSecret = identityBootstrapSecret;
+        PublicAssistantEnabled = publicAssistantEnabled;
     }
 
     private bool RateLimitStoreUnavailable { get; }
     private bool TrustLoopbackProxy { get; }
     private string? IdentityBootstrapSecret { get; }
+    private bool PublicAssistantEnabled { get; }
 
     public RecordingContactInquiryWriter Writer { get; } = new();
     public RecordingPrivateObjectStorage Storage { get; } = new();
@@ -72,6 +80,7 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
         builder.UseSetting("Storage:Supabase:ProjectUrl", "https://storage.example.test");
         builder.UseSetting("Storage:Supabase:SecretKey", "test-only-server-secret");
         builder.UseSetting("Storage:Supabase:PrivateBucket", "digisay-private");
+        builder.UseSetting("AI:PublicAssistant:Enabled", PublicAssistantEnabled.ToString());
         if (IdentityBootstrapSecret is not null)
         {
             builder.UseSetting("Identity:BootstrapAdminSecret", IdentityBootstrapSecret);
@@ -85,16 +94,21 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<DigiSayDbContext>();
-            services.AddScoped(_ => new DigiSayDbContext(
+            services.AddScoped(serviceProvider => new DigiSayDbContext(
                 new DbContextOptionsBuilder<DigiSayDbContext>()
                     .UseSqlServer(connectionString)
-                    .Options));
+                    .Options,
+                serviceProvider.GetRequiredService<IOrganizationContext>()));
             services.RemoveAll<IContactInquiryWriter>();
             services.AddSingleton<IContactInquiryWriter>(Writer);
             services.RemoveAll<IEmailSender<DigiSayUser>>();
             services.AddSingleton<IEmailSender<DigiSayUser>>(EmailSender);
             services.RemoveAll<IPrivateObjectStorage>();
             services.AddSingleton<IPrivateObjectStorage>(Storage);
+            services.RemoveAll<IPublicFaqSearchTool>();
+            services.AddSingleton<IPublicFaqSearchTool>(PublicFaqSearch);
+            services.RemoveAll<ILanguageModelProvider>();
+            services.AddSingleton<ILanguageModelProvider>(LanguageModel);
             if (RateLimitStoreUnavailable)
             {
                 services.RemoveAll<IRateLimitStore>();
@@ -110,6 +124,29 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
         await dbContext.Database.EnsureCreatedAsync();
     }
 
+    public async Task<DigiSayDbContext> CreateVerifiedOrganizationDbContextAsync(Guid organizationId, Guid userId)
+    {
+        var organizationContext = new OrganizationContext();
+        using (var verificationContext = new DigiSayDbContext(
+            new DbContextOptionsBuilder<DigiSayDbContext>().UseSqlServer(TestConnectionString).Options,
+            organizationContext))
+        {
+            var isActiveMember = await verificationContext.OrganizationMemberships
+                .AsNoTracking()
+                .AnyAsync(membership => membership.OrganizationId == organizationId &&
+                    membership.UserId == userId && membership.Status == OrganizationMembershipStatus.Active);
+            if (!isActiveMember)
+            {
+                throw new InvalidOperationException("Test organization context requires an active persisted membership.");
+            }
+        }
+
+        organizationContext.Set(organizationId, userId, "Test");
+        return new DigiSayDbContext(
+            new DbContextOptionsBuilder<DigiSayDbContext>().UseSqlServer(TestConnectionString).Options,
+            organizationContext);
+    }
+
     public async Task<HttpResponseMessage> ConfirmEmailAsync(HttpClient client, string email)
     {
         var confirmationLink = EmailSender.GetConfirmationLink(email);
@@ -117,6 +154,31 @@ internal sealed class DigiSayApiFactory : WebApplicationFactory<Program>
         return await client.GetAsync(confirmationUri.PathAndQuery);
     }
 
+}
+
+internal sealed class RecordingPublicFaqSearchTool : IPublicFaqSearchTool
+{
+    public int CallCount { get; private set; }
+
+    public Task<IReadOnlyList<PublicFaqSource>> SearchAsync(string question, int maximumResults, CancellationToken cancellationToken)
+    {
+        CallCount++;
+        IReadOnlyList<PublicFaqSource> result = question.Contains("service", StringComparison.OrdinalIgnoreCase)
+            ? [new PublicFaqSource("services", "DigiSay services", "/services", "DigiSay offers content production and social media services.")]
+            : [];
+        return Task.FromResult(result);
+    }
+}
+
+internal sealed class RecordingLanguageModelProvider : ILanguageModelProvider
+{
+    public int CallCount { get; private set; }
+
+    public Task<string> CompleteAsync(string systemPrompt, string userPrompt, CancellationToken cancellationToken)
+    {
+        CallCount++;
+        return Task.FromResult("DigiSay offers content production and social media services.");
+    }
 }
 
 internal sealed class RecordingIdentityEmailSender : IEmailSender<DigiSayUser>
@@ -151,6 +213,12 @@ internal sealed class RecordingPrivateObjectStorage : IPrivateObjectStorage
 
     public IReadOnlyCollection<Guid> OrganizationIds => _objects.Keys.Select(key => key.OrganizationId).ToArray();
     public int? ProviderFailureStatusCode { get; set; }
+
+    public Task<IReadOnlyList<StorageObject>> ListAsync(Guid organizationId, CancellationToken cancellationToken) =>
+        Task.FromResult<IReadOnlyList<StorageObject>>(_objects
+            .Where(item => item.Key.OrganizationId == organizationId)
+            .Select(item => new StorageObject(item.Key.ObjectId, item.Value.ContentType, item.Value.Content.Length, DateTimeOffset.UtcNow))
+            .ToArray());
 
     public async Task UploadAsync(Guid organizationId, Guid objectId, Stream content, string verifiedContentType, CancellationToken cancellationToken)
     {

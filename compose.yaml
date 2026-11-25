@@ -1,0 +1,100 @@
+name: digisay
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SQL_SERVER_SA_PASSWORD:-DigiSay_LocalOnly_2026!ChangeMe}
+    ports:
+      - "127.0.0.1:1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa
+          -P "$${MSSQL_SA_PASSWORD}" -C -Q 'SELECT 1' >/dev/null 2>&1
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5080
+      ConnectionStrings__SqlServer: "Server=sqlserver,1433;Database=DigiSay;User Id=sa;Password=${SQL_SERVER_SA_PASSWORD:-DigiSay_LocalOnly_2026!ChangeMe};Encrypt=True;TrustServerCertificate=True"
+      RateLimiting__RedisConnectionString: redis:6379
+      Database__ApplyMigrationsOnStartup: "true"
+      DataProtection__KeysPath: /app/.keys
+      AI__PublicAssistant__Enabled: "false"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:5080:5080"
+    volumes:
+      - api_data_protection:/app/.keys
+    restart: unless-stopped
+
+  public:
+    build:
+      context: .
+      dockerfile: docker/public.Dockerfile
+    environment:
+      VITE_DIGISAY_API_BASE_URL: http://localhost:5080
+      VITE_PUBLIC_AI_ASSISTANT_ENABLED: "false"
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./public:/app/public
+      - public_node_modules:/app/public/node_modules
+
+  dashboard:
+    build:
+      context: .
+      dockerfile: docker/dashboard.Dockerfile
+    depends_on:
+      - api
+    ports:
+      - "127.0.0.1:4200:4200"
+    volumes:
+      - ./dashboard:/app/dashboard
+      - dashboard_node_modules:/app/dashboard/node_modules
+
+  tests:
+    profiles: [test]
+    build:
+      context: .
+      dockerfile: docker/tests.Dockerfile
+    environment:
+      TEST_SQLSERVER_CONNECTION_STRING: "Server=sqlserver,1433;Database=master;User Id=sa;Password=${SQL_SERVER_SA_PASSWORD:-DigiSay_LocalOnly_2026!ChangeMe};Encrypt=True;TrustServerCertificate=True"
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+
+volumes:
+  sqlserver_data:
+  api_data_protection:
+  public_node_modules:
+  dashboard_node_modules:

@@ -1,6 +1,6 @@
 # DigiSay Client and Admin Dashboard
 
-This Angular 22.3 workspace provides separate client and administration route trees, layouts, navigation, responsive design tokens, and lazy-loaded page areas. The administration routes include authenticated lead and service request workflows backed by the CRM API. The client portal keeps its own route boundary and does not inherit admin access.
+This Angular 22.3 workspace provides separate client and administration route trees, layouts, navigation, responsive design tokens, and lazy-loaded features. Connected pages include authenticated CRM workflows, organization-scoped CRM reports, the admin organization directory, SuperAdmin account and role management, private content/deliverable files, profile display, organization creation/selection, and the public FAQ assistant. The client portal keeps its own route boundary and does not inherit admin access. Project, task, campaign, service-catalog, support, notification, audit-log, and settings routes remain explicit placeholders because their backend domains and APIs do not exist yet; see the integration matrix before treating those sections as usable.
 
 ## Development server
 
@@ -14,7 +14,9 @@ Open `http://localhost:4200/`. `/client` and `/admin` have separate route guards
 
 The client journey is: sign in, load `/api/v1/users/me` and `/api/v1/organizations`, select an organization, then view or submit service requests. Calls to `GET /api/v1/crm/service-requests` and `POST /api/v1/crm/service-requests` send the bearer token and `X-Organization-Id`. The API returns paged records and verifies membership on every request; records outside that organization return 404. Client routes expose no admin review or lifecycle actions, and the API requires an admin role for those operations regardless of the route guard.
 
-The overview checks API readiness using `public/runtime-config.js`. Set its `apiBaseUrl` to the API origin for each deployment; do not put credentials or secret keys in this browser-visible file. The default points to `http://localhost:5080` for local development.
+The overview checks API readiness and loads live organization-scoped lead and service-request totals using `public/runtime-config.js`. Set its `apiBaseUrl` to the API origin and `publicBaseUrl` to the public React site origin for each deployment; do not put credentials or secret keys in this browser-visible file. Local defaults point to `http://localhost:5080` and `http://localhost:8080`. The AI assistant uses the API's approved public FAQ endpoint and links to its source pages. Admins can request rate-limited, organization-scoped service-request triage suggestions from CRM details. Suggestions require the server-side OpenAI configuration and always remain human-reviewed; they do not update CRM records.
+
+See [`docs/architecture/DASHBOARD-BACKEND-INTEGRATION.md`](../docs/architecture/DASHBOARD-BACKEND-INTEGRATION.md) for the connected-route matrix and backend work required by the remaining dashboard pages.
 
 ## Build and tests
 

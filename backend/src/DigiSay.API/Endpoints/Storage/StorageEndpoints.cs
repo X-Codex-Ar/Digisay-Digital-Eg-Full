@@ -6,6 +6,7 @@ using DigiSay.Application.Features.Content;
 using DigiSay.Application.Features.Content.Commands.DeleteObject;
 using DigiSay.Application.Features.Content.Commands.UploadObject;
 using DigiSay.Application.Features.Content.Queries.CreateDownloadLink;
+using DigiSay.Application.Features.Content.Queries.ListObjects;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DigiSay.API.Endpoints.Storage;
@@ -59,15 +60,32 @@ internal static class StorageEndpoints
                 {
                     return Results.ValidationProblem(new Dictionary<string, string[]> { ["file"] = [exception.Message] });
                 }
-                catch (StorageProviderException)
+                catch (StorageProviderException exception)
                 {
-                    return Results.Problem(statusCode: StatusCodes.Status502BadGateway, title: "Private storage is unavailable.");
+                    return StorageUnavailable(exception);
                 }
             })
             .AddEndpointFilter<OrganizationOwnerEndpointFilter>()
             .Accepts<IFormFile>("multipart/form-data")
             .WithName("UploadPrivateObject")
             .WithSummary("Upload a validated object to the current organization's private storage path.");
+
+        storage.MapGet("", async (
+                IOrganizationContext organization,
+                ListObjectsHandler handler,
+                CancellationToken cancellationToken) =>
+            {
+                try
+                {
+                    return (IResult)Results.Ok(await handler.HandleAsync(organization.OrganizationId, cancellationToken));
+                }
+                catch (StorageProviderException exception)
+                {
+                    return (IResult)StorageUnavailable(exception);
+                }
+            })
+            .WithName("ListPrivateObjects")
+            .WithSummary("List private objects for the verified organization.");
 
         storage.MapPost("/{objectId:guid}/download-link", async (
                 Guid objectId,
@@ -89,9 +107,9 @@ internal static class StorageEndpoints
                 {
                     return Results.NotFound();
                 }
-                catch (StorageProviderException)
+                catch (StorageProviderException exception)
                 {
-                    return Results.Problem(statusCode: StatusCodes.Status502BadGateway, title: "Private storage is unavailable.");
+                    return StorageUnavailable(exception);
                 }
             })
             .WithName("CreatePrivateObjectDownloadLink")
@@ -117,9 +135,9 @@ internal static class StorageEndpoints
                 {
                     return Results.NotFound();
                 }
-                catch (StorageProviderException)
+                catch (StorageProviderException exception)
                 {
-                    return Results.Problem(statusCode: StatusCodes.Status502BadGateway, title: "Private storage is unavailable.");
+                    return StorageUnavailable(exception);
                 }
             })
             .AddEndpointFilter<OrganizationOwnerEndpointFilter>()
@@ -129,4 +147,11 @@ internal static class StorageEndpoints
 
     private static bool IsMissingObject(StorageProviderException exception) =>
         exception.StatusCode == StatusCodes.Status404NotFound;
+
+    private static IResult StorageUnavailable(StorageProviderException exception) =>
+        Results.Problem(
+            statusCode: exception.StatusCode == StatusCodes.Status503ServiceUnavailable
+                ? StatusCodes.Status503ServiceUnavailable
+                : StatusCodes.Status502BadGateway,
+            title: "Private storage is unavailable.");
 }
