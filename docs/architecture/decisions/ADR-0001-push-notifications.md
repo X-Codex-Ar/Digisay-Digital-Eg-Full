@@ -63,16 +63,3 @@ The following are release gates, not optional implementation details:
 - Keep push payloads minimal (opaque notification ID and non-sensitive routing hint); fetch the authorized details from the API. Define retention and deletion for inbox records, attempts, and device registrations before launch.
 
 No FCM SDK, endpoint, credential, or worker is introduced by this ADR. Implementation remains blocked until the event/recipient matrix, consent behavior, sign-out revocation policy, retention, and Firebase project ownership are approved.
-
-
-## Implementation guardrails before enabling delivery
-
-- Persist each notification and its outbox message in the same SQL Server transaction as the business change that emits it. A worker publishes only committed outbox records.
-- Derive recipients from authenticated server-side identity and current tenant membership. Never trust client-supplied user, role, or organization identifiers; re-check membership when authorizing inbox reads and device registration.
-- Model multiple installations per user. Bind each FID to its authenticated owner, define re-registration and transfer behavior, and revoke the current installation on sign-out if that product behavior is approved.
-- Make delivery idempotent with a database uniqueness constraint over the approved business event, recipient, and channel. Do not rely on FCM for exactly-once processing.
-- Classify transient and permanent failures. Use bounded exponential backoff with jitter, honor provider retry guidance, invalidate unregistered FIDs, and move exhausted messages to an observable dead-letter state with operator recovery/replay.
-- Support multiple devices per recipient and record per-installation attempts/outcomes without duplicating the durable inbox item.
-- Keep push payloads minimal (opaque notification ID and non-sensitive routing hint); fetch authorized details from the API. Define retention and deletion for inbox records, attempts, and device registrations before launch.
-
-These are adoption gates, not a reason to add an FCM SDK, endpoint, credential, or worker now. Implementation remains blocked until the event/recipient matrix, consent behavior, sign-out revocation policy, retention, and Firebase project ownership are approved.
