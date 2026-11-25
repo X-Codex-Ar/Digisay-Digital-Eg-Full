@@ -46,8 +46,8 @@ public static class DependencyInjection
         services.AddScoped<ILeadStore>(provider => provider.GetRequiredService<CrmStore>());
         services.AddScoped<IServiceRequestStore>(provider => provider.GetRequiredService<CrmStore>());
         services.AddScoped<IOutboxStore, SqlOutboxStore>();
-        services.AddSingleton<IIntegrationEventPublisher, LoggingIntegrationEventPublisher>();
-        services.AddHostedService<OutboxDispatcher>();
+        // Keep events durable in SQL until an idempotent destination publisher is configured.
+        // Do not register the dispatcher with a logging-only publisher: logging is not delivery.
 
         services.AddOptions<PublicAssistantOptions>()
             .Bind(configuration.GetSection(PublicAssistantOptions.SectionName));
