@@ -3,6 +3,7 @@ using System.Security.Claims;
 using Asp.Versioning;
 using Asp.Versioning.Builder;
 using DigiSay.Application.Common.Organizations;
+using DigiSay.Application.Features.Organizations.Abstractions;
 using DigiSay.Application.Features.Organizations.Commands.CreateOrganization;
 using DigiSay.Application.Features.Organizations.Queries.ListMyOrganizations;
 using DigiSay.Application.Features.Organizations.Queries.GetCurrentOrganization;
@@ -42,9 +43,9 @@ internal static class OrganizationEndpoints
 
                 var organization = await handler.HandleAsync(new(request.Name!, userId), cancellationToken);
 
-                return Results.Json(
-                    new OrganizationResponse(organization.Id, organization.Name, "Owner"),
-                    statusCode: StatusCodes.Status201Created);
+                return Results.Created(
+                    $"/api/v1/organizations/{organization.Id}",
+                    new OrganizationResponse(organization.Id, organization.Name, "Owner"));
             })
             .WithName("CreateOrganization")
             .WithSummary("Create an organization and grant the creator its owner membership.");
@@ -68,6 +69,29 @@ internal static class OrganizationEndpoints
             })
             .WithName("GetMyOrganizations")
             .WithSummary("List only organizations where the signed-in user has active membership.");
+
+        organizations.MapGet("/{organizationId:guid}", async (
+                Guid organizationId,
+                ClaimsPrincipal principal,
+                UserManager<DigiSayUser> userManager,
+                IOrganizationStore store,
+                CancellationToken cancellationToken) =>
+            {
+                var userIdValue = userManager.GetUserId(principal);
+                if (!Guid.TryParse(userIdValue, out var userId))
+                {
+                    return Results.Unauthorized();
+                }
+
+                var membership = await store.FindActiveMembershipAsync(organizationId, userId, cancellationToken);
+
+                return membership is null
+                    ? Results.NotFound()
+                    : Results.Ok(new OrganizationResponse(
+                        membership.OrganizationId, membership.OrganizationName, membership.MembershipRole));
+            })
+            .WithName("GetOrganization")
+            .WithSummary("Read an organization only when the signed-in user has active membership; missing and inaccessible organizations both return 404.");
 
         organizations.MapGet("/current", (
                 IOrganizationContext organizationContext,
