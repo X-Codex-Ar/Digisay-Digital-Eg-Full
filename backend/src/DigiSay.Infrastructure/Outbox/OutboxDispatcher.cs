@@ -67,16 +67,3 @@ internal sealed class OutboxDispatcher(
         }
     }
 }
-
-internal sealed class LoggingIntegrationEventPublisher(ILogger<LoggingIntegrationEventPublisher> logger)
-    : IIntegrationEventPublisher
-{
-    public Task PublishAsync(IntegrationEvent integrationEvent, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        // No external projection is configured yet; this is the replaceable delivery boundary.
-        logger.LogInformation("Integration event {EventId} ({EventType}) is ready for a configured consumer.",
-            integrationEvent.Id, integrationEvent.EventType);
-        return Task.CompletedTask;
-    }
-}
