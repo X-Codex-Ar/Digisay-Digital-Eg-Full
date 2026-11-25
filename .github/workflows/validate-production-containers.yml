@@ -37,5 +37,7 @@ jobs:
           context: .
           file: ${{ matrix.dockerfile }}
           push: false
+          build-args: |
+            DIGISAY_API_BASE_URL=https://api.validation.invalid
           cache-from: type=gha,scope=production-${{ matrix.name }}
           cache-to: type=gha,mode=max,scope=production-${{ matrix.name }}
