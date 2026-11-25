@@ -31,7 +31,7 @@ The **DigiSay Dashboard** is a enterprise-grade Angular 22 application serving t
 - **In-Memory Token Lifecycle:**
   - Short-lived bearer tokens (15 minutes) and refresh tokens (7 days) are held securely in memory.
   - Automatic rotation via `/api/v1/auth/refresh`.
-  - Sign-out triggers immediate backend session revocation and clears memory state.
+  - Sign-out sends a best-effort backend session-revocation request, then clears in-memory state without waiting for or checking the result. Revocation can fail silently, and an already-issued 15-minute bearer access token may remain valid until it expires.
 - **Responsive Sticky Layouts & Brand Tokens:**
   - Clean separation of Header and Sidebar components.
   - Sticky navigation and custom slim crimson scrollbars (`#d90a2c`) matching the public showcase.
@@ -76,7 +76,7 @@ pnpm run build:dashboard
 
 ### Runtime Configuration
 
-`public/runtime-config.js` provides environment configuration without exposing credentials:
+`public/runtime-config.js` provides environment configuration without exposing credentials. The `http://localhost:5080` API origin below is for local development only; before deploying, set `apiBaseUrl` in `dashboard/public/runtime-config.js` to the deployed backend API origin and rebuild/redeploy the dashboard.
 
 ```javascript
 window.digisayRuntimeConfig = {
@@ -97,3 +97,5 @@ In your Vercel Project Settings:
 - **Build Command:** `pnpm run build`
 - **Output Directory:** `dist/digisay-dashboard/browser`
 - **Install Command:** `pnpm install`
+
+Before each Vercel deployment, update `dashboard/public/runtime-config.js` so `apiBaseUrl` points to the deployed API origin (never `localhost`), then deploy the resulting build.
