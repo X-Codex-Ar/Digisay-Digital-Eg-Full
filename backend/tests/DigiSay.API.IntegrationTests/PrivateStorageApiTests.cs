@@ -67,7 +67,41 @@ public sealed class PrivateStorageApiTests
         using var crossTenantDelete = await outsider.DeleteAsync($"/api/v1/storage/objects/{objectId}");
         Assert.Equal(HttpStatusCode.NotFound, crossTenantLink.StatusCode);
         Assert.Equal(HttpStatusCode.NotFound, crossTenantDelete.StatusCode);
+        using var crossTenantMetadata = await outsider.GetAsync($"/api/v1/storage/objects/{objectId}");
+        Assert.Equal(HttpStatusCode.NotFound, crossTenantMetadata.StatusCode);
         Assert.Single(factory.Storage.OrganizationIds);
+    }
+
+    [Fact]
+    public async Task Metadata_is_persisted_resolvable_and_removed_only_after_the_provider_delete_succeeds()
+    {
+        using var factory = new DigiSayApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var client = await CreateOrganizationClientAsync(factory, "metadata-owner@example.test", "Metadata Org");
+        using var multipart = CreateMultipart("%PDF-1.7\nvalid", "application/pdf", "document.pdf");
+
+        using var upload = await client.PostAsync("/api/v1/storage/objects", multipart);
+        Assert.Equal(HttpStatusCode.Created, upload.StatusCode);
+        var objectId = (await upload.Content.ReadFromJsonAsync<StorageObjectResponse>())!.Id;
+        Assert.Equal($"/api/v1/storage/objects/{objectId}", upload.Headers.Location?.OriginalString);
+
+        using var metadata = await client.GetAsync(upload.Headers.Location);
+        Assert.Equal(HttpStatusCode.OK, metadata.StatusCode);
+        Assert.Equal(objectId, (await metadata.Content.ReadFromJsonAsync<StorageObjectResponse>())!.Id);
+
+        factory.Storage.ProviderFailureStatusCode = StatusCodes.Status400BadRequest;
+        using var failedDelete = await client.DeleteAsync($"/api/v1/storage/objects/{objectId}");
+        Assert.Equal(HttpStatusCode.BadGateway, failedDelete.StatusCode);
+        factory.Storage.ProviderFailureStatusCode = null;
+        using var stillThere = await client.GetAsync($"/api/v1/storage/objects/{objectId}");
+        Assert.Equal(HttpStatusCode.OK, stillThere.StatusCode);
+
+        using var delete = await client.DeleteAsync($"/api/v1/storage/objects/{objectId}");
+        Assert.Equal(HttpStatusCode.NoContent, delete.StatusCode);
+        using var gone = await client.GetAsync($"/api/v1/storage/objects/{objectId}");
+        using var unknownLink = await client.PostAsync($"/api/v1/storage/objects/{Guid.NewGuid()}/download-link", null);
+        Assert.Equal(HttpStatusCode.NotFound, gone.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, unknownLink.StatusCode);
     }
 
     private static MultipartFormDataContent CreateMultipart(string content, string claimedType, string fileName)
