@@ -21,6 +21,10 @@ Start with **staff-reviewed inquiry/CRM triage**, only after product and privacy
 
 The first product slice should return a small typed result: category, urgency, concise rationale, and confidence/evidence fields. Store the result as a separate, versioned suggestion linked to the source record; never overwrite the source record with raw model output. Before implementation, product and security/privacy owners must agree the minimum persisted fields, retention/deletion period, and access policy. The audit trail must capture the suggestion ID and version, tenant and source-record references, provider/model/prompt versions, creation time, and the acting staff member's accept/edit/reject decision, timestamp, and accepted or edited values. Keep raw prompts, full model responses, and unnecessary personal data out of logs and audit records. A staff member must accept or edit a suggestion before it affects routing or workflow state. A provider outage must leave the existing inquiry/CRM workflow usable.
 
+Persist every generated suggestion separately from its source record, including suggestions that are pending review, edited, or rejected. The persisted states are `pending`, `edited`, `accepted`, and `rejected`, with transitions `pending -> edited`, `pending -> accepted`, `pending -> rejected`, `edited -> edited`, `edited -> accepted`, or `edited -> rejected`; accepted and rejected are terminal. Each human edit creates a new immutable version linked to the preceding version. Never overwrite the model-generated version or apply a suggestion to CRM until an authorized reviewer accepts the current version.
+
+Each version stores only the typed suggestion fields needed for review, tenant and source-record references, provider/model/prompt identifiers, and creation time. An append-only audit entry records each state transition, prior and new state, version, reviewer identity, UTC timestamp, and accepted or edited values. A rejection reason is optional and must exclude unnecessary personal data. Apply the owner-approved retention period to all suggestion versions and audit values. Deleting a source record deletes its linked suggestion content and audit values too, except for a non-identifying tombstone kept only when an approved legal or security requirement demands it. Product and security/privacy owners must set the retention period and any tombstone exception before inference or persistence is enabled. Until then, keep inference disabled and persist no suggestions.
+
 ## Architecture and location
 
 - `ai-agents/`: feature specifications, prompt versions, evaluation fixtures, and operator documentation. No credentials or production customer data belong here.
@@ -28,7 +32,7 @@ The first product slice should return a small typed result: category, urgency, c
 - `backend/src/DigiSay.Infrastructure/Integrations/AI/`: provider client, configuration, timeout/retry policy, and secret-backed implementation.
 - `backend/src/DigiSay.API/`: authenticated, authorized, rate-limited endpoints. Derive tenant identity from verified API context; never accept an organization identifier as authorization proof.
 - `dashboard/`: present suggestions, provenance, and accept/edit/reject actions for staff. Keep provider SDKs and secrets out of browser bundles.
-- SQL Server: persist source records and any accepted suggestion/audit state. Use an outbox and background worker if inference becomes asynchronous; neither exists today.
+- SQL Server: persist source records separately from the versioned suggestion lifecycle and transition audit described above. Use an outbox and background worker if inference becomes asynchronous; neither exists today.
 
 Avoid a standalone AI microservice, multi-agent orchestration, or a multi-provider abstraction until a concrete scale or provider requirement justifies them.
 
