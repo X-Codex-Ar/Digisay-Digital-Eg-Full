@@ -13,6 +13,7 @@ const firebaseConfig = {
 };
 
 let analyticsPromise: Promise<Analytics | null> | undefined;
+let consentUpdateSequence = 0;
 
 async function getClientAnalytics(): Promise<Analytics | null> {
   if (typeof window === "undefined" || getAnalyticsConsent() !== "granted") return null;
@@ -54,10 +55,20 @@ export async function trackPageView(path: string): Promise<void> {
 export async function applyAnalyticsConsent(
   consent: Exclude<AnalyticsConsent, null>,
 ): Promise<void> {
+  const requestSequence = ++consentUpdateSequence;
+
+  // A rejection does not need to load Analytics when it has never been initialized.
+  if (consent === "denied" && !analyticsPromise) return;
+
   const analyticsSdk = await import("firebase/analytics");
 
   // A newer visitor choice may have been made while the SDK chunk was loading.
-  if (getAnalyticsConsent() !== consent) return;
+  if (
+    requestSequence !== consentUpdateSequence ||
+    getAnalyticsConsent() !== consent
+  ) {
+    return;
+  }
 
   analyticsSdk.setConsent({
     analytics_storage: consent === "granted" ? "granted" : "denied",
