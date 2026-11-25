@@ -27,4 +27,36 @@ public sealed class PublicFaqSearchToolTests
         Assert.Empty(unsupported);
         Assert.InRange(supported.Count, 1, 4);
     }
+
+    [Fact]
+    public void Corpus_has_a_version_identifier()
+    {
+        Assert.False(string.IsNullOrWhiteSpace(PublicFaqSearchTool.CorpusVersion));
+    }
+
+    [Fact]
+    public async Task Corpus_sources_have_unique_ids_and_safe_relative_paths()
+    {
+        var results = await new PublicFaqSearchTool()
+            .SearchAsync("services anti-piracy content contact digisay", 4, CancellationToken.None);
+
+        Assert.NotEmpty(results);
+        Assert.Equal(results.Count, results.Select(r => r.Id).Distinct().Count());
+        Assert.All(results, r =>
+        {
+            Assert.StartsWith("/", r.Path, StringComparison.Ordinal);
+            Assert.False(r.Path.StartsWith("//", StringComparison.Ordinal));
+            Assert.DoesNotContain('\\', r.Path);
+        });
+    }
+
+    [Fact]
+    public async Task Cancelled_token_stops_search()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(() =>
+            new PublicFaqSearchTool().SearchAsync("services", 4, cts.Token));
+    }
 }
