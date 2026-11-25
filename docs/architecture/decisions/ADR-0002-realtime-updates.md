@@ -61,3 +61,17 @@ Any future SignalR or Supabase Broadcast implementation must satisfy all of thes
 - Add tests for unauthorized connections, cross-tenant group access, revoked membership, reconnect/replay, duplicate events, and API refetch behavior before rollout.
 
 These are adoption gates only. They do not justify adding SignalR, Redis, Supabase Realtime, or a polling loop before a named product screen and latency requirement are approved.
+
+
+## Implementation guardrails before enabling a realtime transport
+
+- Authenticate every connection with the application's trusted identity provider. Authorize subscriptions separately from connection authentication.
+- Derive SignalR groups or private topics from verified subject and current tenant membership on the server. Never accept arbitrary client-selected group names or tenant IDs as authorization evidence.
+- Re-check authorization when joining or rejoining groups and remove memberships when access or tenant membership is revoked. Cover cross-tenant subscription attempts with negative tests.
+- Treat realtime messages as invalidation hints, not canonical business data. Send an event ID/type and safe version or cursor only; fetch the current record through the authorized API.
+- Define reconnect behavior: refresh the authenticated connection, rejoin only authorized groups, detect missed events using a cursor/version where available, and refetch relevant API state after reconnect. WebSocket delivery alone cannot guarantee no missed messages.
+- Define event ordering/versioning and client deduplication. Consumers must tolerate duplicate, delayed, and out-of-order notifications.
+- Keep SQL Server as the source of truth. Do not add a second business-data projection merely to obtain Postgres Changes.
+- Add tests for unauthorized connections, cross-tenant group access, revoked membership, reconnect/recovery, duplicate events, and API refetch behavior before rollout.
+
+These are adoption gates only. They do not justify adding SignalR, Redis, Supabase Realtime, or a polling loop before a named product screen and latency requirement are approved.
