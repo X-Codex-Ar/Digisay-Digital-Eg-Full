@@ -56,10 +56,13 @@ export function AnalyticsConsentManager() {
         <div className="max-w-xl">
           <h2 className="text-base font-bold">Your privacy choices</h2>
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-            Optional Firebase Analytics helps us understand visits to this public website.
-            Analytics stays off unless you choose to allow it. You can change this choice at
-            any time from Privacy settings. Read our{" "}
-            <a className="font-semibold text-primary underline underline-offset-4" href="/privacy-policy">
+            Optional Firebase Analytics helps us understand visits to this public website. Analytics
+            stays off unless you choose to allow it. You can change this choice at any time from
+            Privacy settings. Read our{" "}
+            <a
+              className="font-semibold text-primary underline underline-offset-4"
+              href="/privacy-policy"
+            >
               Privacy Policy
             </a>
             .

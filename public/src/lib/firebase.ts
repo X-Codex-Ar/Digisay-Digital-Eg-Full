@@ -63,10 +63,7 @@ export async function applyAnalyticsConsent(
   const analyticsSdk = await import("firebase/analytics");
 
   // A newer visitor choice may have been made while the SDK chunk was loading.
-  if (
-    requestSequence !== consentUpdateSequence ||
-    getAnalyticsConsent() !== consent
-  ) {
+  if (requestSequence !== consentUpdateSequence || getAnalyticsConsent() !== consent) {
     return;
   }
 
