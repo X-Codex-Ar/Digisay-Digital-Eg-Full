@@ -51,6 +51,12 @@ namespace DigiSay.Infrastructure.Persistence.Migrations
                         .HasMaxLength(25)
                         .HasColumnType("nvarchar(25)");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<string>("Source")
                         .HasMaxLength(80)
                         .HasColumnType("nvarchar(80)");
@@ -112,6 +118,12 @@ namespace DigiSay.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid>("LeadId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<string>("Title")
                         .IsRequired()
