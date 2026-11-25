@@ -158,6 +158,11 @@ internal static class CrmEndpoints
                         title: "AI triage is not configured.");
                 }
 
+                if (id == Guid.Empty)
+                {
+                    return (IResult)Results.NotFound();
+                }
+
                 try
                 {
                     var result = await handler.HandleAsync(id, scope, cancellationToken);
