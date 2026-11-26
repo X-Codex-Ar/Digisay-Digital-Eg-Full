@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using DigiSay.Application.Features.AI.PublicAssistant;
 using Xunit;
 
 namespace DigiSay.API.IntegrationTests;
@@ -54,6 +55,22 @@ public sealed class PublicAssistantApiTests
         using var limited = await client.PostAsJsonAsync("/api/v1/ai/public-chat", new { question = "Tell me about services." });
         Assert.Equal((HttpStatusCode)429, limited.StatusCode);
         Assert.Equal(9, factory.LanguageModel.CallCount);
+    }
+
+    [Fact]
+    public async Task Provider_quota_or_billing_failure_returns_sanitized_503_without_provider_detail()
+    {
+        using var factory = new DigiSayApiFactory(publicAssistantEnabled: true);
+        factory.LanguageModel.FailureToThrow = new PublicAssistantUnavailableException("The language model provider rejected the request.");
+        using var client = factory.CreateClient();
+
+        using var response = await client.PostAsJsonAsync("/api/v1/ai/public-chat", new { question = "What services do you offer?" });
+        var body = await response.Content.ReadAsStringAsync();
+
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.Contains("temporarily unavailable", body);
+        Assert.DoesNotContain("rejected the request", body);
+        Assert.Equal(1, factory.LanguageModel.CallCount);
     }
 
     private sealed record PublicAssistantResponse(string Answer, IReadOnlyList<PublicAssistantSourceResponse> Sources);
