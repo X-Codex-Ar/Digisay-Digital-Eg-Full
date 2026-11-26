@@ -231,7 +231,7 @@
         <p class="whitespace-pre-line text-sm text-muted-foreground">
           {{ $any(selected()).description }}
         </p>
-        @if (auth.isAdmin()) {
+        @if (aiTriageEnabled && auth.isAdmin()) {
           <section class="mt-5 rounded-2xl border border-primary/25 bg-primary/5 p-4" aria-labelledby="ai-triage-title">
             <div class="flex flex-wrap items-start justify-between gap-3">
               <div>
