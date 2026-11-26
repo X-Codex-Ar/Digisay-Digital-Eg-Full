@@ -1,4 +1,5 @@
 using DigiSay.Application.Common;
+using DigiSay.Application.Common.Organizations;
 using DigiSay.Domain.Entities.CRM;
 using DigiSay.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,7 @@ public sealed class CrmConcurrencyTests
     {
         using var context = new DigiSayDbContext(new DbContextOptionsBuilder<DigiSayDbContext>()
             .UseSqlServer(ModelOnlyConnectionString)
-            .Options);
+            .Options, new OrganizationContext());
 
         foreach (var (entityType, propertyName) in new[]
                  {
@@ -39,7 +40,7 @@ public sealed class CrmConcurrencyTests
         using var context = new DigiSayDbContext(new DbContextOptionsBuilder<DigiSayDbContext>()
             .UseSqlServer(ModelOnlyConnectionString)
             .AddInterceptors(new StaleSaveInterceptor())
-            .Options);
+            .Options, new OrganizationContext());
         var store = new CrmStore(context);
 
         await Assert.ThrowsAsync<ConcurrencyConflictException>(() => store.SaveChangesAsync(CancellationToken.None));
