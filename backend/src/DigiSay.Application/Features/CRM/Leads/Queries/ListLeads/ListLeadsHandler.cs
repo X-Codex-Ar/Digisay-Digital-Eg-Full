@@ -8,5 +8,5 @@ namespace DigiSay.Application.Features.CRM.Leads.Queries.ListLeads;
 public sealed class ListLeadsHandler(ILeadStore store)
 {
     public Task<PageSlice<Lead>> HandleAsync(ListLeadsQuery query, IOrganizationContext scope, CancellationToken cancellationToken) =>
-        store.ListLeadsAsync(scope.OrganizationId, query.Skip, query.Take, cancellationToken);
+        store.ListLeadsAsync(scope.OrganizationId, query.Skip, query.Take, query.Search, query.Status, cancellationToken);
 }

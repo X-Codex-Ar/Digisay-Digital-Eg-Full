@@ -11,7 +11,8 @@ Schema changes are tracked as Entity Framework Core migrations in `backend/src/D
 | Migration Identifier | Date | Scope & Tables Introduced |
 | :--- | :--- | :--- |
 | `20261125120000_InitialIdentityAndOrganizations` | 2026-11-25 | ASP.NET Identity tables, `Organizations`, `OrganizationMemberships`, and `ContactInquiries` |
-| `20261125150000_CrmLeadAndServiceRequests` | 2026-11-25 | `Leads`, `LeadFollowUps`, `LeadStatusHistories`, and `ServiceRequests` |
+| `20261124070229_CrmLeadAndServiceRequests` | 2026-11-24 | `Leads` and `ServiceRequests` |
+| `20261125124200_CrmLeadEngagementHistory` | 2026-11-25 | `LeadFollowUps` and `LeadStatusHistory` |
 | `20261125190201_CrmConcurrencyRowVersion` | 2026-11-25 | Added `RowVersion` (`rowversion` / `byte[]`) concurrency tokens to `Leads` and `LeadFollowUps` |
 | `20261125210540_StorageObjectMetadata` | 2026-11-25 | Added `StorageObjectRecords` for private Supabase Storage tracking |
 

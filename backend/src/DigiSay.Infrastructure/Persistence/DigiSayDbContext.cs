@@ -24,6 +24,9 @@ public sealed class DigiSayDbContext(
     public DbSet<OrganizationMembership> OrganizationMemberships => Set<OrganizationMembership>();
     public DbSet<StorageObjectRecord> StorageObjects => Set<StorageObjectRecord>();
     public DbSet<Lead> Leads => Set<Lead>();
+    public DbSet<LeadNote> LeadNotes => Set<LeadNote>();
+    public DbSet<LeadFollowUp> LeadFollowUps => Set<LeadFollowUp>();
+    public DbSet<LeadStatusHistory> LeadStatusHistory => Set<LeadStatusHistory>();
     public DbSet<ServiceRequest> ServiceRequests => Set<ServiceRequest>();
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
 

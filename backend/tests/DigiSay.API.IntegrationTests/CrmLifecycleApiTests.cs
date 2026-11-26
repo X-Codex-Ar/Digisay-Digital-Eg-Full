@@ -2,6 +2,12 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
+using DigiSay.Application.Common;
+using DigiSay.Application.Common.Organizations;
+using DigiSay.Application.Features.CRM.Leads.Abstractions;
+using DigiSay.Application.Features.CRM.Leads.Commands.CompleteLeadFollowUp;
+using DigiSay.Application.Features.CRM.Leads.Commands.TransitionLead;
+using DigiSay.Domain.Enums;
 using DigiSay.Domain.Entities.Organizations;
 using DigiSay.Infrastructure.Identity;
 using DigiSay.Infrastructure.Persistence;
@@ -77,6 +83,286 @@ public sealed class CrmLifecycleApiTests
         Assert.NotNull(leads);
         Assert.Equal(1, leads.TotalCount);
         Assert.Single(leads.Items);
+
+        using var statusFilterResponse = await client.GetAsync("/api/v1/crm/leads?search=Byron&status=Converted&page=1&pageSize=5");
+        Assert.Equal(HttpStatusCode.OK, statusFilterResponse.StatusCode);
+        var filteredLeads = await statusFilterResponse.Content.ReadFromJsonAsync<PagedResponse<LeadResponse>>();
+        Assert.NotNull(filteredLeads);
+        Assert.Equal(1, filteredLeads.TotalCount);
+
+        using var historyResponse = await client.GetAsync($"/api/v1/crm/leads/{id}/history?page=1&pageSize=20");
+        Assert.Equal(HttpStatusCode.OK, historyResponse.StatusCode);
+        var history = await historyResponse.Content.ReadFromJsonAsync<PagedResponse<LeadStatusHistoryResponse>>();
+        Assert.NotNull(history);
+        Assert.Equal(6, history.TotalCount);
+        Assert.Contains(history.Items, item => item.FromStatus is null && item.ToStatus == "New");
+        Assert.Contains(history.Items, item => item.FromStatus == "Negotiation" && item.ToStatus == "Converted");
+    }
+
+    [Fact]
+    public async Task Lead_search_matches_partial_email_case_insensitively_and_stays_within_organization()
+    {
+        using var factory = new DigiSayApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var owner = await CreateOrganizationClientAsync(factory, "email-search-owner@example.test", "Email Search Org");
+        using var other = await CreateOrganizationClientAsync(factory, "email-search-other@example.test", "Other Email Org");
+
+        using var createLead = await owner.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Grace Hopper", email = "ada.byron@example.test", source = "Referral",
+        });
+        Assert.Equal(HttpStatusCode.Created, createLead.StatusCode);
+        var lead = await createLead.Content.ReadFromJsonAsync<LeadResponse>();
+        Assert.NotNull(lead);
+
+        using var createWildcardTrap = await owner.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Numbered contact", email = "100sample@other.test", source = "Referral",
+        });
+        Assert.Equal(HttpStatusCode.Created, createWildcardTrap.StatusCode);
+
+        using var createOtherLead = await other.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Other person", email = "other@other.test", source = "Referral",
+        });
+        Assert.Equal(HttpStatusCode.Created, createOtherLead.StatusCode);
+
+        foreach (var term in new[] { "ada", "@example.test", "ada.byr", "ADA.BYRON@EXAMPLE.TEST" })
+        {
+            using var response = await owner.GetAsync($"/api/v1/crm/leads?search={Uri.EscapeDataString(term)}&page=1&pageSize=10");
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var page = await response.Content.ReadFromJsonAsync<PagedResponse<LeadResponse>>();
+            Assert.NotNull(page);
+            Assert.Equal(1, page.TotalCount);
+            Assert.Equal(lead.Id, Assert.Single(page.Items).Id);
+        }
+
+        using var escapedWildcard = await owner.GetAsync($"/api/v1/crm/leads?search={Uri.EscapeDataString("100%_")}&page=1&pageSize=10");
+        Assert.Equal(HttpStatusCode.OK, escapedWildcard.StatusCode);
+        var escapedWildcardPage = await escapedWildcard.Content.ReadFromJsonAsync<PagedResponse<LeadResponse>>();
+        Assert.NotNull(escapedWildcardPage);
+        Assert.Equal(0, escapedWildcardPage.TotalCount);
+        Assert.Empty(escapedWildcardPage.Items);
+
+        using var escapedBracket = await owner.GetAsync($"/api/v1/crm/leads?search={Uri.EscapeDataString("[a]")}&page=1&pageSize=10");
+        Assert.Equal(HttpStatusCode.OK, escapedBracket.StatusCode);
+        var escapedBracketPage = await escapedBracket.Content.ReadFromJsonAsync<PagedResponse<LeadResponse>>();
+        Assert.NotNull(escapedBracketPage);
+        Assert.Empty(escapedBracketPage.Items);
+
+        using var crossOrganizationSearch = await other.GetAsync("/api/v1/crm/leads?search=ada&page=1&pageSize=10");
+        Assert.Equal(HttpStatusCode.OK, crossOrganizationSearch.StatusCode);
+        var otherPage = await crossOrganizationSearch.Content.ReadFromJsonAsync<PagedResponse<LeadResponse>>();
+        Assert.NotNull(otherPage);
+        Assert.DoesNotContain(otherPage.Items, item => item.Id == lead.Id);
+    }
+
+    [Fact]
+    public async Task Lead_notes_and_followups_are_tenant_scoped_and_followups_complete_once()
+    {
+        using var factory = new DigiSayApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var owner = await CreateOrganizationClientAsync(factory, "lead-owner@example.test", "Owner Org");
+        using var other = await CreateOrganizationClientAsync(factory, "lead-other@example.test", "Other Org");
+
+        using var createLead = await owner.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Grace Hopper", email = "grace@example.test", source = "Referral",
+        });
+        Assert.Equal(HttpStatusCode.Created, createLead.StatusCode);
+        var createdLead = await createLead.Content.ReadFromJsonAsync<LeadResponse>();
+        Assert.NotNull(createdLead);
+
+        using var addNote = await owner.PostAsJsonAsync($"/api/v1/crm/leads/{createdLead.Id}/notes", new { content = "Discussed Q3 launch requirements." });
+        Assert.Equal(HttpStatusCode.Created, addNote.StatusCode);
+
+        using var addFollowUp = await owner.PostAsJsonAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups", new
+        {
+            title = "Send proposal", details = "Include the digital strategy scope.", dueAtUtc = DateTimeOffset.UtcNow.AddDays(2),
+        });
+        Assert.Equal(HttpStatusCode.Created, addFollowUp.StatusCode);
+        var followUp = await addFollowUp.Content.ReadFromJsonAsync<LeadFollowUpResponse>();
+        Assert.NotNull(followUp);
+
+        using var addOpenFollowUp = await owner.PostAsJsonAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups", new
+        {
+            title = "Confirm assets", details = "Check the source files.", dueAtUtc = DateTimeOffset.UtcNow.AddDays(1),
+        });
+        Assert.Equal(HttpStatusCode.Created, addOpenFollowUp.StatusCode);
+        var openFollowUp = await addOpenFollowUp.Content.ReadFromJsonAsync<LeadFollowUpResponse>();
+        Assert.NotNull(openFollowUp);
+
+        using var complete = await owner.PostAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups/{followUp.Id}/complete", null);
+        Assert.Equal(HttpStatusCode.OK, complete.StatusCode);
+        using var completeAgain = await owner.PostAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups/{followUp.Id}/complete", null);
+        Assert.Equal(HttpStatusCode.Conflict, completeAgain.StatusCode);
+
+        using var ownNotes = await owner.GetAsync($"/api/v1/crm/leads/{createdLead.Id}/notes");
+        using var foreignNotes = await other.GetAsync($"/api/v1/crm/leads/{createdLead.Id}/notes");
+        using var foreignComplete = await other.PostAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups/{followUp.Id}/complete", null);
+        Assert.Equal(HttpStatusCode.OK, ownNotes.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, foreignNotes.StatusCode);
+        Assert.Equal(HttpStatusCode.NotFound, foreignComplete.StatusCode);
+
+        using var firstFollowUpPageResponse = await owner.GetAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups?page=1&pageSize=1");
+        Assert.Equal(HttpStatusCode.OK, firstFollowUpPageResponse.StatusCode);
+        var firstFollowUpPage = await firstFollowUpPageResponse.Content.ReadFromJsonAsync<PagedResponse<LeadFollowUpResponse>>();
+        Assert.NotNull(firstFollowUpPage);
+        Assert.Equal(2, firstFollowUpPage.TotalCount);
+        Assert.Single(firstFollowUpPage.Items);
+        Assert.Equal(openFollowUp.Id, firstFollowUpPage.Items[0].Id);
+
+        using var secondFollowUpPageResponse = await owner.GetAsync($"/api/v1/crm/leads/{createdLead.Id}/follow-ups?page=2&pageSize=1");
+        Assert.Equal(HttpStatusCode.OK, secondFollowUpPageResponse.StatusCode);
+        var secondFollowUpPage = await secondFollowUpPageResponse.Content.ReadFromJsonAsync<PagedResponse<LeadFollowUpResponse>>();
+        Assert.NotNull(secondFollowUpPage);
+        Assert.Equal(2, secondFollowUpPage.TotalCount);
+        var completedFollowUp = Assert.Single(secondFollowUpPage.Items);
+        Assert.Equal(followUp.Id, completedFollowUp.Id);
+        Assert.NotNull(completedFollowUp.CompletedAtUtc);
+        Assert.Equal(createdLead.CreatedByUserId, completedFollowUp.CompletedByUserId);
+
+        using var unknownLeadFollowUps = await owner.GetAsync($"/api/v1/crm/leads/{Guid.NewGuid()}/follow-ups?page=1&pageSize=1");
+        Assert.Equal(HttpStatusCode.NotFound, unknownLeadFollowUps.StatusCode);
+
+        using var createForeignLead = await other.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Foreign lead", email = "foreign-lead@example.test", source = "Referral",
+        });
+        Assert.Equal(HttpStatusCode.Created, createForeignLead.StatusCode);
+        var foreignLead = await createForeignLead.Content.ReadFromJsonAsync<LeadResponse>();
+        Assert.NotNull(foreignLead);
+        using var foreignLeadFollowUps = await owner.GetAsync($"/api/v1/crm/leads/{foreignLead.Id}/follow-ups?page=1&pageSize=1");
+        Assert.Equal(HttpStatusCode.NotFound, foreignLeadFollowUps.StatusCode);
+
+        var notes = await ownNotes.Content.ReadFromJsonAsync<PagedResponse<LeadNoteResponse>>();
+        Assert.NotNull(notes);
+        Assert.Equal(1, notes.TotalCount);
+    }
+
+    [Fact]
+    public async Task SqlServer_concurrent_follow_up_completion_rejects_stale_writer_and_keeps_first_values()
+    {
+        using var factory = new DigiSayApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var owner = await CreateOrganizationClientAsync(factory, "follow-up-race-owner@example.test", "Follow-up Race Org");
+        using var other = await CreateOrganizationClientAsync(factory, "follow-up-race-other@example.test", "Other Race Org");
+        var organizationId = Guid.Parse(owner.DefaultRequestHeaders.GetValues("X-Organization-Id").Single());
+
+        using var createLead = await owner.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Follow-up race", email = "follow-up-race@example.test",
+        });
+        Assert.Equal(HttpStatusCode.Created, createLead.StatusCode);
+        var lead = await createLead.Content.ReadFromJsonAsync<LeadResponse>();
+        Assert.NotNull(lead);
+
+        using var createFollowUp = await owner.PostAsJsonAsync($"/api/v1/crm/leads/{lead.Id}/follow-ups", new
+        {
+            title = "Complete exactly once", dueAtUtc = DateTimeOffset.UtcNow.AddDays(1),
+        });
+        Assert.Equal(HttpStatusCode.Created, createFollowUp.StatusCode);
+        var followUp = await createFollowUp.Content.ReadFromJsonAsync<LeadFollowUpResponse>();
+        Assert.NotNull(followUp);
+        var otherActorId = await GetUserIdAsync(factory, "follow-up-race-other@example.test");
+
+        using var firstScope = factory.Services.CreateScope();
+        using var secondScope = factory.Services.CreateScope();
+        var firstDb = firstScope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
+        var secondDb = secondScope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
+        var firstLoaded = await firstDb.LeadFollowUps.SingleAsync(item => item.OrganizationId == organizationId && item.Id == followUp.Id);
+        var secondLoaded = await secondDb.LeadFollowUps.SingleAsync(item => item.OrganizationId == organizationId && item.Id == followUp.Id);
+        var firstScopeContext = CreateOrganizationContext(organizationId, lead.CreatedByUserId);
+        var secondScopeContext = CreateOrganizationContext(organizationId, otherActorId);
+        var firstHandler = new CompleteLeadFollowUpHandler(firstScope.ServiceProvider.GetRequiredService<ILeadStore>());
+        var secondHandler = new CompleteLeadFollowUpHandler(secondScope.ServiceProvider.GetRequiredService<ILeadStore>());
+
+        var firstResult = await firstHandler.HandleAsync(lead.Id, followUp.Id, firstScopeContext, CancellationToken.None);
+        Assert.True(firstResult.Found);
+        Assert.True(firstResult.Completed);
+
+        using var repeatedHttpCompletion = await owner.PostAsync($"/api/v1/crm/leads/{lead.Id}/follow-ups/{followUp.Id}/complete", null);
+        Assert.Equal(HttpStatusCode.Conflict, repeatedHttpCompletion.StatusCode);
+
+        using var savedWinnerScope = factory.Services.CreateScope();
+        var savedWinner = await savedWinnerScope.ServiceProvider.GetRequiredService<DigiSayDbContext>()
+            .LeadFollowUps.AsNoTracking().SingleAsync(item => item.OrganizationId == organizationId && item.Id == followUp.Id);
+        Assert.Equal(lead.CreatedByUserId, savedWinner.CompletedByUserId);
+        Assert.NotNull(savedWinner.CompletedAtUtc);
+
+        await Assert.ThrowsAsync<ConcurrencyConflictException>(async () =>
+            await secondHandler.HandleAsync(lead.Id, followUp.Id, secondScopeContext, CancellationToken.None));
+        Assert.Equal(otherActorId, secondLoaded.CompletedByUserId);
+
+        using var finalScope = factory.Services.CreateScope();
+        var finalFollowUp = await finalScope.ServiceProvider.GetRequiredService<DigiSayDbContext>()
+            .LeadFollowUps.AsNoTracking().SingleAsync(item => item.OrganizationId == organizationId && item.Id == followUp.Id);
+        Assert.Equal(savedWinner.CompletedByUserId, finalFollowUp.CompletedByUserId);
+        Assert.Equal(savedWinner.CompletedAtUtc, finalFollowUp.CompletedAtUtc);
+    }
+
+    [Fact]
+    public async Task SqlServer_concurrent_lead_transitions_roll_back_losing_history()
+    {
+        using var factory = new DigiSayApiFactory();
+        await factory.InitializeDatabaseAsync();
+        using var owner = await CreateOrganizationClientAsync(factory, "lead-race-owner@example.test", "Lead Race Org");
+        using var other = await CreateOrganizationClientAsync(factory, "lead-race-other@example.test", "Other Lead Race Org");
+        var organizationId = Guid.Parse(owner.DefaultRequestHeaders.GetValues("X-Organization-Id").Single());
+
+        using var createLead = await owner.PostAsJsonAsync("/api/v1/crm/leads", new
+        {
+            name = "Transition race", email = "transition-race@example.test",
+        });
+        Assert.Equal(HttpStatusCode.Created, createLead.StatusCode);
+        var lead = await createLead.Content.ReadFromJsonAsync<LeadResponse>();
+        Assert.NotNull(lead);
+        var otherActorId = await GetUserIdAsync(factory, "lead-race-other@example.test");
+
+        using var firstScope = factory.Services.CreateScope();
+        using var secondScope = factory.Services.CreateScope();
+        firstScope.ServiceProvider.GetRequiredService<OrganizationContext>().Set(organizationId, lead.CreatedByUserId, DigiSayRoles.Admin);
+        secondScope.ServiceProvider.GetRequiredService<OrganizationContext>().Set(organizationId, otherActorId, DigiSayRoles.Admin);
+        var firstDb = firstScope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
+        var secondDb = secondScope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
+        var firstLoaded = await firstDb.Leads.SingleAsync(item => item.OrganizationId == organizationId && item.Id == lead.Id);
+        var secondLoaded = await secondDb.Leads.SingleAsync(item => item.OrganizationId == organizationId && item.Id == lead.Id);
+        Assert.Equal(LeadStatus.New, firstLoaded.Status);
+        Assert.Equal(LeadStatus.New, secondLoaded.Status);
+
+        var firstHandler = new TransitionLeadHandler(firstScope.ServiceProvider.GetRequiredService<ILeadStore>());
+        var secondHandler = new TransitionLeadHandler(secondScope.ServiceProvider.GetRequiredService<ILeadStore>());
+        var firstResult = await firstHandler.HandleAsync(
+            lead.Id,
+            new TransitionLeadCommand(LeadStatus.Contacted),
+            CreateOrganizationContext(organizationId, lead.CreatedByUserId),
+            CancellationToken.None);
+        Assert.True(firstResult.Transitioned);
+
+        // New -> Qualified is not a legal lifecycle transition; Lost is the competing valid target from New.
+        await Assert.ThrowsAsync<ConcurrencyConflictException>(async () =>
+            await secondHandler.HandleAsync(
+                lead.Id,
+                new TransitionLeadCommand(LeadStatus.Lost),
+                CreateOrganizationContext(organizationId, otherActorId),
+                CancellationToken.None));
+        Assert.Equal(LeadStatus.Lost, secondLoaded.Status);
+
+        using var verifyScope = factory.Services.CreateScope();
+        verifyScope.ServiceProvider.GetRequiredService<OrganizationContext>().Set(organizationId, lead.CreatedByUserId, DigiSayRoles.Admin);
+        var verifyDb = verifyScope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
+        var persistedLead = await verifyDb.Leads.AsNoTracking().SingleAsync(item => item.OrganizationId == organizationId && item.Id == lead.Id);
+        var history = await verifyDb.LeadStatusHistory.AsNoTracking()
+            .Where(item => item.OrganizationId == organizationId && item.LeadId == lead.Id)
+            .ToListAsync();
+
+        Assert.Equal(LeadStatus.Contacted, persistedLead.Status);
+        Assert.Equal(2, history.Count);
+        Assert.Contains(history, item => item.FromStatus is null && item.ToStatus == LeadStatus.New);
+        var transitionsFromNew = history.Where(item => item.FromStatus == LeadStatus.New).ToArray();
+        var winningTransition = Assert.Single(transitionsFromNew);
+        Assert.Equal(LeadStatus.Contacted, winningTransition.ToStatus);
+        Assert.DoesNotContain(history, item => item.FromStatus == LeadStatus.New && item.ToStatus == LeadStatus.Lost);
     }
 
     [Fact]
@@ -311,6 +597,12 @@ public sealed class CrmLifecycleApiTests
         using var crossOrganizationDetails = await otherClient.GetAsync($"/api/v1/crm/service-requests/{requestId}");
         Assert.Equal(HttpStatusCode.NotFound, crossOrganizationDetails.StatusCode);
 
+        using var filteredRequests = await client.GetAsync("/api/v1/crm/service-requests?search=Campaign%20planning&status=Submitted&page=1&pageSize=10");
+        Assert.Equal(HttpStatusCode.OK, filteredRequests.StatusCode);
+        var filteredRequestPage = await filteredRequests.Content.ReadFromJsonAsync<PagedResponse<ServiceRequestResponse>>();
+        Assert.NotNull(filteredRequestPage);
+        Assert.Equal(1, filteredRequestPage.TotalCount);
+
         using var transition = await client.PostAsJsonAsync($"/api/v1/crm/service-requests/{requestId}/transitions", new { status = "UnderReview" });
         Assert.Equal(HttpStatusCode.Forbidden, transition.StatusCode);
 
@@ -341,6 +633,22 @@ public sealed class CrmLifecycleApiTests
         return Assert.Single(organizations!).Id;
     }
 
+    private static async Task<Guid> GetUserIdAsync(DigiSayApiFactory factory, string email)
+    {
+        using var scope = factory.Services.CreateScope();
+        var userManager = scope.ServiceProvider.GetRequiredService<UserManager<DigiSayUser>>();
+        var user = await userManager.FindByEmailAsync(email);
+        Assert.NotNull(user);
+        return user.Id;
+    }
+
+    private static IOrganizationContext CreateOrganizationContext(Guid organizationId, Guid userId)
+    {
+        var context = new OrganizationContext();
+        context.Set(organizationId, userId, DigiSayRoles.Admin);
+        return context;
+    }
+
     private static async Task<string> RegisterAndSignInAsync(DigiSayApiFactory factory, HttpClient client, string email, string role)
     {
         var registration = await client.PostAsJsonAsync("/api/v1/auth/register", new { email, password = Password });
@@ -366,6 +674,9 @@ public sealed class CrmLifecycleApiTests
     private sealed record OrganizationResponse(Guid Id, string Name, string MembershipRole);
     private sealed record LeadResponse(Guid Id, string Name, string Email, string? Phone, string? Source, string Status, Guid CreatedByUserId, Guid UpdatedByUserId, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc);
     private sealed record ServiceRequestResponse(Guid Id, string Title, string Description, string Service, string Status, Guid CreatedByUserId, Guid UpdatedByUserId, DateTimeOffset CreatedAtUtc, DateTimeOffset UpdatedAtUtc);
+    private sealed record LeadStatusHistoryResponse(Guid Id, Guid LeadId, string? FromStatus, string ToStatus, Guid ChangedByUserId, DateTimeOffset ChangedAtUtc);
+    private sealed record LeadNoteResponse(Guid Id, Guid LeadId, string Content, Guid CreatedByUserId, DateTimeOffset CreatedAtUtc);
+    private sealed record LeadFollowUpResponse(Guid Id, Guid LeadId, string Title, string? Details, DateTimeOffset DueAtUtc, Guid CreatedByUserId, DateTimeOffset CreatedAtUtc, DateTimeOffset? CompletedAtUtc, Guid? CompletedByUserId);
     private sealed record PagedResponse<T>(IReadOnlyList<T> Items, int Page, int PageSize, int TotalCount, int TotalPages);
 
 }

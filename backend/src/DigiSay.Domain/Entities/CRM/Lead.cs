@@ -20,6 +20,7 @@ public sealed class Lead : IOrganizationOwned
     public Guid UpdatedByUserId { get; private set; }
     public DateTimeOffset CreatedAtUtc { get; private set; }
     public DateTimeOffset UpdatedAtUtc { get; private set; }
+    public byte[] RowVersion { get; private set; } = [];
 
     public static Lead Create(
         Guid organizationId,
