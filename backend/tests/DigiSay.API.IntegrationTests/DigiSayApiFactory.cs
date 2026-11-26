@@ -174,9 +174,17 @@ internal sealed class RecordingLanguageModelProvider : ILanguageModelProvider
 {
     public int CallCount { get; private set; }
 
+    /// <summary>When set, the provider fails like a quota, billing or auth rejection would.</summary>
+    public Exception? FailureToThrow { get; set; }
+
     public Task<string> CompleteAsync(string systemPrompt, string userPrompt, CancellationToken cancellationToken)
     {
         CallCount++;
+        if (FailureToThrow is not null)
+        {
+            throw FailureToThrow;
+        }
+
         return Task.FromResult("DigiSay offers content production and social media services.");
     }
 }
