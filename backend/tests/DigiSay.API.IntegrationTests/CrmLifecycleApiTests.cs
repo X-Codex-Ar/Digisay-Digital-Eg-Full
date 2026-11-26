@@ -321,6 +321,8 @@ public sealed class CrmLifecycleApiTests
 
         using var firstScope = factory.Services.CreateScope();
         using var secondScope = factory.Services.CreateScope();
+        firstScope.ServiceProvider.GetRequiredService<OrganizationContext>().Set(organizationId, lead.CreatedByUserId, DigiSayRoles.Admin);
+        secondScope.ServiceProvider.GetRequiredService<OrganizationContext>().Set(organizationId, otherActorId, DigiSayRoles.Admin);
         var firstDb = firstScope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
         var secondDb = secondScope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
         var firstLoaded = await firstDb.Leads.SingleAsync(item => item.OrganizationId == organizationId && item.Id == lead.Id);
@@ -347,6 +349,7 @@ public sealed class CrmLifecycleApiTests
         Assert.Equal(LeadStatus.Lost, secondLoaded.Status);
 
         using var verifyScope = factory.Services.CreateScope();
+        verifyScope.ServiceProvider.GetRequiredService<OrganizationContext>().Set(organizationId, lead.CreatedByUserId, DigiSayRoles.Admin);
         var verifyDb = verifyScope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
         var persistedLead = await verifyDb.Leads.AsNoTracking().SingleAsync(item => item.OrganizationId == organizationId && item.Id == lead.Id);
         var history = await verifyDb.LeadStatusHistory.AsNoTracking()
