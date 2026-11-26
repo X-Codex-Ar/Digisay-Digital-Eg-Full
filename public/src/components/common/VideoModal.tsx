@@ -10,10 +10,7 @@ export interface VideoModalProps {
   title?: string;
 }
 
-const DEFAULT_VIDEO = resolveVideoUrl(
-  "videos/showreel.mp4",
-  "/assets/videos/showreel.mp4",
-);
+const DEFAULT_VIDEO = resolveVideoUrl("videos/showreel.mp4", "/assets/videos/showreel.mp4");
 
 export function VideoModal({
   isOpen,
