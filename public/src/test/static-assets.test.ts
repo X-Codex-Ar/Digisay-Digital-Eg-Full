@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 const publicRoot = path.resolve(__dirname, "..", "..");
@@ -27,6 +28,15 @@ function walk(dir: string): string[] {
   return out;
 }
 
+function hasSvgRoot(buf: Buffer): boolean {
+  const head = buf.subarray(0, 512).toString("utf8");
+  const withoutPreamble = head
+    .replace(/^\uFEFF/, "")
+    .replace(/^\s*<\?xml[\s\S]*?\?>/, "")
+    .replace(/^(?:\s*<!--[\s\S]*?-->|\s*<!DOCTYPE[^>]*>|\s+)*/i, "");
+  return withoutPreamble.startsWith("<svg");
+}
+
 function hasValidMagicBytes(file: string, ext: string): boolean {
   const buf = fs.readFileSync(file);
   if (buf.length < 4) return false;
@@ -48,10 +58,8 @@ function hasValidMagicBytes(file: string, ext: string): boolean {
       return buf[0] === 0x00 && buf[1] === 0x00 && buf[2] === 0x01 && buf[3] === 0x00;
     case ".avif":
       return buf.subarray(4, 8).toString("ascii") === "ftyp";
-    case ".svg": {
-      const head = buf.subarray(0, 512).toString("utf8");
-      return head.includes("<svg") || head.includes("<?xml");
-    }
+    case ".svg":
+      return hasSvgRoot(buf);
     default:
       return true;
   }
@@ -86,5 +94,38 @@ describe("static image assets", () => {
       }
     }
     expect(missing).toEqual([]);
+  });
+});
+
+describe("svg root detection", () => {
+  function svgCheck(content: string): boolean {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), "svg-check-"));
+    const file = path.join(dir, "sample.svg");
+    fs.writeFileSync(file, content);
+    try {
+      return hasValidMagicBytes(file, ".svg");
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  }
+
+  it("accepts a plain SVG document", () => {
+    expect(svgCheck('<svg xmlns="http://www.w3.org/2000/svg"></svg>')).toBe(true);
+  });
+
+  it("accepts an XML-prefixed SVG document", () => {
+    expect(
+      svgCheck(
+        '<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg"></svg>',
+      ),
+    ).toBe(true);
+  });
+
+  it("rejects an XML-prefixed HTML error page", () => {
+    expect(svgCheck('<?xml version="1.0"?><html>error</html>')).toBe(false);
+  });
+
+  it("rejects HTML stored as .svg", () => {
+    expect(svgCheck("<html><body>not found</body></html>")).toBe(false);
   });
 });
