@@ -163,7 +163,7 @@ export function HeroSection() {
       <VideoModal
         isOpen={isVideoOpen}
         onClose={() => setIsVideoOpen(false)}
-        videoUrl="https://digisay.com/wp-content/uploads/2024/03/GFF-No-Logo-1.mp4"
+        videoUrl="/assets/videos/showreel.mp4"
         title="DigiSay Group • The Digital Media Solutions Leader"
       />
     </section>

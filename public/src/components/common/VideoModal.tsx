@@ -10,10 +10,7 @@ export interface VideoModalProps {
   title?: string;
 }
 
-const DEFAULT_VIDEO = resolveVideoUrl(
-  "videos/showreel.mp4",
-  "https://digisay.com/wp-content/uploads/2024/03/GFF-No-Logo-1.mp4",
-);
+const DEFAULT_VIDEO = resolveVideoUrl("videos/showreel.mp4", "/assets/videos/showreel.mp4");
 
 export function VideoModal({
   isOpen,
