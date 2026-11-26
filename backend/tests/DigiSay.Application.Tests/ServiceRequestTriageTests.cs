@@ -2,6 +2,7 @@ using DigiSay.Application.Common.Organizations;
 using DigiSay.Application.Features.AI.ServiceRequestTriage;
 using DigiSay.Application.Features.CRM.ServiceRequests.Abstractions;
 using DigiSay.Domain.Entities.CRM;
+using DigiSay.Domain.Enums;
 using Xunit;
 
 namespace DigiSay.Application.Tests;
@@ -80,7 +81,7 @@ public sealed class ServiceRequestTriageTests
         }
 
         public Task AddAsync(ServiceRequest serviceRequest, CancellationToken cancellationToken) => throw new NotSupportedException();
-        public Task<DigiSay.Application.Common.Pagination.PageSlice<ServiceRequest>> ListServiceRequestsAsync(Guid organizationId, int skip, int take, CancellationToken cancellationToken) => throw new NotSupportedException();
+        public Task<DigiSay.Application.Common.Pagination.PageSlice<ServiceRequest>> ListServiceRequestsAsync(Guid organizationId, int skip, int take, string? search, ServiceRequestStatus? status, CancellationToken cancellationToken) => throw new NotSupportedException();
         public Task SaveChangesAsync(CancellationToken cancellationToken) => throw new NotSupportedException();
     }
 
