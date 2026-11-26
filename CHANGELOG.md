@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/X-Codex-Ar/Digisay-Digital-Eg-Full/compare/v1.1.0...v1.2.0) (2026-11-26)
+
+
+### Features
+
+* **crm:** add lead engagement history and list filters ([68b5739](https://github.com/X-Codex-Ar/Digisay-Digital-Eg-Full/commit/68b57398566959fe100593661f4454f46f3160b3))
+
 ## 1.1.0 (2026-11-25)
 
 ### Features
