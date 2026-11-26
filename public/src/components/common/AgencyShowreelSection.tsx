@@ -21,7 +21,7 @@ export function AgencyShowreelSection({
   title = "Where High-End Production Meets Algorithmic Distribution",
   description = "Watch our agency showreel to see how DigiSay Group transforms creative concepts into award-winning broadcasts, digital originals, and high-velocity commercial campaigns across MENA and the globe.",
   thumbnailUrl = "/assets/services/content-production-studio.jpg",
-  videoUrl = "https://digisay.com/wp-content/uploads/2024/03/GFF-No-Logo-1.mp4",
+  videoUrl = "/assets/videos/showreel.mp4",
   className = "",
 }: AgencyShowreelSectionProps) {
   const [isOpen, setIsOpen] = useState(false);
