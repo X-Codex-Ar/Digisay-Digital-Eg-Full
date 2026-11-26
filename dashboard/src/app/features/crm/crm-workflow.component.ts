@@ -4,6 +4,7 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/auth.service';
+import { aiTriageUiEnabled } from '../../core/feature-flags';
 import { OrganizationSelectorComponent } from '../../shared/organization-selector/organization-selector.component';
 import { DropdownComponent, DropdownOption } from '../../shared/dropdown/dropdown.component';
 import {
@@ -64,6 +65,7 @@ export class CrmWorkflowComponent implements OnInit {
   readonly notice = signal('');
   readonly selected = signal<CrmRecord | null>(null);
   readonly triage = signal<ServiceRequestTriage['suggestion']>(null);
+  readonly aiTriageEnabled = aiTriageUiEnabled();
   readonly triageBusy = signal(false);
   readonly triageError = signal('');
   readonly formOpen = signal(false);
@@ -235,7 +237,7 @@ export class CrmWorkflowComponent implements OnInit {
 
   suggestTriage(): void {
     const record = this.selected();
-    if (this.isLeads() || !record || !this.auth.isAdmin() || this.triageBusy()) return;
+    if (!this.aiTriageEnabled || this.isLeads() || !record || !this.auth.isAdmin() || this.triageBusy()) return;
     this.triageBusy.set(true);
     this.triageError.set('');
     this.triage.set(null);
