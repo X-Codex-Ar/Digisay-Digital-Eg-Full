@@ -1,3 +1,10 @@
 # X Code Ar review owner (GitHub CODEOWNERS requires a username or team, not an email).
 # Contact: x.code.arabic@gmail.com
+
 * @Mostafa-SAID7
+
+# AI engineering scope; keep the existing repository review owner involved.
+/ai-agents/ @eng-teto @Mostafa-SAID7
+/docs/architecture/AI-*.md @eng-teto @Mostafa-SAID7
+/backend/src/DigiSay.Application/Features/AI/ @eng-teto @Mostafa-SAID7
+/backend/tests/DigiSay.Application.Tests/ServiceRequestTriageTests.cs @eng-teto @Mostafa-SAID7

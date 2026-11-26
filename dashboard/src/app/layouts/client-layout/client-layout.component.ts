@@ -12,6 +12,7 @@ const CLIENT_NAVIGATION = [
   { label: 'Activity', path: '/client/activity', icon: 'AC' },
   { label: 'Notifications', path: '/client/notifications', icon: 'NT' },
   { label: 'Support', path: '/client/support', icon: 'SP' },
+  { label: 'AI assistant', path: '/client/ai-assistant', icon: 'AI' },
   { label: 'Profile', path: '/client/profile', icon: 'PR' },
   { label: 'Organization', path: '/client/organization', icon: 'OR' },
 ] as const;

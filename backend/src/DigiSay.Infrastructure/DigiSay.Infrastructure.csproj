@@ -1,6 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>DigiSay.Infrastructure</RootNamespace>
+    <PackageId>DigiSay.Infrastructure</PackageId>
+    <Description>DigiSay persistence, identity, storage, and integration adapters.</Description>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\DigiSay.Application\DigiSay.Application.csproj" />

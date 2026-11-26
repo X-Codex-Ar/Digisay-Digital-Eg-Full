@@ -30,6 +30,22 @@ ON CONFLICT (id) DO UPDATE SET
     file_size_limit = EXCLUDED.file_size_limit,
     allowed_mime_types = EXCLUDED.allowed_mime_types;
 
+-- Bucket: digisay-private
+-- Private backend-owned files. The API derives paths as
+-- organizations/{organization-guid-N}/{object-guid-N} and enforces membership.
+INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+VALUES (
+    'digisay-private',
+    'digisay-private',
+    false,
+    10485760, -- 10 MiB max; the API also validates the actual stream size
+    ARRAY['application/pdf', 'image/jpeg', 'image/png']
+)
+ON CONFLICT (id) DO UPDATE SET
+    public = EXCLUDED.public,
+    file_size_limit = EXCLUDED.file_size_limit,
+    allowed_mime_types = EXCLUDED.allowed_mime_types;
+
 -- Bucket: client-assets
 -- Private bucket for authenticated clients: contracts, reports, brand decks.
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -143,4 +159,22 @@ USING (
         OR (storage.foldername(name))[1] = auth.uid()::text
         OR auth.jwt() -> 'app_metadata' ->> 'is_admin' = 'true'
     )
+);
+
+-- 2.4 DigiSay private API bucket
+-- The API uses a server-only Supabase secret key, whose service_role bypasses
+-- RLS. This policy records the expected bucket/path shape but does not enforce
+-- the current API requests; membership authorization remains in the backend.
+-- Browser roles receive no access to this bucket.
+DROP POLICY IF EXISTS "DigiSay API manages tenant private objects" ON storage.objects;
+CREATE POLICY "DigiSay API manages tenant private objects"
+ON storage.objects FOR ALL
+TO service_role
+USING (
+    bucket_id = 'digisay-private'
+    AND name ~ '^organizations/[0-9a-f]{32}/[0-9a-f]{32}$'
+)
+WITH CHECK (
+    bucket_id = 'digisay-private'
+    AND name ~ '^organizations/[0-9a-f]{32}/[0-9a-f]{32}$'
 );

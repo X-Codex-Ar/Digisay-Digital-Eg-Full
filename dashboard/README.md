@@ -1,4 +1,4 @@
-# <p align="center">DigiSay Client & Admin Dashboard</p>
+# <p align="center"><img src="public/assets/brand/Digisay-logo-transparent-1-e1709464890607.png" alt="DigiSay Logo" width="180" /><br>DigiSay Client & Admin Dashboard</p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/Angular-22.3-DD0031?logo=angular&logoColor=white&style=flat-square" alt="Angular 22" />

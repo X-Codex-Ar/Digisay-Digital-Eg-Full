@@ -1,4 +1,5 @@
 using DigiSay.Application.Common;
+using System.Text.Json;
 using DigiSay.Application.Common.Pagination;
 using DigiSay.Application.Features.CRM.Leads.Abstractions;
 using DigiSay.Application.Features.CRM.ServiceRequests.Abstractions;
@@ -13,7 +14,7 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
     public async Task AddAsync(Lead lead, CancellationToken cancellationToken)
     {
         dbContext.Leads.Add(lead);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await SaveChangesAsync(cancellationToken);
     }
 
     public void AddStatusHistory(LeadStatusHistory history) => dbContext.LeadStatusHistory.Add(history);
@@ -21,7 +22,7 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
     public async Task AddAsync(ServiceRequest request, CancellationToken cancellationToken)
     {
         dbContext.ServiceRequests.Add(request);
-        await dbContext.SaveChangesAsync(cancellationToken);
+        await SaveChangesAsync(cancellationToken);
     }
 
     public Task<Lead?> FindLeadAsync(Guid organizationId, Guid id, CancellationToken cancellationToken) =>
@@ -129,6 +130,7 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
 
     public async Task SaveChangesAsync(CancellationToken cancellationToken)
     {
+        AppendOutboxEvents();
         try
         {
             await dbContext.SaveChangesAsync(cancellationToken);
@@ -136,6 +138,31 @@ internal sealed class CrmStore(DigiSayDbContext dbContext) : ILeadStore, IServic
         catch (DbUpdateConcurrencyException exception)
         {
             throw new ConcurrencyConflictException("The record was changed by another request.", exception);
+        }
+    }
+
+    private void AppendOutboxEvents()
+    {
+        var now = DateTimeOffset.UtcNow;
+        foreach (var entry in dbContext.ChangeTracker.Entries()
+                     .Where(entry => entry.State is EntityState.Added or EntityState.Modified)
+                     .ToArray())
+        {
+            switch (entry.Entity)
+            {
+                case Lead lead:
+                    dbContext.OutboxMessages.Add(OutboxMessage.Create(
+                        entry.State == EntityState.Added ? "crm.lead.created.v1" : "crm.lead.updated.v1",
+                        JsonSerializer.Serialize(new { lead.OrganizationId, lead.Id, Status = lead.Status.ToString() }),
+                        now));
+                    break;
+                case ServiceRequest request:
+                    dbContext.OutboxMessages.Add(OutboxMessage.Create(
+                        entry.State == EntityState.Added ? "crm.service-request.created.v1" : "crm.service-request.updated.v1",
+                        JsonSerializer.Serialize(new { request.OrganizationId, request.Id, Status = request.Status.ToString() }),
+                        now));
+                    break;
+            }
         }
     }
 

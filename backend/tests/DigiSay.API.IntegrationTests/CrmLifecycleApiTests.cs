@@ -456,6 +456,43 @@ public sealed class CrmLifecycleApiTests
         Assert.Equal(HttpStatusCode.Created, create.StatusCode);
         using var created = await JsonDocument.ParseAsync(await create.Content.ReadAsStreamAsync());
         var leadId = created.RootElement.GetProperty("id").GetGuid();
+        using var createRequest = await firstClient.PostAsJsonAsync("/api/v1/crm/service-requests", new
+        {
+            title = "First organization request",
+            description = "A request scoped to the first organization.",
+            service = "Production",
+        });
+        Assert.Equal(HttpStatusCode.Created, createRequest.StatusCode);
+        using var createdRequest = await JsonDocument.ParseAsync(await createRequest.Content.ReadAsStreamAsync());
+        var serviceRequestId = createdRequest.RootElement.GetProperty("id").GetGuid();
+        using (var eventScope = factory.Services.CreateScope())
+        {
+            var dbContext = eventScope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
+            var leadEvent = Assert.Single(
+                await dbContext.OutboxMessages.AsNoTracking()
+                    .Where(message => message.EventType == "crm.lead.created.v1")
+                    .ToListAsync(),
+                message => message.Payload.Contains(leadId.ToString(), StringComparison.OrdinalIgnoreCase));
+            var requestEvent = Assert.Single(
+                await dbContext.OutboxMessages.AsNoTracking()
+                    .Where(message => message.EventType == "crm.service-request.created.v1")
+                    .ToListAsync(),
+                message => message.Payload.Contains(serviceRequestId.ToString(), StringComparison.OrdinalIgnoreCase));
+            Assert.DoesNotContain("grace@example.test", leadEvent.Payload, StringComparison.OrdinalIgnoreCase);
+            Assert.Null(leadEvent.LastError);
+            Assert.Null(requestEvent.LastError);
+        }
+
+        Guid firstUserId;
+        using (var membershipScope = factory.Services.CreateScope())
+        {
+            var dbContext = membershipScope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
+            var firstOrganization = Guid.Parse(firstOrganizationId);
+            firstUserId = await dbContext.OrganizationMemberships.AsNoTracking()
+                .Where(membership => membership.OrganizationId == firstOrganization)
+                .Select(membership => membership.UserId)
+                .SingleAsync();
+        }
 
         secondClient.DefaultRequestHeaders.Remove("X-Organization-Id");
         var secondOrganizationId = await GetOrganizationIdAsync(secondClient);
@@ -469,6 +506,36 @@ public sealed class CrmLifecycleApiTests
         Assert.Equal(HttpStatusCode.NotFound, crossOrganizationRead.StatusCode);
         Assert.NotNull(otherOrganizationLeads);
         Assert.Empty(otherOrganizationLeads.Items);
+
+        var firstOrganizationContext = await factory.CreateVerifiedOrganizationDbContextAsync(
+            Guid.Parse(firstOrganizationId), firstUserId);
+        await using (firstOrganizationContext)
+        {
+            Assert.Equal(1, await firstOrganizationContext.Leads.CountAsync());
+            Assert.Equal(1, await firstOrganizationContext.ServiceRequests.CountAsync());
+        }
+
+        Guid secondUserId;
+        using (var membershipScope = factory.Services.CreateScope())
+        {
+            var dbContext = membershipScope.ServiceProvider.GetRequiredService<DigiSayDbContext>();
+            var secondOrganization = secondOrganizationId;
+            secondUserId = await dbContext.OrganizationMemberships.AsNoTracking()
+                .Where(membership => membership.OrganizationId == secondOrganization)
+                .Select(membership => membership.UserId)
+                .SingleAsync();
+        }
+
+        var secondOrganizationContext = await factory.CreateVerifiedOrganizationDbContextAsync(
+            secondOrganizationId, secondUserId);
+        await using (secondOrganizationContext)
+        {
+            Assert.Empty(await secondOrganizationContext.Leads.ToListAsync());
+            Assert.Null(await secondOrganizationContext.Leads.SingleOrDefaultAsync(lead => lead.Id == leadId));
+            Assert.Empty(await secondOrganizationContext.ServiceRequests.ToListAsync());
+            Assert.Null(await secondOrganizationContext.ServiceRequests
+                .SingleOrDefaultAsync(request => request.Id == serviceRequestId));
+        }
 
         using var attemptRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/organizations/current");
         attemptRequest.Headers.Add("X-Organization-Id", firstOrganizationId);

@@ -15,6 +15,7 @@ import { reportAppError } from "../lib/error-reporting";
 import { AnalyticsConsentManager } from "@/components/common/AnalyticsConsentManager";
 import { ScrollProgressBar } from "@/components/common/ScrollProgressBar";
 import { BrandIntroLoader } from "@/components/common/BrandIntroLoader";
+import { PublicAiAssistant } from "@/components/common/PublicAiAssistant";
 
 function NotFoundComponent() {
   return (
@@ -161,6 +162,7 @@ function RootComponent() {
       <AnalyticsConsentManager />
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      <PublicAiAssistant />
     </QueryClientProvider>
   );
 }

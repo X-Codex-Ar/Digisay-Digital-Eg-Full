@@ -1,11 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { catchError, of, timeout } from 'rxjs';
-import './runtime-config';
+import { apiHealthUrl } from './api-url';
 
 type ApiStatus = 'checking' | 'online' | 'offline';
-
-const API_BASE_URL = window.digisayRuntimeConfig?.apiBaseUrl ?? 'http://localhost:5080';
 
 @Injectable({ providedIn: 'root' })
 export class ApiHealthService {
@@ -19,7 +17,7 @@ export class ApiHealthService {
 
   refresh(): void {
     this.http
-      .get(`${API_BASE_URL}/health/ready`)
+      .get(apiHealthUrl())
       .pipe(
         timeout(5_000),
         catchError(() => of(null)),

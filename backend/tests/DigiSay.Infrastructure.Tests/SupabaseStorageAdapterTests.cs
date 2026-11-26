@@ -111,6 +111,31 @@ public sealed class SupabaseStorageAdapterTests
         Assert.Contains("outside the configured project", exception.Message);
     }
 
+    [Fact]
+    public async Task Adapter_accepts_signed_url_expiry_at_one_second_and_one_hour()
+    {
+        var expiries = new List<int>();
+        var handler = new RecordingHandler(async (request, _) =>
+        {
+            if (request.Content is not null)
+            {
+                using var body = JsonDocument.Parse(await request.Content.ReadAsStringAsync());
+                expiries.Add(body.RootElement.GetProperty("expiresIn").GetInt32());
+            }
+
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(new { signedURL = "/object/sign/digisay-private/file?token=stub" }),
+            };
+        });
+        var adapter = CreateAdapter(handler);
+
+        await adapter.CreateSignedDownloadUrlAsync(Guid.NewGuid(), Guid.NewGuid(), TimeSpan.FromSeconds(1), CancellationToken.None);
+        await adapter.CreateSignedDownloadUrlAsync(Guid.NewGuid(), Guid.NewGuid(), TimeSpan.FromHours(1), CancellationToken.None);
+
+        Assert.Equal([1, 3600], expiries);
+    }
+
     private static SupabaseStorageAdapter CreateAdapter(HttpMessageHandler handler) =>
         new(new HttpClient(handler) { BaseAddress = new Uri("https://project.supabase.test/storage/v1/") },
             Options.Create(new SupabaseStorageOptions

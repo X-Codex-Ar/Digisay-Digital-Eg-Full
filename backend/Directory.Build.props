@@ -8,5 +8,14 @@
     <Deterministic>true</Deterministic>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <NuGetAudit>true</NuGetAudit>
+    <Authors>DigiSay</Authors>
+    <RepositoryUrl>https://github.com/X-Codex-Ar/Digisay-Digital-Eg-Full</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>PACKAGE-README.md</PackageReadmeFile>
+    <PackageVersion Condition="'$(PackageVersion)' == ''">1.0.0</PackageVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)PACKAGE-README.md" Pack="true" PackagePath="/" />
+  </ItemGroup>
 </Project>

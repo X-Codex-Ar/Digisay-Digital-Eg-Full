@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Asp.Versioning.Builder;
 using DigiSay.API.Endpoints.ContactInquiries;
+using DigiSay.API.Endpoints.AI;
 using DigiSay.API.Endpoints.Identity;
 
 namespace DigiSay.API.Endpoints;
@@ -20,6 +21,7 @@ public static class ApiEndpoints
             .MapToApiVersion(new ApiVersion(1, 0));
 
         versionedApi.MapContactInquiryEndpoints();
+        versionedApi.MapPublicAssistantEndpoints();
         versionedApi.MapIdentityEndpoints();
     }
 }

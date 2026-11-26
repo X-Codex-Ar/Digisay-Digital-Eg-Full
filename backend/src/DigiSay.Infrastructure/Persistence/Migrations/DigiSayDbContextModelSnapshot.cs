@@ -79,9 +79,9 @@ namespace DigiSay.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.HasIndex("OrganizationId", "Email");
-
-                    b.HasIndex("OrganizationId", "Status", "CreatedAtUtc");
+                    b.HasIndex("OrganizationId", "CreatedAtUtc", "Id")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("IX_Leads_OrganizationId_CreatedAtUtc_Id");
 
                     b.ToTable("Leads", "crm");
                 });
@@ -257,7 +257,9 @@ namespace DigiSay.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("UpdatedByUserId");
 
-                    b.HasIndex("OrganizationId", "Status", "CreatedAtUtc");
+                    b.HasIndex("OrganizationId", "CreatedAtUtc", "Id")
+                        .IsDescending(false, true, false)
+                        .HasDatabaseName("IX_ServiceRequests_OrganizationId_CreatedAtUtc_Id");
 
                     b.ToTable("ServiceRequests", "crm");
                 });
@@ -464,6 +466,62 @@ namespace DigiSay.Infrastructure.Persistence.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("DigiSay.Infrastructure.Persistence.OutboxMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AttemptCount")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasDefaultValue(0);
+
+                    b.Property<DateTimeOffset?>("DeadLetteredAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("datetimeoffset(3)");
+
+                    b.Property<string>("EventType")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("LastError")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTimeOffset?>("LeaseExpiresAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("datetimeoffset(3)");
+
+                    b.Property<Guid?>("LeaseId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("NextAttemptAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("datetimeoffset(3)");
+
+                    b.Property<DateTimeOffset>("OccurredAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("datetimeoffset(3)");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasMaxLength(16000)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset?>("ProcessedAtUtc")
+                        .HasPrecision(3)
+                        .HasColumnType("datetimeoffset(3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NextAttemptAtUtc", "LeaseExpiresAtUtc", "OccurredAtUtc")
+                        .HasDatabaseName("IX_OutboxMessages_Dispatch")
+                        .HasFilter("[ProcessedAtUtc] IS NULL AND [DeadLetteredAtUtc] IS NULL");
+
+                    b.ToTable("OutboxMessages", "integration");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>

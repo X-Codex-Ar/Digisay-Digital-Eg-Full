@@ -1,4 +1,4 @@
-# <p align="center"><img src="storage/static/brand/Digisay-logo-transparent-1.png" alt="DigiSay Logo" width="220" /><br>DigiSay Group — Digital Media Solutions Platform</p>
+# <p align="center"><img src="storage/static/brand/Digisay-logo-transparent-1-e1709464890607.png" alt="DigiSay Logo" width="220" /><br>DigiSay Group — Digital Media Solutions Platform</p>
 
 <p align="center">
   <a href="https://github.com/X-Codex-Ar/Digisay-Digital-Eg-Full/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/X-Codex-Ar/Digisay-Digital-Eg-Full/ci.yml?branch=main&label=CI%20Quality%20Gates&logo=github&style=flat-square&color=2ea44f" alt="CI Quality Gates" /></a>
@@ -84,7 +84,29 @@ graph TD
 
 ## ✦ Quick Start
 
-Install dependencies across the monorepo:
+### 1. Run Everything via Docker Compose
+
+The fastest way to spin up the entire ecosystem (SQL Server, Redis, Backend API, Dashboard, Public Site):
+
+```powershell
+docker compose up -d
+```
+
+| Service | Local URL | Description |
+| :--- | :--- | :--- |
+| **Public Website** | [http://localhost:8080](http://localhost:8080) | React 19 public showcase |
+| **Dashboard** | [http://localhost:4200](http://localhost:4200) | Angular client and admin portal |
+| **Backend API** | [http://localhost:5080](http://localhost:5080) | ASP.NET Core API |
+| **API Health** | [http://localhost:5080/health/ready](http://localhost:5080/health/ready) | SQL Server & dependency readiness check |
+| **SQL Server** | `127.0.0.1:1433` | Microsoft SQL Server 2022 instance |
+
+*(Note: EF Core migrations are opt-in; `docker compose up` never applies them automatically. After reviewing a migration, use the explicit PowerShell sequence in [Docker development docs](docs/development/DOCKER.md#start-the-full-stack) to apply it to the local Compose database.)*
+
+---
+
+### 2. Local Monorepo Development
+
+Install dependencies across all workspaces:
 
 ```powershell
 pnpm run install:all
